@@ -179,7 +179,7 @@ autopoint.1.html: autopoint.1
 	$(MAN2HTML) `if test -f autopoint.1; then echo .; else echo $(srcdir); fi`/autopoint.1 | sed -e '/CreationDate:/d' > t-$@
 	mv t-$@ $@
 
-install-html:
+install-html-local:
 	$(mkdir_p) $(DESTDIR)$(htmldir)
 	for file in $(man_HTML); do \
 	  if test -f $$file; then dir=.; else dir=$(srcdir); fi; \
@@ -193,13 +193,3 @@ uninstall-html:
 	for file in $(man_HTML); do \
 	  $(RM) $(DESTDIR)$(htmldir)/$$file; \
 	done
-
-
-# VMS support.
-
-EXTRA_DIST += Makefile.vms
-
-
-# Woe32 support.
-
-EXTRA_DIST += Makefile.msvc

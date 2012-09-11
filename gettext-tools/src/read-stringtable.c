@@ -32,7 +32,7 @@
 
 #include "error.h"
 #include "error-progname.h"
-#include "read-po-abstract.h"
+#include "read-catalog-abstract.h"
 #include "xalloc.h"
 #include "xvasprintf.h"
 #include "po-xerror.h"
@@ -826,9 +826,9 @@ read_string (lex_pos_ty *pos)
 
 
 /* Read a .strings file from a stream, and dispatch to the various
-   abstract_po_reader_class_ty methods.  */
-void
-stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
+   abstract_catalog_reader_class_ty methods.  */
+static void
+stringtable_parse (abstract_catalog_reader_ty *pop, FILE *file,
 		   const char *real_filename, const char *logical_filename)
 {
   fp = file;
@@ -877,10 +877,11 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
 	{
 	  /* "key"; is an abbreviation for "key"=""; and does not
 	     necessarily designate an untranslated entry.  */
-	  msgstr = "";
+	  msgstr = xstrdup ("");
 	  msgstr_pos = msgid_pos;
 	  po_callback_message (NULL, msgid, &msgid_pos, NULL,
 			       msgstr, strlen (msgstr) + 1, &msgstr_pos,
+			       NULL, NULL, NULL,
 			       false, next_is_obsolete);
 	}
       else if (c == '=')
@@ -930,6 +931,7 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
 	      /* A key/value pair.  */
 	      po_callback_message (NULL, msgid, &msgid_pos, NULL,
 				   msgstr, strlen (msgstr) + 1, &msgstr_pos,
+				   NULL, NULL, NULL,
 				   false, next_is_obsolete);
 	    }
 	  else
@@ -955,3 +957,9 @@ warning: syntax error, expected '=' or ';' after string"));
   real_file_name = NULL;
   gram_pos.line_number = 0;
 }
+
+const struct catalog_input_format input_format_stringtable =
+{
+  stringtable_parse,			/* parse */
+  true					/* produces_utf8 */
+};

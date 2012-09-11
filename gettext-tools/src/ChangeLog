@@ -1,3 +1,633 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CPPFLAGS): Add also $(top_srcdir). Needed so that
+	woe32dll/export.h is found while compiling gettextsrc-exports.c in a
+	VPATH build.
+	Reported by Charles Wilson <cygwin@cwilson.fastmail.fm>.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c (struct definitions_ty): Remove semicolon after
+	gl_lock_define invocation.
+
+2006-10-21  Bruno Haible  <bruno@clisp.org>
+
+	* po-error.h (po_error, po_error_at_line): Use format attribute only
+	with gcc >= 3.1.
+
+2006-10-21  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c (struct definitions_ty): Use gl_lock_define to declare
+	the findex_init_lock field.
+	(definitions_init): Use gl_lock_init to initialize it, instead of
+	memcpy hack.
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Work around automake-1.10 problem described in
+	http://lists.gnu.org/archive/html/bug-automake/2006-08/msg00025.html.
+	* Makefile.am (CXXLINK): Remove variable.
+	(msgmerge_CXXFLAGS): New variable.
+	(libgettextsrc_la_LINK, msgattrib_LINK, msgcat_LINK, msgcomm_LINK,
+	msgconv_LINK, msgen_LINK, msgfilter_LINK, msggrep_LINK, msgmerge_LINK,
+	msguniq_LINK, xgettext_LINK): New variables.
+
+2006-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* read-po.h (input_format_po): Mark as DLL_VARIABLE.
+	* read-properties.h (input_format_properties): Likewise.
+	* read-stringtable.h (input_format_stringtable): Likewise.
+	* write-po.h (output_format_po): Likewise.
+	* write-properties.h (output_format_properties): Likewise.
+	* write-stringtable.h (output_format_stringtable): Likewise.
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in: Move to ../libgettextpo/.
+	* gettext-po.c: Move to ../libgettextpo/.
+	* Makefile.am (lib_LTLIBRARIES): Remove libgettextpo.la.
+	(nodist_include_HEADERS): Remove variable.
+	(libgettextpo_la_SOURCES, LTV_CURRENT, LTV_REVISION, LTV_AGE,
+	libgettextpo_la_LDFLAGS, libgettextpo_la_DEPENDENCIES,
+	libgettextpo_la_LDFLAGS): Remove variables.
+	(EXTRA_DIST, BUILT_SOURCES, CLEANFILES): Remove gettext-po.h support.
+	(gettext-po.h): Remove rule.
+
+2006-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* po-error.h (__attribute__, __format__, __printf__): New macros.
+	(po_error, po_error_at_line): Declare format string argument.
+	* po-lex.h (__attribute__, __format__, __printf__): New macros.
+	(po_gram_error, po_gram_error_at_line): Declare format string argument.
+
+	* msgl-cat.c (catenate_msgdomain_list): Avoid "gcc -Wshadow" warning.
+	* msgl-check.c (formatstring_error_logger): Avoid "gcc
+	-Wmissing-format-attribute" warning.
+	(check_pair): Avoid "gcc -Wshadow" warning.
+
+	* read-stringtable.c (stringtable_parse): Pass a mutable string as
+	msgstr to po_callback_message.
+	* write-po.c (msgdomain_list_print_po): Avoid "gcc -Wwrite-strings"
+	warning.
+	* xgettext.c (remember_a_message_plural): Free a temporary string
+	after use.
+
+2006-10-17  Bruno Haible  <bruno@clisp.org>
+
+	* lang-table.c (language_table): Add the most important languages that
+	have an ISO 639-2 code.
+	* msginit.c (catalogname_for_locale): Likewise.
+
+2006-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* read-catalog-abstract.h (input_syntax_ty): Remove type.
+	(catalog_input_format): New structure type.
+	(catalog_input_format_ty): New type.
+	(catalog_reader_parse): Change type of input_syntax argument.
+	* read-catalog.h (input_syntax): Remove variable.
+	(read_catalog_stream, read_catalog_file): Add input_syntax argument.
+	* msgl-cat.h: Include read-catalog-abstract.h.
+	(catenate_msgdomain_list): Add input_syntax argument.
+	* read-po.h: New file.
+	* read-po.c: New file, extracted from read-catalog-abstract.c.
+	* msgattrib.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file calls.
+	* msgcat.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update catenate_msgdomain_list call.
+	* msgcmp.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update compare call.
+	(compare): Add input_syntax argument.
+	* msgcomm.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update catenate_msgdomain_list call.
+	* msgconv.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msgen.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msgexec.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msgfilter.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msgfmt.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file_msgfmt call.
+	(read_catalog_file_msgfmt): Add input_syntax argument.
+	* msggrep.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msginit.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update read_catalog_file call.
+	* msgl-cat.c (catenate_msgdomain_list): Add input_syntax argument.
+	* msgmerge.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update merge call.
+	(compendium): Read it in PO syntax.
+	(merge): Add input_syntax argument.
+	* msguniq.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(main): Change handling of --properties-input, --stringtable-input
+	options. Update catenate_msgdomain_list call.
+	* read-catalog-abstract.c: Don't include po-gram.h, read-properties.h,
+	read-stringtable.h.
+	(catalog_reader_parse): Change type of input_syntax argument. Invoke
+	the parser indirectly.
+	* read-catalog.c (input_syntax): Remove variable.
+	(read_catalog_stream, read_catalog_file): Add input_syntax argument.
+	* read-csharp.c: Include read-po.h.
+	(execute_and_read_po_output): Update read_catalog_stream call.
+	* read-java.c: Include read-po.h.
+	(execute_and_read_po_output): Update read_catalog_stream call.
+	* read-properties.c (properties_parse): Make static.
+	(input_format_properties): New variable.
+	* read-properties.h (properties_parse): Remove declaration.
+	(input_format_properties): New declaration.
+	* read-resources.c: Include read-po.h.
+	(execute_and_read_po_output): Update read_catalog_stream call.
+	* read-stringtable.c (stringtable_parse): Make static.
+	(input_format_stringtable): New variable.
+	* read-stringtable.h (stringtable_parse): Remove declaration.
+	(input_format_stringtable): New declaration.
+	* read-tcl.c: Include read-po.h.
+	(msgdomain_read_tcl): Update read_catalog_stream call.
+	* x-po.c: Include read-po.h, read-properties.h, read-stringtable.h.
+	(extract): Change type of input_syntax argument.
+	(extract_po, extract_properties, extract_stringtable): Update.
+	* xgettext.c: Include read-po.h.
+	(read_exclusion_file): Read it in PO syntax.
+	* gettext-po.c: Include read-po.h.
+	(po_file_read_v3, po_file_read_v2, po_file_read): Update
+	read_catalog_stream call.
+	* Makefile.am (noinst_HEADERS): Add read-po.h.
+	(COMMON_SOURCE): Add read-po.c.
+
+2006-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* read-catalog-abstract.h (abstract_catalog_reader_ty): Renamed from
+	abstract_po_reader_ty.
+	(abstract_catalog_reader_class_ty): Renamed from
+	abstract_po_reader_class_ty. Update.
+	(ABSTRACT_CATALOG_READER_TY): Renamed from ABSTRACT_PO_READER_TY.
+	Update.
+	(abstract_catalog_reader_ty): Renamed from abstract_po_reader_ty.
+	Update.
+	(catalog_reader_alloc): Renamed from po_reader_alloc.
+	(catalog_reader_parse): Renamed from po_scan.
+	(catalog_reader_free): Renamed from po_reader_free.
+	* read-catalog.h: Update.
+	(default_catalog_reader_class_ty): Renamed from
+	default_po_reader_class_ty.
+	(DEFAULT_CATALOG_READER_TY): Renamed from DEFAULT_PO_READER_TY. Update.
+	(default_catalog_reader_ty): Renamed from default_po_reader_ty. Update.
+	(default_constructor, default_destructor, default_parse_brief,
+	default_parse_debrief, default_directive_domain,
+	default_directive_message, default_comment, default_comment_dot,
+	default_comment_filepos, default_comment_special, default_set_domain,
+	default_add_message): Update.
+	(default_catalog_reader_alloc): Renamed from default_po_reader_alloc.
+	Update.
+	(read_catalog_stream): Renamed from read_po.
+	(read_catalog_file): Renamed from read_po_file.
+	* open-catalog.h (open_catalog_file): Renamed from open_po_file.
+	* msgattrib.c: Update.
+	(main): Update.
+	* msgcat.c: Update.
+	* msgcmp.c: Update.
+	(compare): Update.
+	* msgcomm.c: Update.
+	* msgconv.c: Update.
+	(main): Update.
+	* msgen.c: Update.
+	(main): Update.
+	* msgexec.c: Update.
+	(main): Update.
+	* msgfilter.c: Update.
+	(main): Update.
+	* msgfmt.c: Update.
+	(read_catalog_file_msgfmt): Renamed from read_po_file_msgfmt. Update.
+	(main): Update.
+	(msgfmt_catalog_reader_ty): Renamed from msgfmt_po_reader_ty. Update.
+	(msgfmt_constructor, msgfmt_parse_debrief, msgfmt_set_domain,
+	msgfmt_add_message, msgfmt_frob_new_message, msgfmt_comment_special,
+	msgfmt_methods): Update.
+	(read_catalog_file_msgfmt): Renamed from read_po_file_msgfmt. Update.
+	* msggrep.c: Update.
+	(main): Update.
+	* msginit.c: Update.
+	(main): Update.
+	* msgl-cat.c: Update.
+	(catenate_msgdomain_list): Update.
+	* msgmerge.c: Update.
+	(compendium, merge): Update.
+	* msguniq.c: Update.
+	* open-catalog.c: Update.
+	(try_open_catalog_file): Renamed from try_open_po_file.
+	(open_catalog_file): Renamed from open_po_file. Update.
+	* po-gram-gen.y: Update.
+	* read-catalog-abstract.c: Update.
+	(callback_arg): Update.
+	(catalog_reader_alloc): Renamed from po_reader_alloc.
+	(catalog_reader_free): Renamed from po_reader_free.
+	(call_parse_brief, call_parse_debrief, call_directive_domain,
+	call_directive_message, call_comment, call_comment_dot,
+	call_comment_filepos, call_comment_special): Update.
+	(parse_start): Renamed from po_scan_start.
+	(parse_end): Renamed from po_scan_end.
+	(catalog_reader_parse): Renamed from po_scan.
+	* read-catalog.c: Update.
+	(call_set_domain, call_add_message, call_frob_new_message): Update.
+	(default_constructor, default_destructor, default_parse_brief,
+	default_parse_debrief, default_copy_comment_state,
+	default_reset_comment_state, default_directive_domain,
+	default_directive_message, default_comment, default_comment_dot,
+	default_comment_filepos, default_comment_special, default_set_domain,
+	default_add_message, default_methods): Update.
+	(default_catalog_reader_alloc): Renamed from default_po_reader_alloc.
+	(read_catalog_stream): Renamed from read_po. Update.
+	(read_catalog_file): Renamed from read_po_file. Update.
+	* read-csharp.c: Update.
+	(execute_and_read_po_output): Update.
+	* read-java.c: Update.
+	(execute_and_read_po_output): Update.
+	* read-properties.c: Update.
+	(properties_parse): Update.
+	* read-properties.h: Update.
+	(properties_parse): Update.
+	* read-resources.c: Update.
+	(execute_and_read_po_output): Update.
+	* read-stringtable.c: Update.
+	(stringtable_parse): Update.
+	* read-stringtable.h: Update.
+	(stringtable_parse): Update.
+	* read-tcl.c: Update.
+	(msgdomain_read_tcl): Update.
+	* x-po.c: Update.
+	(extract_add_message, extract_methods, extract): Update.
+	* xgettext.c: Update.
+	(exclude_directive_domain, exclude_directive_message, exclude_methods,
+	read_exclusion_file): Update.
+	* xgettext.h: Update.
+	* gettext-po.c: Update.
+	(po_file_read_v3, po_file_read_v2, po_file_read): Update.
+
+	* read-catalog-abstract.h: Renamed from read-po-abstract.h.
+	* read-catalog-abstract.c: Renamed from read-po-abstract.c.
+	* read-catalog.h: Renamed from read-po.h.
+	* read-catalog.c: Renamed from read-po.c.
+	* open-catalog.h: Renamed from open-po.h.
+	* open-catalog.c: Renamed from open-po.c.
+	* Makefile.am (noinst_HEADERS, COMMON_SOURCE, libgettextsrc_la_SOURCES):
+	Update.
+
+2006-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* write-catalog.h: New file.
+	* write-catalog.c: New file, mostly extracted from write-po.c.
+	* write-po.h (message_page_width_set): Move declaration to
+	write-catalog.h.
+	(message_print_syntax_properties, message_print_syntax_stringtable):
+	Remove declarations.
+	(msgdomain_list_print): Move out to write-catalog.h, adding a
+	catalog_output_format_ty argument.
+	(msgdomain_list_sort_by_msgid, msgdomain_list_sort_by_filepos): Move
+	out to write-catalog.h.
+	(output_format_po): New declaration.
+	* write-po.c: Don't include fwriteerror.h, error-progname.h.
+	(page_width, message_page_width_set): Move out to write-catalog.c.
+	(use_syntax_properties): Remove variable.
+	(message_print_syntax_properties): Remove function.
+	(use_syntax_stringtable): Remove variable.
+	(message_print_syntax_stringtable): Remove function.
+	(wrap, message_print, message_print_obsolete, msgdomain_list_print_po):
+	Add page_width argument.
+	(msgdomain_list_print): Move out to write-catalog.c, adding a
+	catalog_output_format_ty argument.
+	(cmp_by_msgid, msgdomain_list_sort_by_msgid,
+	cmp_filepos, msgdomain_list_sort_filepos,
+	cmp_by_filepos, msgdomain_list_sort_by_filepos): Move out to
+	write-catalog.c.
+	(output_format_po): New variable.
+	* write-properties.h (msgdomain_list_print_properties): Remove
+	declaration.
+	(output_format_properties): New declaration.
+	* write-properties.c (msgdomain_list_print_properties): Make static.
+	(output_format_properties): New variable.
+	* write-stringtable.h (msgdomain_list_print_stringtable): Remove
+	declaration.
+	(output_format_stringtable): New declaration.
+	* write-stringtable.c (msgdomain_list_print_stringtable): Make static.
+	(output_format_stringtable): New variable.
+	* msgattrib.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgcat.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgcomm.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgconv.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgen.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgfilter.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msggrep.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msginit.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgmerge.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msgunfmt.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* msguniq.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(main): Change handling of --properties-output, --stringtable-output
+	options. Pass the output_syntax to msgdomain_list_print.
+	* xgettext.c: Include write-catalog.h, write-properties.h,
+	write-stringtable.h.
+	(output_syntax): Change type to catalog_output_format_ty.
+	(main): Update. Pass the output_syntax to msgdomain_list_print.
+	(finalize_header): Update.
+	* gettext-po.c: Include write-catalog.h.
+	(po_file_write): Specify PO syntax.
+	* Makefile.am (noinst_HEADERS): Add write-catalog.h.
+	(libgettextsrc_la_SOURCES): Add write.catalog.c.
+
+2006-10-05  Bruno Haible  <bruno@clisp.org>
+
+	* lang-table.c (language_table): Add Adangme, Kashubian. Fix the
+	names of Western Frisian, Marshallese, Sinhala.
+	* msginit.c (catalogname_for_locale): Add entries for Kashubian,
+	Western Frisian, South Ndebele. Change entry for Serbian from sr_CS to
+	sr_RS.
+
+2006-10-06  Bruno Haible  <bruno@clisp.org>
+
+	* write-java.c (msgdomain_write_java): Use fopen_temp, fwriteerror_temp
+	instead of fopen, fwriteerror.
+	* write-csharp.c (msgdomain_write_csharp): Likewise.
+
+2006-10-06  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 3:0:3.
+
+2006-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* message.h (struct message_ty): New fields prev_msgctxt, prev_msgid,
+	prev_msgid_plural.
+	* message.c (message_alloc): Initialize the prev_msg* fields.
+	(message_free): Free the prev_msg* fields.
+	(message_copy): Copy the prev_msg* fields.
+	* msgl-ascii.c (is_ascii_message): Consider also the prev_msg* fields.
+	* msgl-cat.c (catenate_msgdomain_list): Copy the prev_msg* fields if
+	a message is copied, not merged.
+	* msgl-equal.c (message_equal): Consider also the prev_msg* fields.
+	* msgl-iconv.c (convert_prev_msgid): New function.
+	(iconv_message_list): Call it.
+	iconvable_prev_msgid): New function.
+	(is_message_list_iconvable): Call it.
+
+	* po-lex.c (po_lex_previous): New variable.
+	(lex_start, lex_end): Reset it.
+	(keyword_p): Test it. New return values PREV_MSGID, PREV_MSGID_PLURAL,
+	PREV_MSGCTXT.
+	(po_gram_lex): Recognize #| and #~| syntax. New return value
+	PREV_STRING.
+	* po-gram-gen.y (do_callback_message): Add prev_msgctxt, prev_msgid,
+	prev_msgid_plural arguments.
+	(free_message_intro): New macro.
+	(PREV_MSGCTXT, PREV_MSGID, PREV_MSGID_PLURAL, PREV_STRING): New tokens.
+	(prev, message_intro): New structures.
+	(po_file): Renamed from msgfmt.
+	(message): Pass prev_* fields around. Call free_message_intro.
+	(message_intro, prev): New rules.
+	(msg_intro): Renamed from message_intro.
+	(prev_msg_intro, prev_msgid_pluralform, prev_string_list): New rules.
+	* read-po-abstract.h (struct abstract_po_reader_class_ty): Add
+	prev_msgctxt, prev_msgid, prev_msgid_plural arguments to the
+	'directive_message' method.
+	(po_callback_message): Add prev_msgctxt, prev_msgid,
+	prev_msgid_plural arguments.
+	* read-po-abstract.c (call_directive_message, po_callback_message): Add
+	prev_msgctxt, prev_msgid, prev_msgid_plural arguments.
+	* read-po.h (struct default_po_reader_class_ty): Add prev_msgctxt,
+	prev_msgid, prev_msgid_plural arguments to the 'add_message' method.
+	(default_directive_message, default_add_message): Add prev_msgctxt,
+	prev_msgid, prev_msgid_plural arguments.
+	* read-po.c (call_add_message, default_directive_message,
+	default_add_message): Add prev_msgctxt, prev_msgid, prev_msgid_plural
+	arguments.
+	* read-properties.c (properties_parse): Update.
+	* read-stringtable.c (stringtable_parse): Update.
+	* xgettext.c (exclude_directive_message): Add prev_msgctxt, prev_msgid,
+	prev_msgid_plural arguments.
+	* x-po.c (extract_add_message): Add prev_msgctxt, prev_msgid,
+	prev_msgid_plural arguments.
+
+	* write-po.c (wrap): Add extra_indent argument.
+	(message_print, message_print_obsolete): Print the prev_msgctxt,
+	prev_msgid, prev_msgid_plural fields. Compute an extra_indent.
+
+	* msgmerge.c (keep_previous): New variable.
+	(long_options): Add --previous option.
+	(main): Handle it.
+	(usage): Document --previous option.
+	(message_merge): Add force_fuzzy argument. Set the new message's
+	prev_msg* fields.
+	(match_domain): Update.
+	* msgattrib.c (REMOVE_PREV): New enum item.
+	(long_options): Add --clear-previous option.
+	(main): Handle it.
+	(usage): Document --clear-previous option.
+	(process_message_list): Handle REMOVE_PREV.
+	* msgfmt.c (msgfmt_add_message): Add prev_msgctxt, prev_msgid,
+	prev_msgid_plural arguments.
+	* gettext-po.c (po_message_prev_msgctxt, po_message_set_prev_msgctxt,
+	po_message_prev_msgid, po_message_set_prev_msgid,
+	po_message_prev_msgid_plural, po_message_set_prev_msgid_plural): New
+	functions.
+
+2006-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c (definitions_init): Fix initialization of fresh_lock.
+
+2006-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* msgcmp.c (include_fuzzies, include_untranslated): New variables.
+	(long_options): Add options --use-fuzzy, --use-untranslated.
+	(main): Handle them.
+	(usage): Document them.
+	(match_domain): Consider include_fuzzies and include_untranslated.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in (LIBGETTEXTPO_VERSION): Bump version number.
+	* Makefile.am (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 2:1:2.
+
+2006-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* x-perl.c (extract_balanced): Remove state argument.
+
+	* x-perl.c (extract_balanced): Remove unused variable prev_last_token.
+
+	Fix Perl parsing bug introduced between 0.14.6 and 0.15.
+	* x-perl.c (extract_balanced): Add eat_delim and comma_delim arguments.
+	Use recursion to handle the case of a keyword not followed by an
+	opening parenthesis. When a keyword is seen, set next_argparser
+	instead of modifying the argparser variable of the current recursion.
+	When seeing an opening parenthesis, distinguish the case of function
+	arguments and the case of a subexpression. Don't call collect_message
+	for unused argument positions.
+	Reported by Nicolas François <nicolas.francois@centraliens.net>.
+
+	* x-perl.c (extract_balanced): Remove unused variable.
+
+2006-09-06  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-iconv.c: Include xstriconv.h instead of iconvstring.h.
+	(convert_string, convert_msgstr, iconvable_string, iconvable_msgstr):
+	Use xmem_cd_iconv instead of iconv_string.
+	* recode-sr-latin.c: Include xstriconv.h instead of iconvstring.h.
+	(process): Use xmem_cd_iconv instead of iconv_string.
+
+2006-09-04  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (msginit_SOURCES): Add ../../gettext-runtime/intl/lock.c.
+	Reported by Aaron Williams <aaron_williams@net.com>.
+
+2006-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* x-scheme.c (read_object): Don't call arglist_parser_remember if
+	argparser is NULL.
+	* x-elisp.c (read_object): Likewise.
+	* x-librep.c (read_object): Likewise.
+	* x-lisp.c (read_object): Likewise.
+	Reported by Kevin Ryde <user42@zip.com.au>.
+
+2006-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* plural-table.c (plural_table): Put Hungarian under nplurals=2.
+	Reported by Arpad Biro <biro_arpad@yahoo.com> and
+	Gabor Kelemen <kelemeng@gnome.hu>.
+
+2006-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* read-mo.c: Include stdbool.h, stdlib.h, format.h.
+	(read_mo_file): Mark messages with system-dependent segments as
+	"#, c-format" or "#, objc-format", as appropriate.
+	Reported by Egmont Koblinger <egmont@uhulinux.hu>.
+
+2006-08-07  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.c (remember_a_message): Use the position passed as argument
+	instead of a dummypos.
+	Reported by Paul Eggert <eggert@cs.ucla.edu>.
+
+2006-08-01  Bruno Haible  <bruno@clisp.org>
+
+	Fix behaviour of msgmerge when the PO file and the compendium are
+	in different encodings.
+	* msgl-iconv.h (is_message_list_iconvable): New declaration.
+	* msgl-iconv.c (iconvable_string, iconvable_string_list,
+	iconvable_msgid, iconvable_msgstr, is_message_list_iconvable): New
+	functions.
+	* msgmerge.c: Include xallocsa.h.
+	(merge): In the case that the .pot file is ASCII, not UTF-8, convert
+	the definitions and the compendia contents to a common encoding.
+	Reported by Stanislav Brabec <sbrabec@suse.cz>.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CPPFLAGS, LDADD, libgettextsrc_la_LDFLAGS,
+	libgettextpo_la_LDFLAGS, recode_sr_latin_LDADD, RELOCATABLE_SRC_DIR,
+	RELOCATABLE_BUILD_DIR): Replace ../lib with ../gnulib-lib.
+	(JAVACOMP, CSHARPCOMP): Remove lib/ from pathname.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-cat.c: Include c-strstr.h instead of strstr.h.
+	(catenate_msgdomain_list): Use c_strstr instead of strstr.
+	* msgl-charset.c: Include c-strstr.h instead of strstr.h.
+	(compare_po_locale_charsets): Use c_strstr instead of strstr.
+	* msgl-check.c: Include c-strstr.h instead of strstr.h.
+	(plural_help, check_plural, check_header_entry): Use c_strstr instead
+	of strstr.
+	* msgl-iconv.c: Include c-strstr.h instead of strstr.h.
+	(iconv_message_list): Use c_strstr instead of strstr.
+	* po-charset.c: Include c-strstr.h instead of strstr.h.
+	(po_lex_charset_set): Use c_strstr instead of strstr.
+	* write-po.c: Include c-strstr.h instead of strstr.h.
+	(msgdomain_list_print_po): Use c_strstr instead of strstr.
+	* write-stringtable.c: Include c-strstr.h instead of strstr.h.
+	(write_message): Use c_strstr instead of strstr.
+	* msgcmp.c: Include c-strstr.h instead of strstr.h.
+	(compare): Use c_strstr instead of strstr.
+	* msginit.c: Include c-strstr.h instead of strstr.h.
+	(content_type): Use c_strstr instead of strstr.
+	* msgmerge.c: Include c-strstr.h instead of strstr.h.
+	(message_merge, merge): Use c_strstr instead of strstr.
+	* x-python.c: Include c-strstr.h instead of strstr.h.
+	(try_to_extract_coding): Use c_strstr instead of strstr.
+	* xgettext.c: Include c-strstr.h instead of strstr.h.
+	(remember_a_message, finalize_header): Use c_strstr instead of strstr.
+
+2006-07-23  Bruno Haible  <bruno@clisp.org>
+
+	Exploit CPUs with multiple execution units.
+	* msgmerge.c: Include lock.h.
+	(struct definitions_ty): Add 'findex_init_lock' field.
+	(definitions_init): Initialize it.
+	(definitions_init_findex): Ensure findex is initialized by the
+	first thread who attempts so.
+	(match_domain): Split the main loop into two. Parallelize the first
+	loop using OpenMP pragmas.
+	* Makefile.am (msgmerge_CFLAGS): New variable.
+	(msgmerge_LDADD): Add OPENMP_CFLAGS.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.msvc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.vms.
+
+2006-07-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (include_HEADERS): Remove variable.
+	(nodist_include_HEADERS): New variable.
+	Suggested by Ralf Corsepius <rc040203@freenet.de>.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

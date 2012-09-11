@@ -759,8 +759,9 @@ static void interpolate_keywords (message_list_ty *mlp, const char *string,
 				  int lineno);
 static token_ty *x_perl_lex (message_list_ty *mlp);
 static void x_perl_unlex (token_ty *tp);
-static bool extract_balanced (message_list_ty *mlp, int state,
-			      token_type_ty delim,
+static bool extract_balanced (message_list_ty *mlp,
+			      token_type_ty delim, bool eat_delim,
+			      bool comma_delim,
 			      flag_context_ty outer_context,
 			      flag_context_list_iterator_ty context_iter,
 			      int arg, struct arglist_parser *argparser);
@@ -1369,7 +1370,7 @@ extract_variable (message_list_ty *mlp, token_ty *tp, int first)
 	       real_file_name, line_number);
 #endif
 
-      if (extract_balanced (mlp, 0, token_type_rbrace,
+      if (extract_balanced (mlp, token_type_rbrace, true, false,
 			    null_context, null_context_list_iterator,
 			    1, arglist_parser_alloc (mlp, NULL)))
 	return;
@@ -1560,7 +1561,7 @@ extract_variable (message_list_ty *mlp, token_ty *tp, int first)
 		else
 		  {
 		    x_perl_unlex (t1);
-		    if (extract_balanced (mlp, 1, token_type_rbrace,
+		    if (extract_balanced (mlp, token_type_rbrace, true, false,
 					  null_context, context_iter,
 					  1, arglist_parser_alloc (mlp, &shapes)))
 		      return;
@@ -1591,7 +1592,7 @@ extract_variable (message_list_ty *mlp, token_ty *tp, int first)
 	  fprintf (stderr, "%s:%d: extracting balanced '{' after varname\n",
 		   real_file_name, line_number);
 #endif
-	  extract_balanced (mlp, 0, token_type_rbrace,
+	  extract_balanced (mlp, token_type_rbrace, true, false,
 			    null_context, null_context_list_iterator,
 			    1, arglist_parser_alloc (mlp, NULL));
 	  break;
@@ -1601,7 +1602,7 @@ extract_variable (message_list_ty *mlp, token_ty *tp, int first)
 	  fprintf (stderr, "%s:%d: extracting balanced '[' after varname\n",
 		   real_file_name, line_number);
 #endif
-	  extract_balanced (mlp, 0, token_type_rbracket,
+	  extract_balanced (mlp, token_type_rbracket, true, false,
 			    null_context, null_context_list_iterator,
 			    1, arglist_parser_alloc (mlp, NULL));
 	  break;
@@ -2782,7 +2783,7 @@ collect_message (message_list_ty *mlp, token_ty *tp, int error_level)
 /* The file is broken into tokens.  Scan the token stream, looking for
    a keyword, followed by a left paren, followed by a string.  When we
    see this sequence, we have something to remember.  We assume we are
-   looking at a valid C or C++ program, and leave the complaints about
+   looking at a valid Perl program, and leave the complaints about
    the grammar to the compiler.
 
      Normal handling: Look for
@@ -2791,47 +2792,86 @@ collect_message (message_list_ty *mlp, token_ty *tp, int error_level)
        keyword ( ... msgid ... msgid_plural ... )
 
    We use recursion because the arguments before msgid or between msgid
-   and msgid_plural can contain subexpressions of the same form.  */
+   and msgid_plural can contain subexpressions of the same form.
+
+   In Perl, parentheses around function arguments can be omitted.
+
+   The general rules are:
+     1) Functions declared with a prototype take exactly the specified number
+        of arguments.
+          sub one_arg ($) { ... }
+          sub two_args ($$) { ... }
+     2) When a function name is immediately followed by an opening parenthesis,
+        the argument list ends at the corresponding closing parenthesis.
+
+   If rule 1 and rule 2 are contradictory, i.e. when the program calls a
+   function with an explicit argument list and the wrong number of arguments,
+   the program is invalid:
+     sub two_args ($$) { ... }
+     foo two_args (x), y             - invalid due to rules 1 and 2
+
+   Ambiguities are resolved as follows:
+     3) Some built-ins, such as 'abs', 'sqrt', 'sin', 'cos', ..., and functions
+        declared with a prototype of exactly one argument take exactly one
+        argument:
+          foo sin x, y  ==>  foo (sin (x), y)
+          sub one_arg ($) { ... }
+          foo one_arg x, y, z  ==>  foo (one_arg (x), y, z)
+     4) Other identifiers, if not immediately followed by an opening
+        parenthesis, consume the entire remaining argument list:
+          foo bar x, y  ==>  foo (bar (x, y))
+          sub two_args ($$) { ... }
+          foo two_args x, y  ==>  foo (two_args (x, y))
+
+   Other series of comma separated expressions without a function name at
+   the beginning are comma expressions:
+          sub two_args ($$) { ... }
+          foo two_args x, (y, z)  ==>  foo (two_args (x, (y, z)))
+   Note that the evaluation of comma expressions returns a list of values
+   when in list context (e.g. inside the argument list of a function without
+   prototype) but only one value when inside the argument list of a function
+   with a prototype:
+          sub print3 ($$$) { print @_ }
+          print3 5, (6, 7), 8  ==>  578
+          print 5, (6, 7), 8  ==>  5678
+
+   Where rule 3 or 4 contradict rule 1 or 2, the program is invalid:
+     sin (x, y)                      - invalid due to rules 2 and 3
+     sub one_arg ($) { ... }
+     one_arg (x, y)                  - invalid due to rules 2 and 3
+     sub two_args ($$) { ... }
+     foo two_args x, y, z            - invalid due to rules 1 and 4
+ */
 
 /* Extract messages until the next balanced closing parenthesis.
    Extracted messages are added to MLP.
 
+   DELIM can be either token_type_rbrace, token_type_rbracket,
+   token_type_rparen.  Additionally, if COMMA_DELIM is true, parsing
+   stops at the next comma outside parentheses.
+
    ARG is the current argument list position, starts with 1.
    ARGPARSER is the corresponding argument list parser.
 
-   Returns true for EOF, false otherwise.
-
-   States are:
-
-   0 - initial state
-   1 - keyword has been seen
-   2 - extractable string has been seen
-   3 - a dot operator after an extractable string has been seen
-
-   States 2 and 3 are "fragile", the parser will remain in state 2
-   as long as only opening parentheses are seen, a transition to
-   state 3 is done on appearance of a dot operator, all other tokens
-   will cause the parser to fall back to state 1 or 0, eventually
-   with an error message about invalid intermixing of constant and
-   non-constant strings.
-
-   Likewise, state 3 is fragile.  The parser will remain in state 3
-   as long as only closing parentheses are seen, a transition to state
-   2 is done on appearance of another (literal!) string, all other
-   tokens will cause a warning.  */
+   Returns true for EOF, false otherwise.  */
 
 static bool
-extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
+extract_balanced (message_list_ty *mlp,
+		  token_type_ty delim, bool eat_delim, bool comma_delim,
 		  flag_context_ty outer_context,
 		  flag_context_list_iterator_ty context_iter,
 		  int arg, struct arglist_parser *argparser)
 {
-  /* Number of left parentheses seen.  */
-  int paren_seen = 0;
-
   /* Whether to implicitly assume the next tokens are arguments even without
      a '('.  */
   bool next_is_argument = false;
+  /* Parameters of the keyword just seen.  Defined only when next_is_argument
+     is true.  */
+  const struct callshapes *next_shapes = NULL;
+  struct arglist_parser *next_argparser = NULL;
+
+  /* Whether to not consider strings until the next comma.  */
+  bool skip_until_comma = false;
 
   /* Context iterator that will be used if the next token is a '('.  */
   flag_context_list_iterator_ty next_context_iter =
@@ -2852,7 +2892,6 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 
   for (;;)
     {
-      int my_last_token = last_token;
       /* The current token.  */
       token_ty *tp;
 
@@ -2865,23 +2904,84 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  xgettext_current_source_encoding = po_charset_utf8;
 	  arglist_parser_done (argparser, arg);
 	  xgettext_current_source_encoding = xgettext_global_source_encoding;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
 #if DEBUG_PERL
 	  fprintf (stderr, "%s:%d: extract_balanced finished (%d)\n",
 		   logical_file_name, tp->line_number, --nesting_level);
 #endif
-	  free_token (tp);
+	  if (eat_delim)
+	    free_token (tp);
+	  else
+	    /* Preserve the delimiter for the caller.  */
+	    x_perl_unlex (tp);
 	  return false;
 	}
 
+      if (comma_delim && tp->type == token_type_comma)
+	{
+	  xgettext_current_source_encoding = po_charset_utf8;
+	  arglist_parser_done (argparser, arg);
+	  xgettext_current_source_encoding = xgettext_global_source_encoding;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+#if DEBUG_PERL
+	  fprintf (stderr, "%s:%d: extract_balanced finished at comma (%d)\n",
+		   logical_file_name, tp->line_number, --nesting_level);
+#endif
+	  x_perl_unlex (tp);
+	  return false;
+	}
+	  
       if (next_is_argument && tp->type != token_type_lparen)
 	{
 	  /* An argument list starts, even though there is no '('.  */
-	  context_iter = next_context_iter;
-	  outer_context = inner_context;
-	  inner_context =
-	    inherited_context (outer_context,
-			       flag_context_list_iterator_advance (
-				 &context_iter));
+	  bool next_comma_delim;
+
+	  x_perl_unlex (tp);
+
+	  if (next_shapes != NULL)
+	    /* We know something about the function being called.  Assume
+	       that it consumes only one argument if no argument number or
+	       total > 1 is specified.  */
+	    {
+	      size_t i;
+
+	      next_comma_delim = true;
+	      for (i = 0; i < next_shapes->nshapes; i++)
+		{
+		  const struct callshape *shape = &next_shapes->shapes[i];
+
+		  if (shape->argnum1 > 1
+		      || shape->argnum2 > 1
+		      || shape->argnumc > 1
+		      || shape->argtotal > 1)
+		    next_comma_delim = false;
+		}
+	    }
+	  else
+	    /* We know nothing about the function being called.  It could be
+	       a function prototyped to take only one argument, or on the other
+	       hand it could be prototyped to take more than one argument or an
+	       arbitrary argument list or it could be unprototyped.  Due to
+	       the way the parser works, assuming the first case gives the
+	       best results.  */
+	    next_comma_delim = true;
+
+	  if (extract_balanced (mlp, delim, false, next_comma_delim,
+				inner_context, next_context_iter,
+				1, next_argparser))
+	    {
+	      xgettext_current_source_encoding = po_charset_utf8;
+	      arglist_parser_done (argparser, arg);
+	      xgettext_current_source_encoding = xgettext_global_source_encoding;
+	      return true;
+	    }
+
+	  next_is_argument = false;
+	  next_argparser = NULL;
+	  next_context_iter = null_context_list_iterator;
+	  continue;
 	}
 
       switch (tp->type)
@@ -2902,15 +3002,14 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		const struct callshapes *shapes =
 		  (const struct callshapes *) keyword_value;
 
-		xgettext_current_source_encoding = po_charset_utf8;
-		arglist_parser_done (argparser, arg);
-		xgettext_current_source_encoding = xgettext_global_source_encoding;
-		argparser = arglist_parser_alloc (mlp, shapes);
-		arg = 1;
-
 		last_token = token_type_keyword_symbol;
-
-		state = 2;
+		next_shapes = shapes;
+		next_argparser = arglist_parser_alloc (mlp, shapes);
+	      }
+	    else
+	      {
+		next_shapes = NULL;
+		next_argparser = arglist_parser_alloc (mlp, NULL);
 	      }
 	  }
 	  next_is_argument = true;
@@ -2928,44 +3027,66 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 #endif
 	  prefer_division_over_regexp = true;
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
 	case token_type_lparen:
 #if DEBUG_PERL
-	  fprintf (stderr, "%s:%d: type left parentheses (%d)\n",
+	  fprintf (stderr, "%s:%d: type left parenthesis (%d)\n",
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
-	  ++paren_seen;
-
-	  if (extract_balanced (mlp, state, token_type_rparen,
-				inner_context, next_context_iter,
-				arg, arglist_parser_clone (argparser)))
+	  if (next_is_argument)
 	    {
-	      xgettext_current_source_encoding = po_charset_utf8;
-	      arglist_parser_done (argparser, arg);
-	      xgettext_current_source_encoding = xgettext_global_source_encoding;
-	      free_token (tp);
-	      return true;
+	      /* Parse the argument list of a function call.  */
+	      if (extract_balanced (mlp, token_type_rparen, true, false,
+				    inner_context, next_context_iter,
+				    1, next_argparser))
+		{
+		  xgettext_current_source_encoding = po_charset_utf8;
+		  arglist_parser_done (argparser, arg);
+		  xgettext_current_source_encoding = xgettext_global_source_encoding;
+		  return true;
+		}
+	      next_is_argument = false;
+	      next_argparser = NULL;
 	    }
-	  if (my_last_token == token_type_keyword_symbol)
+	  else
 	    {
-	      xgettext_current_source_encoding = po_charset_utf8;
-	      arglist_parser_done (argparser, arg);
-	      xgettext_current_source_encoding = xgettext_global_source_encoding;
-	      argparser = arglist_parser_alloc (mlp, NULL);
+	      /* Parse a parenthesized expression or comma expression.  */
+	      if (extract_balanced (mlp, token_type_rparen, true, false,
+				    inner_context, next_context_iter,
+				    arg, arglist_parser_clone (argparser)))
+		{
+		  xgettext_current_source_encoding = po_charset_utf8;
+		  arglist_parser_done (argparser, arg);
+		  xgettext_current_source_encoding = xgettext_global_source_encoding;
+		  if (next_argparser != NULL)
+		    free (next_argparser);
+		  free_token (tp);
+		  return true;
+		}
+	      next_is_argument = false;
+	      if (next_argparser != NULL)
+		free (next_argparser);
+	      next_argparser = NULL;
 	    }
-	  next_is_argument = false;
+	  skip_until_comma = true;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
 	case token_type_rparen:
 #if DEBUG_PERL
-	  fprintf (stderr, "%s:%d: type right parentheses(%d)\n",
+	  fprintf (stderr, "%s:%d: type right parenthesis (%d)\n",
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
-	  --paren_seen;
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
+	  skip_until_comma = true;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -2994,6 +3115,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 			       flag_context_list_iterator_advance (
 				 &context_iter));
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
+	  skip_until_comma = false;
 	  next_context_iter = passthrough_context_list_iterator;
 	  break;
 
@@ -3015,16 +3140,36 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	      remember_a_message (mlp, NULL, string, inner_context, &pos, savable_comment);
 	      xgettext_current_source_encoding = xgettext_global_source_encoding;
 	    }
-	  else if (state)
+	  else if (!skip_until_comma)
 	    {
-	      char *string = collect_message (mlp, tp, EXIT_FAILURE);
+	      /* Need to collect the complete string, with error checking,
+		 only if the argument ARG is used in ARGPARSER.  */
+	      bool must_collect = false;
+	      {
+		size_t nalternatives = argparser->nalternatives;
+		size_t i;
 
-	      xgettext_current_source_encoding = po_charset_utf8;
-	      arglist_parser_remember (argparser, arg,
-				       string, inner_context,
-				       logical_file_name, tp->line_number,
-				       savable_comment);
-	      xgettext_current_source_encoding = xgettext_global_source_encoding;
+		for (i = 0; i < nalternatives; i++)
+		  {
+		    struct partial_call *cp = &argparser->alternative[i];
+
+		    if (arg == cp->argnumc
+			|| arg == cp->argnum1 || arg == cp->argnum2)
+		      must_collect = true;
+		  }
+	      }
+
+	      if (must_collect)
+		{
+		  char *string = collect_message (mlp, tp, EXIT_FAILURE);
+
+		  xgettext_current_source_encoding = po_charset_utf8;
+		  arglist_parser_remember (argparser, arg,
+					   string, inner_context,
+					   logical_file_name, tp->line_number,
+					   savable_comment);
+		  xgettext_current_source_encoding = xgettext_global_source_encoding;
+		}
 	    }
 
 	  if (arglist_parser_decidedp (argparser, arg))
@@ -3033,10 +3178,12 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	      arglist_parser_done (argparser, arg);
 	      xgettext_current_source_encoding = xgettext_global_source_encoding;
 	      argparser = arglist_parser_alloc (mlp, NULL);
-	      state = 0;
 	    }
 
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -3048,6 +3195,9 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  xgettext_current_source_encoding = po_charset_utf8;
 	  arglist_parser_done (argparser, arg);
 	  xgettext_current_source_encoding = xgettext_global_source_encoding;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  free_token (tp);
 	  return true;
 
@@ -3056,17 +3206,22 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  fprintf (stderr, "%s:%d: type lbrace (%d)\n",
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
-	  if (extract_balanced (mlp, 0, token_type_rbrace,
+	  if (extract_balanced (mlp, token_type_rbrace, true, false,
 				null_context, null_context_list_iterator,
 				1, arglist_parser_alloc (mlp, NULL)))
 	    {
 	      xgettext_current_source_encoding = po_charset_utf8;
 	      arglist_parser_done (argparser, arg);
 	      xgettext_current_source_encoding = xgettext_global_source_encoding;
+	      if (next_argparser != NULL)
+		free (next_argparser);
 	      free_token (tp);
 	      return true;
 	    }
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -3076,8 +3231,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
-	  state = 0;
 	  break;
 
 	case token_type_lbracket:
@@ -3085,17 +3242,22 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  fprintf (stderr, "%s:%d: type lbracket (%d)\n",
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
-	  if (extract_balanced (mlp, 0, token_type_rbracket,
+	  if (extract_balanced (mlp, token_type_rbracket, true, false,
 				null_context, null_context_list_iterator,
 				1, arglist_parser_alloc (mlp, NULL)))
 	    {
 	      xgettext_current_source_encoding = po_charset_utf8;
 	      arglist_parser_done (argparser, arg);
 	      xgettext_current_source_encoding = xgettext_global_source_encoding;
+	      if (next_argparser != NULL)
+		free (next_argparser);
 	      free_token (tp);
 	      return true;
 	    }
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -3105,8 +3267,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
-	  state = 0;
 	  break;
 
 	case token_type_semicolon:
@@ -3114,7 +3278,6 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  fprintf (stderr, "%s:%d: type semicolon (%d)\n",
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
-	  state = 0;
 
 	  /* The ultimate sign.  */
 	  xgettext_current_source_encoding = po_charset_utf8;
@@ -3128,6 +3291,9 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 	  outer_context = null_context;
 	  context_iter = null_context_list_iterator;
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = passthrough_context_list_iterator;
 	  inner_context =
 	    inherited_context (outer_context,
@@ -3141,6 +3307,9 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -3150,8 +3319,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
-	  state = 0;
 	  break;
 
 	case token_type_named_op:
@@ -3161,8 +3332,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   tp->string);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
-	  state = 0;
 	  break;
 
 	case token_type_regex_op:
@@ -3171,6 +3344,9 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
 	  break;
 
@@ -3180,8 +3356,10 @@ extract_balanced (message_list_ty *mlp, int state, token_type_ty delim,
 		   logical_file_name, tp->line_number, nesting_level);
 #endif
 	  next_is_argument = false;
+	  if (next_argparser != NULL)
+	    free (next_argparser);
+	  next_argparser = NULL;
 	  next_context_iter = null_context_list_iterator;
-	  state = 0;
 	  break;
 
 	default:
@@ -3223,7 +3401,7 @@ extract_perl (FILE *f, const char *real_filename, const char *logical_filename,
 
   /* Eat tokens until eof is seen.  When extract_balanced returns
      due to an unbalanced closing brace, just restart it.  */
-  while (!extract_balanced (mlp, 0, token_type_rbrace,
+  while (!extract_balanced (mlp, token_type_rbrace, true, false,
 			    null_context, null_context_list_iterator,
 			    1, arglist_parser_alloc (mlp, NULL)))
     ;

@@ -1,11 +1,170 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-25  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_OTHER): For libgettextpo, add
+	gettext-tools-libgettextpo-misc.
+
+2006-10-25  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/install-reloc: Define IN_RELOCWRAPPER for the compilation.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* version.sh: Bump version number to 0.16.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_FOR_LIBGETTEXTPO): Add unlocked-io.
+	Needed because gettext-tools/configure ends up setting USE_UNLOCKED_IO
+	in gettext-tools/config.h.
+
+2006-10-23  Bruno Haible  <bruno@clisp.org>
+
+	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): Make it work with
+	automake-1.10 too.
+
+2006-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Don't remove gettext-tools/libgettextpo/gnulib-m4.
+	Move the "-I gnulib-m4" to the end of the aclocal command lines.
+	Also add "-I libgettextpo/gnulib-m4".
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_FOR_LIBGETTEXTPO): New variable.
+	Invoke gnulib-tool also for libgettextpo.
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_FOR_SRC): Add xstriconv.
+
+2006-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): New rule.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* version.sh: Bump version number to 0.15.1.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/config.sub: Update to GNU version 2006-09-20.
+
+2006-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Mention intldir.m4.
+
+2006-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Remove inttypes-h.m4.
+
+2006-09-11  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Mention intl.m4.
+
+2006-09-06  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_FOR_SRC): Add xstriconv, remove
+	iconvstring.
+
+2006-08-26  Bruno Haible  <bruno@clisp.org>
+
+	* m4/woe32-dll.m4: Update comments.
+
+2006-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Remove signed.m4.
+
+2006-08-23  Bruno Haible  <bruno@clisp.org>
+
+	* INSTALL: Recommend to pass variables as configure arguments.
+	Suggested by Ralf Wildenhues.
+
+2006-08-08  Bruno Haible  <bruno@clisp.org>
+
+	* INSTALL: Add a recommendation for Tru64.
+	Reported by Gary V. Vaughan <gary@gnu.org>.
+
+2006-08-04  Bruno Haible  <bruno@clisp.org>
+
+	* README.woe32: Recommend to use cygwin as development environment,
+	and mingw only as target environment. Needed to avoid libtool problems
+	reported by Matthew McGillis <matthew@jenika.com>.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Invoke gnulib-tool inside gettext-runtime directory.
+	Append gettext-runtime/gnulib-m4 to the macro search path; remove
+	references to gettext-tools from gettext-runtime.
+
+2006-08-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (SUBDIRS): Add gnulib-local.
+	* configure.ac (AC_CONFIG_FILES): Add gnulib-local/Makefile.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Process the top-level directory after its subdirectories,
+	not before. Needed because of the recursive autoconf invocation in
+	the top-level configure.ac.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: If GNULIB_TOOL is not set, make an anonymous checkout
+	of gnulib.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* gnulib-local: New directory.
+	* autogen.sh: Invoke gnulib-tool inside gettext-tools directory.
+	Append gettext-tools/gnulib-m4 to the macro search path.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/csharpcomp.sh.in: Move here from
+	gettext-tools/lib/csharpcomp.sh.in.
+	* build-aux/csharpexec.sh.in: Move here from
+	gettext-tools/lib/csharpexec.sh.in.
+	* build-aux/javacomp.sh.in: Move here from
+	gettext-tools/lib/javacomp.sh.in.
+	* build-aux/javaexec.sh.in: Move here from
+	gettext-tools/lib/javaexec.sh.in.
+
+2006-07-22  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Accept option --quick.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	Remove MSVC/nmake build support.
+	* Makefile.msvc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	Remove VMS support.
+	* vms: Remove directory.
+	* Makefile.vms: Remove file.
+	* README.vms: Remove file.
+	* Makefile.am (EXTRA_DIST): Update.
+
+2006-07-24  Bruno Haible  <bruno@clisp.org>
+
+	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): Protect the initial
+	tab with a backslash. Needed for MacOS X sed.
+	Reported by Denis Excoffier <Denis.Excoffier@free.fr>.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.
 
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
-	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): Use a multiline -e argument
-	instead of multiple -e arguments. Needed for AIX 4.
+	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): Use a multiline -e
+	argument instead of multiple -e arguments. Needed for AIX 4.
 
 2006-07-20  Bruno Haible  <bruno@clisp.org>
 

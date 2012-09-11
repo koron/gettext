@@ -38,6 +38,9 @@
 /* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
 
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -129,9 +132,6 @@
 /* Define as the type of the result of subtracting two pointers, if the system
    doesn't define it. */
 #undef ptrdiff_t
-
-/* Define to empty if the C compiler doesn't support this keyword. */
-#undef signed
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t

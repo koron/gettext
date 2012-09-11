@@ -1,3 +1,32 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-14  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.sh.in: Put under LGPL.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CPPFLAGS, LDADD, RELOCATABLE_SRC_DIR,
+	RELOCATABLE_BUILD_DIR): Replace lib and ../gettext-tools/lib with
+	gnulib-lib.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CPPFLAGS): Replace gettext-tools/lib with
+	gettext-tools/gnulib-lib.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.msvc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.vms.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

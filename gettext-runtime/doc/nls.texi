@@ -1,7 +1,7 @@
 @node Translation Intro
 @chapter Notes on the Free Translation Project
 
-@set STATUS July 2006
+@set STATUS October 2006
 
 Free software is going international!  The Free Translation Project is
 a way to get maintainers of free software, translators, and users all
@@ -93,7 +93,7 @@ run configure without an option for your new package, @code{configure}
 will probably detect the previously built and installed @file{libintl.a}
 file and will decide to use this.  This might not be desirable.
 You should use the more recent version of the GNU @code{gettext}
-library.  I.e. if the file @file{intl/VERSION} shows that the library
+library.  I.e.@: if the file @file{intl/VERSION} shows that the library
 which comes with this package is more recent, you should use
 
 @example
@@ -211,8 +211,8 @@ do or how to get started, please write to
 coordinator for all translator teams.
 
 The English team is special.  It works at improving and uniformizing
-the terminology in use.  Proven linguistic skill are praised
-more than programming skill, here.
+the terminology in use.  Proven linguistic skills are praised
+more than programming skills, here.
 
 @node Available Packages
 @section Available Packages

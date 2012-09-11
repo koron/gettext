@@ -1,3 +1,140 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Mark Keywords): Explain the syntax that xgettext
+	understands. Fix example of a non-translatable string.
+
+2006-10-19  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* gettext.texi (Mark Keywords): keyword are -> keyword is.
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	Switch to automake-1.10.
+	* Makefile.am (install-html): Add no-op rule.
+	(install-dvi, install-ps, install-pdf): Remove rules.
+
+2006-10-17  Bruno Haible  <bruno@clisp.org>
+
+	* ISO_639-2: New file.
+	* iso-639-2.sed: New file.
+	* Makefile.am (gettext_TEXINFOS): Add iso-639-2.texi.
+	(EXTRA_DIST): Add iso-639-2.sed, ISO_639-2.
+	(iso-639-2.texi): New rule.
+	* gettext.texi (Language codes): Split into two nodes "Usual Language
+	Codes" and "Rare Language Codes". Include iso-639-2.texi.
+
+2006-10-08  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.texi: Document the --symlink option instead of the --copy
+	option.
+
+2006-10-05  Bruno Haible  <bruno@clisp.org>
+
+	* ISO_639: Add Adangme. Fix the names of Western Frisian, Galician,
+	Marshallese, Sinhala.
+	* ISO_3166: Add AX, GG, IM, JE, ME, RS. Remove CS.
+	* iso-3166.sed: Also transform Å to Aa.
+
+2006-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (PO Files): Document the "previous msgid" syntax.
+	* msgmerge.texi: Document the --previous option.
+	* msgattrib.texi: Document the --clear-previous option.
+
+2006-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* msgcmp.texi: Document --use-fuzzy and --use-untranslated options.
+
+2006-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (AM_GNU_GETTEXT): Mention the AM_GNU_GETTEXT_NEED
+	alternative.
+	(AM_GNU_GETTEXT_NEED): New subsection.
+
+2006-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Mention intldir.m4.
+	(AM_GNU_GETTEXT): Mention the effect of AM_GNU_GETTEXT_INTL_SUBDIR.
+	(AM_GNU_GETTEXT_INTL_SUBDIR): New subsection.
+
+2006-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Don't mention inttypes-h.m4.
+
+2006-09-11  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Mention nls.m4, po.m4, mkdirp.m4.
+
+2006-09-11  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Add intl.m4 to file list.
+
+2006-09-08  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Preparing strings): Also discourage unusual markup.
+	Suggested by Paul Eggert.
+
+2006-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Update file list.
+
+2006-08-17  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural Forms): Mention the use of ngettext with a
+	singular format string that doesn't need as many format arguments as
+	the plural string.
+	Suggested by Paul Eggert <eggert@cs.ucla.edu>.
+
+2006-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural Forms): Document how to deal with bignums,
+	negative numbers and floating-point numbers.
+	Suggested by Paul Eggert <eggert@cs.ucla.edu>.
+
+2006-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural Forms): Put Hungarian under nplurals=2, and
+	explain why.
+	Reported by Arpad Biro <biro_arpad@yahoo.com> and
+	Gabor Kelemen <kelemeng@gnome.hu>.
+
+2006-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural Forms): Mention the use of ngettext without
+	cardinal numbers.
+	Reported by Arpad Biro <biro_arpad@yahoo.com>.
+
+2006-08-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gettext.texi: Fix 2 typos.
+
+2006-08-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gettext.texi: Reduce spacing after "i.e." and "e.g.".
+	* msgcat.texi: Likewise.
+	* msgcomm.texi: Likewise.
+	* msgfilter.texi: Likewise.
+
+2006-08-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gettext.texi: Fix 17 typos.
+	* msgattrib.texi: Fix 2 typos.
+	* xgettext.texi: Fix 1 typo.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.msvc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.vms.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

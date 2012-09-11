@@ -19,8 +19,9 @@ rm -f m4/glibc2.m4
 rm -f m4/glibc21.m4
 rm -f m4/iconv.m4
 rm -f m4/intdiv0.m4
+rm -f m4/intl.m4
+rm -f m4/intldir.m4
 rm -f m4/intmax.m4
-rm -f m4/inttypes-h.m4
 rm -f m4/inttypes-pri.m4
 rm -f m4/inttypes_h.m4
 rm -f m4/lcmessage.m4
@@ -34,7 +35,6 @@ rm -f m4/nls.m4
 rm -f m4/po.m4
 rm -f m4/printf-posix.m4
 rm -f m4/progtest.m4
-rm -f m4/signed.m4
 rm -f m4/size_max.m4
 rm -f m4/stdint_h.m4
 rm -f m4/uintmax_t.m4

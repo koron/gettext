@@ -1,3 +1,71 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-25  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Don't invoke AC_RELOCATABLE; now done through the
+	relocwrapper module.
+
+2006-10-25  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (DLL_VARIABLE): Define to empty if IN_RELOCWRAPPER is
+	defined.
+
+2006-10-14  Bruno Haible  <bruno@clisp.org>
+
+	* COPYING: Clarify copyright of the programs.
+	Reported by Charles Wilson <cwilson@fastmail.fm>.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (EXTRA_DIST): Add gnulib-m4/gnulib-cache.m4.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Move gnulib-m4 to the end, since
+	sometime we have newer m4 files than gnulib.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Append gnulib-m4. Remove
+	../gettext-tools/m4 and ../gettext-tools/gnulib-m4.
+	(SUBDIRS): Replace lib with gnulib-lib.
+	* configure.ac (AC_PREREQ): Bump to 2.59.
+	(gl_EARLY): Invoke.
+	(AC_GNU_SOURCE, gl_USE_SYSTEM_EXTENSIONS): Remove invocations.
+	(gl_INIT): Invoke.
+	(string.h, AM_STDBOOL_H, gl_ALLOCSA, strerror, strstr, atexit, memmove,
+	gl_GETOPT, gt_FUNC_SETENV, gl_FUNC_STRERROR, gl_FUNC_STRTOUL,
+	gl_FUNC_GLIBC_UNLOCKED_IO, gl_ERROR, gl_PATHMAX, gl_FUNC_READLINK,
+	gl_XREADLINK, gl_CANONICALIZE): Remove tests done directly or
+	indirectly by gl_INIT.
+	(AC_CONFIG_FILES): Add gnulib-lib/Makefile, remove lib/Makefile.
+	Remove lib/javacomp.sh, lib/csharpcomp.sh.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Append ../gettext-tools/gnulib-m4.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Update for changed location of javacomp.sh.in and
+	csharpcomp.sh.in.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* windows: Remove directory.
+	* Makefile.msvc: Remove file.
+	* Makefile.am (config.h.msvc, intl/libgnuintl.h.msvc-static,
+	intl/libgnuintl.h.msvc-shared): Remove rules.
+	(EXTRA_DIST): Remove Makefile.msvc, config.h.msvc, windows/*.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.am (config.h_vms, intl/libgnuintl.h_vms): Remove rules.
+	(EXTRA_DIST): Remove Makefile.vms, config.h_vms.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

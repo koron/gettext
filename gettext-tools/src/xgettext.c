@@ -46,19 +46,23 @@
 #include "xvasprintf.h"
 #include "xalloc.h"
 #include "xallocsa.h"
-#include "strstr.h"
+#include "c-strstr.h"
 #include "xerror.h"
 #include "exit.h"
 #include "pathname.h"
 #include "c-strcase.h"
-#include "open-po.h"
-#include "read-po-abstract.h"
+#include "open-catalog.h"
+#include "read-catalog-abstract.h"
+#include "read-po.h"
 #include "message.h"
 #include "po-charset.h"
 #include "msgl-iconv.h"
 #include "msgl-ascii.h"
 #include "po-time.h"
+#include "write-catalog.h"
 #include "write-po.h"
+#include "write-properties.h"
+#include "write-stringtable.h"
 #include "format.h"
 #include "propername.h"
 #include "gettext.h"
@@ -132,7 +136,7 @@ static const char *msgstr_suffix;
 static char *output_dir;
 
 /* The output syntax: .pot or .properties or .strings.  */
-static input_syntax_ty output_syntax = syntax_po;
+static catalog_output_format_ty output_syntax = &output_format_po;
 
 /* If nonzero omit header with information about this run.  */
 int xgettext_omit_header;
@@ -486,12 +490,10 @@ main (int argc, char *argv[])
 	msgid_bugs_address = optarg;
 	break;
       case CHAR_MAX + 6:	/* --properties-output */
-	message_print_syntax_properties ();
-	output_syntax = syntax_properties;
+	output_syntax = &output_format_properties;
 	break;
       case CHAR_MAX + 7:	/* --stringtable-output */
-	message_print_syntax_stringtable ();
-	output_syntax = syntax_stringtable;
+	output_syntax = &output_format_stringtable;
 	break;
       case CHAR_MAX + 8:	/* --flag */
 	xgettext_record_flag (optarg);
@@ -722,7 +724,7 @@ warning: file `%s' extension `%s' is unknown; will try C"), filename, extension)
     msgdomain_list_sort_by_msgid (mdlp);
 
   /* Write the PO file.  */
-  msgdomain_list_print (mdlp, file_name, force_po, do_debug);
+  msgdomain_list_print (mdlp, file_name, output_syntax, force_po, do_debug);
 
   exit (EXIT_SUCCESS);
 }
@@ -899,7 +901,7 @@ Informative output:\n"));
 
 
 static void
-exclude_directive_domain (abstract_po_reader_ty *pop, char *name)
+exclude_directive_domain (abstract_catalog_reader_ty *pop, char *name)
 {
   po_gram_error_at_line (&gram_pos,
 			 _("this file may not contain domain directives"));
@@ -907,13 +909,16 @@ exclude_directive_domain (abstract_po_reader_ty *pop, char *name)
 
 
 static void
-exclude_directive_message (abstract_po_reader_ty *pop,
+exclude_directive_message (abstract_catalog_reader_ty *pop,
 			   char *msgctxt,
 			   char *msgid,
 			   lex_pos_ty *msgid_pos,
 			   char *msgid_plural,
 			   char *msgstr, size_t msgstr_len,
 			   lex_pos_ty *msgstr_pos,
+			   char *prev_msgctxt,
+			   char *prev_msgid,
+			   char *prev_msgid_plural,
 			   bool force_fuzzy, bool obsolete)
 {
   message_ty *mp;
@@ -943,9 +948,9 @@ exclude_directive_message (abstract_po_reader_ty *pop,
    and all actions resulting from the parse will be through
    invocations of method functions of that object.  */
 
-static abstract_po_reader_class_ty exclude_methods =
+static abstract_catalog_reader_class_ty exclude_methods =
 {
-  sizeof (abstract_po_reader_ty),
+  sizeof (abstract_catalog_reader_ty),
   NULL, /* constructor */
   NULL, /* destructor */
   NULL, /* parse_brief */
@@ -963,12 +968,12 @@ static void
 read_exclusion_file (char *filename)
 {
   char *real_filename;
-  FILE *fp = open_po_file (filename, &real_filename, true);
-  abstract_po_reader_ty *pop;
+  FILE *fp = open_catalog_file (filename, &real_filename, true);
+  abstract_catalog_reader_ty *pop;
 
-  pop = po_reader_alloc (&exclude_methods);
-  po_scan (pop, fp, real_filename, filename, input_syntax);
-  po_reader_free (pop);
+  pop = catalog_reader_alloc (&exclude_methods);
+  catalog_reader_parse (pop, fp, real_filename, filename, &input_format_po);
+  catalog_reader_free (pop);
 
   if (fp != stdin)
     fclose (fp);
@@ -2035,8 +2040,6 @@ meta information, not the empty string.\n")));
     }
   else
     {
-      static lex_pos_ty dummypos = { __FILE__, __LINE__ };
-
       /* Construct the msgstr from the prefix and suffix, otherwise use the
 	 empty string.  */
       if (msgstr_prefix)
@@ -2046,7 +2049,7 @@ meta information, not the empty string.\n")));
 
       /* Allocate a new message and append the message to the list.  */
       mp = message_alloc (msgctxt, msgid, NULL, msgstr, strlen (msgstr) + 1,
-			  &dummypos);
+			  pos);
       /* Do not free msgctxt and msgid.  */
       message_list_append (mlp, mp);
     }
@@ -2077,7 +2080,7 @@ meta information, not the empty string.\n")));
 	/* To reduce the possibility of unwanted matches we do a two
 	   step match: the line must contain `xgettext:' and one of
 	   the possible format description strings.  */
-	if ((t = strstr (s, "xgettext:")) != NULL)
+	if ((t = c_strstr (s, "xgettext:")) != NULL)
 	  {
 	    bool tmp_fuzzy;
 	    enum is_format tmp_format[NFORMATS];
@@ -2249,6 +2252,8 @@ remember_a_message_plural (message_ty *mp, char *string,
       memcpy (msgstr + mp->msgstr_len, msgstr1, msgstr1_len);
       mp->msgstr = msgstr;
       mp->msgstr_len = mp->msgstr_len + msgstr1_len;
+      if (msgstr_prefix)
+	free (msgstr1);
 
       /* Determine whether the context specifies that the msgid_plural is a
 	 format string.  */
@@ -2848,7 +2853,7 @@ finalize_header (msgdomain_list_ty *mdlp)
 	message_ty *header =
 	  message_list_search (mdlp->item[0]->messages, NULL, "");
 	if (header != NULL
-	    && strstr (header->msgstr, "Plural-Forms:") == NULL)
+	    && c_strstr (header->msgstr, "Plural-Forms:") == NULL)
 	  {
 	    size_t insertpos = strlen (header->msgstr);
 	    const char *suffix;
@@ -2887,9 +2892,7 @@ finalize_header (msgdomain_list_ty *mdlp)
 	  has_nonascii = true;
       }
 
-    if (has_nonascii
-	|| output_syntax == syntax_properties
-	|| output_syntax == syntax_stringtable)
+    if (has_nonascii || output_syntax->requires_utf8)
       {
 	message_list_ty *mlp = mdlp->item[0]->messages;
 

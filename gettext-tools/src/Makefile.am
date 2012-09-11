@@ -32,15 +32,13 @@ recode-sr-latin
 
 noinst_PROGRAMS = hostname urlget
 
-lib_LTLIBRARIES = libgettextsrc.la libgettextpo.la
-
-include_HEADERS = gettext-po.h
+lib_LTLIBRARIES = libgettextsrc.la
 
 noinst_HEADERS = pos.h message.h po-error.h po-xerror.h po-gram.h po-charset.h \
-po-lex.h open-po.h \
-read-po-abstract.h read-po.h read-properties.h read-stringtable.h \
+po-lex.h open-catalog.h read-catalog-abstract.h read-catalog.h \
+read-po.h read-properties.h read-stringtable.h \
 str-list.h \
-write-po.h write-properties.h write-stringtable.h \
+write-catalog.h write-po.h write-properties.h write-stringtable.h \
 dir-list.h file-list.h po-gram-gen.h po-gram-gen2.h \
 msgl-charset.h msgl-equal.h msgl-iconv.h msgl-ascii.h msgl-cat.h \
 msgl-english.h msgl-check.h msgl-fsearch.h msgfmt.h msgunfmt.h \
@@ -66,10 +64,10 @@ pkglibdir = $(libdir)/gettext
 
 AM_CPPFLAGS = \
   -I. -I$(srcdir) \
-  -I.. \
+  -I.. -I$(top_srcdir) \
   -I$(top_srcdir)/libgrep \
   -I$(top_srcdir)/libuniname \
-  -I../lib -I$(top_srcdir)/lib \
+  -I../gnulib-lib -I$(top_srcdir)/gnulib-lib \
   -I../intl -I$(top_srcdir)/../gettext-runtime/intl
 DEFS = \
   -DLOCALEDIR=\"$(localedir)\" -DBISON_LOCALEDIR=\"$(BISON_LOCALEDIR)\" \
@@ -80,34 +78,30 @@ DEFS = \
   -DLIBDIR=\"$(libdir)\" \
   -DGETTEXTDATADIR=\"$(pkgdatadir)\" \
   -DPROJECTSDIR=\"$(projectsdir)\" @DEFS@
-LDADD = ../lib/libgettextlib.la @LTLIBINTL@
+LDADD = ../gnulib-lib/libgettextlib.la @LTLIBINTL@
 
 SED = sed
 YACC = @YACC@ -d
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 JAR = @JAR@
-JAVACOMP = $(SHELL) ../lib/javacomp.sh
-CSHARPCOMP = $(SHELL) ../lib/csharpcomp.sh
+JAVACOMP = $(SHELL) ../javacomp.sh
+CSHARPCOMP = $(SHELL) ../csharpcomp.sh
 CSHARPCOMPFLAGS = @CSHARPCOMPFLAGS@
-
-# Linking with C++ libraries is needed _only_ on mingw and Cygwin.
-if !WOE32DLL
-@WOE32DLL_FALSE@CXXLINK = $(LINK)
-endif
 
 
 # All programs deal with message lists.
 # All programs must read PO files. (msgunfmt also, for read-java.c,
 # read-csharp.c and read-resources.c.)
 # message.c -> str-list.c.
-# (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> str-list.c.
-# (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> open-po.c -> dir-list.c -> str-list.c.
-# (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> po-charset.c.
-# (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> message.c -> str-list.c.
+# (read-catalog-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> str-list.c.
+# (read-catalog-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> open-catalog.c -> dir-list.c -> str-list.c.
+# (read-catalog-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> po-charset.c.
+# (read-catalog-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> message.c -> str-list.c.
 COMMON_SOURCE = message.c po-error.c po-xerror.c \
-read-po-abstract.c po-lex.c po-gram-gen.y po-charset.c \
-read-properties.c read-stringtable.c open-po.c dir-list.c str-list.c
+read-catalog-abstract.c po-lex.c po-gram-gen.y po-charset.c \
+read-po.c read-properties.c read-stringtable.c open-catalog.c \
+dir-list.c str-list.c
 
 # xgettext and msgfmt deal with format strings.
 if !WOE32DLL
@@ -123,18 +117,11 @@ format-php.c format-gcc-internal.c format-qt.c format-boost.c
 
 # libgettextsrc contains all code that is needed by at least two programs.
 libgettextsrc_la_SOURCES = \
-$(COMMON_SOURCE) read-po.c write-properties.c write-stringtable.c write-po.c \
+$(COMMON_SOURCE) read-catalog.c \
+write-catalog.c write-properties.c write-stringtable.c write-po.c \
 msgl-ascii.c msgl-iconv.c msgl-equal.c msgl-cat.c msgl-english.c msgl-check.c \
 file-list.c msgl-charset.c po-time.c plural-exp.c plural-eval.c plural-table.c \
 $(FORMAT_SOURCE)
-
-# libgettextpo contains the public API for PO files.
-libgettextpo_la_SOURCES = gettext-po.c
-# Libtool's library version information for libgettextpo.
-# See the libtool documentation, section "Library interface versions".
-LTV_CURRENT=2
-LTV_REVISION=0
-LTV_AGE=2
 
 # msggrep needs pattern matching.
 LIBGREP = ../libgrep/libgrep.a
@@ -204,7 +191,13 @@ else
 msggrep_SOURCES = ../woe32dll/c++msggrep.cc
 endif
 msginit_SOURCES = msginit.c
-msginit_SOURCES += lang-table.c plural-count.c ../../gettext-runtime/intl/localealias.c
+msginit_SOURCES += lang-table.c plural-count.c
+msginit_SOURCES += ../../gettext-runtime/intl/localealias.c
+# This is needed because on Solaris, localealias.c requires the symbol
+# libintl_thread_in_use which is defined in lock.c. The copy of lock.c inside
+# libintl.so is not sufficient, because libintl.so doesn't export the symbol
+# libintl_thread_in_use.
+msginit_SOURCES += ../../gettext-runtime/intl/lock.c
 if !WOE32DLL
 msguniq_SOURCES = msguniq.c
 else
@@ -215,13 +208,13 @@ hostname_SOURCES = hostname.c
 urlget_SOURCES = urlget.c
 
 # How to build libgettextsrc.la.
-# Need ../lib/libgettextlib.la.
+# Need ../gnulib-lib/libgettextlib.la.
 # Need @LTLIBINTL@ because many source files use gettext().
 # Need @LTLIBICONV@ because po-charset.c, po-lex.c, msgl-iconv.c, write-po.c
 # use iconv().
 libgettextsrc_la_LDFLAGS = \
   -release @VERSION@ \
-  ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
+  ../gnulib-lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
 
 # Tell the mingw or Cygwin linker which symbols to export.
 if WOE32DLL
@@ -237,21 +230,9 @@ install-exec-clean:
 	  *) $(RM) $(DESTDIR)$(libdir)/libgettextsrc.a ;; \
 	esac
 
-# How to build libgettextpo.la.
-# Need libgettextsrc.la.
-# Need ../lib/libgettextlib.la because of xmalloc.
-libgettextpo_la_LDFLAGS = \
-  -version-info $(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) \
-  -rpath $(libdir) \
-  libgettextsrc.la ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
-# Build order. Only needed for "make -j[N]".
-libgettextpo_la_DEPENDENCIES = libgettextsrc.la
-
-# Tell the mingw or Cygwin linker which symbols to export.
-if WOE32DLL
-libgettextpo_la_SOURCES += ../woe32dll/gettextpo-exports.c
-libgettextpo_la_LDFLAGS += -Wl,--export-all-symbols
-endif
+# Compile-time flags for particular source files.
+msgmerge_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
+msgmerge_CXXFLAGS = $(AM_CXXFLAGS) $(OPENMP_CFLAGS)
 
 # Link dependencies.
 # INTL_MACOSX_LIBS is needed because the programs depend on libintl.la
@@ -259,7 +240,7 @@ endif
 # For msginit, it is also needed because of localename.c.
 msgcmp_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
 msgfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @MSGMERGE_LIBM@
+msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @MSGMERGE_LIBM@ $(OPENMP_CFLAGS)
 msgunfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
 xgettext_LDADD = $(LIBUNINAME) libgettextsrc.la @INTL_MACOSX_LIBS@ @LTLIBEXPAT@
 msgattrib_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
@@ -273,7 +254,7 @@ msggrep_LDADD = $(LIBGREP) libgettextsrc.la @INTL_MACOSX_LIBS@
 msginit_LDADD = ../intl/localename.@INTL_LIBTOOL_SUFFIX_PREFIX@o \
                 libgettextsrc.la @INTL_MACOSX_LIBS@
 msguniq_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-recode_sr_latin_LDADD = ../lib/libgettextlib.la @INTL_MACOSX_LIBS@
+recode_sr_latin_LDADD = ../gnulib-lib/libgettextlib.la @INTL_MACOSX_LIBS@
 
 # Specify installation directory, for --enable-relocatable.
 msgcmp_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
@@ -315,6 +296,99 @@ hostname_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(pkglibdir)`
 urlget_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(pkglibdir)`
 endif
 
+# Linking with C++ libraries is needed _only_ on mingw and Cygwin.
+if !WOE32DLL
+libgettextsrc_la_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(libgettextsrc_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgattrib_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgattrib_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgcat_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgcat_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgcomm_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgcomm_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgconv_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgconv_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgen_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgen_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgfilter_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msgfilter_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msggrep_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msggrep_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgmerge_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(msgmerge_CFLAGS) $(CFLAGS) $(msgmerge_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msguniq_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(msguniq_LDFLAGS) $(LDFLAGS) \
+	-o $@
+xgettext_LINK = $(LIBTOOL) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(xgettext_LDFLAGS) $(LDFLAGS) \
+	-o $@
+else
+libgettextsrc_la_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(libgettextsrc_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgattrib_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgattrib_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgcat_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgcat_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgcomm_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgcomm_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgconv_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgconv_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgen_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgen_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgfilter_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msgfilter_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msggrep_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msggrep_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msgmerge_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(msgmerge_CXXFLAGS) $(CXXFLAGS) $(msgmerge_LDFLAGS) $(LDFLAGS) \
+	-o $@
+msguniq_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(msguniq_LDFLAGS) $(LDFLAGS) \
+	-o $@
+xgettext_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(xgettext_LDFLAGS) $(LDFLAGS) \
+	-o $@
+endif
+
 # Special rules for bison and flex generated files.
 
 BUILT_SOURCES = \
@@ -324,19 +398,6 @@ po-lex.o po-lex.lo: po-gram-gen2.h
 po-gram-gen2.h: po-gram-gen.h
 	$(SED) -e 's/yy/po_gram_/g' -e 's/extern /extern DLL_VARIABLE /' $(srcdir)/po-gram-gen.h > $@-tmp
 	mv $@-tmp $@
-
-# Special rules for installable include files that export variables.
-
-EXTRA_DIST += gettext-po.h.in
-BUILT_SOURCES += gettext-po.h
-CLEANFILES += gettext-po.h
-gettext-po.h: gettext-po.h.in
-if WOE32DLL
-	sed -e 's/extern \([^()]*\);/extern __declspec (dllimport) \1;/' $(srcdir)/gettext-po.h.in > gettext-po.h-tmp
-else
-	cp $(srcdir)/gettext-po.h.in gettext-po.h-tmp
-endif
-	mv gettext-po.h-tmp gettext-po.h
 
 
 # Special rules for installation of auxiliary programs.
@@ -481,17 +542,7 @@ uninstall-tcl:
 
 # Support for relocatability.
 RELOCATABLE_LIBRARY_PATH = $(libdir)
-RELOCATABLE_SRC_DIR = $(top_srcdir)/lib
-RELOCATABLE_BUILD_DIR = ../lib
+RELOCATABLE_SRC_DIR = $(top_srcdir)/gnulib-lib
+RELOCATABLE_BUILD_DIR = ../gnulib-lib
 RELOCATABLE_CONFIG_H_DIR = ..
 @SET_RELOCATABLE@
-
-
-# VMS support.
-
-EXTRA_DIST += Makefile.vms
-
-
-# Woe32 support.
-
-EXTRA_DIST += Makefile.msvc

@@ -336,6 +336,8 @@ Autoconf macros for use in @file{configure.in}
 
 * AM_GNU_GETTEXT::              AM_GNU_GETTEXT in @file{gettext.m4}
 * AM_GNU_GETTEXT_VERSION::      AM_GNU_GETTEXT_VERSION in @file{gettext.m4}
+* AM_GNU_GETTEXT_NEED::         AM_GNU_GETTEXT_NEED in @file{gettext.m4}
+* AM_GNU_GETTEXT_INTL_SUBDIR::  AM_GNU_GETTEXT_INTL_SUBDIR in @file{intldir.m4}
 * AM_PO_SUBDIRS::               AM_PO_SUBDIRS in @file{po.m4}
 * AM_ICONV::                    AM_ICONV in @file{iconv.m4}
 
@@ -433,6 +435,11 @@ Concluding Remarks
 
 * History::                     History of GNU @code{gettext}
 * References::                  Related Readings
+
+Language Codes
+
+* Usual Language Codes::        Two-letter ISO 639 language codes
+* Rare Language Codes::         Three-letter ISO 639 language codes
 
 Licenses
 
@@ -1145,6 +1152,7 @@ structure:
 #. @var{extracted-comments}
 #: @var{reference}@dots{}
 #, @var{flag}@dots{}
+#| msgid @var{previous-untranslated-string}
 msgid @var{untranslated-string}
 msgstr @var{translated-string}
 @end example
@@ -1178,7 +1186,10 @@ at the translator; these comments are called @var{extracted comments}
 because the @code{xgettext} program extracts them from the program's
 source code.  Comment lines starting with @code{#:} contain references to
 the program's source code.  Comment lines starting with @code{#,} contain
-flags; more about these below.
+flags; more about these below.  Comment lines starting with @code{#|}
+contain the previous untranslated string for which the translator gave
+a translation.
+
 All comments, of either kind, are optional.
 
 @kwindex msgid
@@ -1370,6 +1381,8 @@ this:
 #. @var{extracted-comments}
 #: @var{reference}@dots{}
 #, @var{flag}@dots{}
+#| msgctxt @var{previous-context}
+#| msgid @var{previous-untranslated-string}
 msgctxt @var{context}
 msgid @var{untranslated-string}
 msgstr @var{translated-string}
@@ -1392,6 +1405,8 @@ plural forms.
 #. @var{extracted-comments}
 #: @var{reference}@dots{}
 #, @var{flag}@dots{}
+#| msgid @var{previous-untranslated-string-singular}
+#| msgid_plural @var{previous-untranslated-string-plural}
 msgid @var{untranslated-string-singular}
 msgid_plural @var{untranslated-string-plural}
 msgstr[0] @var{translated-string-case-0}
@@ -1412,6 +1427,11 @@ msgstr[1] "s'han trobat %d errors fatals"
 
 Here also, a @code{msgctxt} context can be specified before @code{msgid},
 like above.
+
+The @var{previous-untranslated-string} is optionally inserted by the
+@code{msgmerge} program, at the same time when it marks a message fuzzy.
+It helps the translator to see which changes were done by the developers
+on the @var{untranslated-string}.
 
 It happens that some lines, usually whitespace or comments, follow the
 very last entry of a PO file.  Such lines are not part of any entry,
@@ -1630,6 +1650,9 @@ Split at paragraphs.
 
 @item
 Use format strings instead of string concatenation.
+
+@item
+Avoid unusual markup and unusual control characters.
 @end itemize
 
 @noindent
@@ -1653,7 +1676,7 @@ This is nearly untranslatable: Is the displayed item @emph{a} parameter or
 @end example
 
 @noindent
-The ambiguity in this message makes it ununderstandable: Is the program
+The ambiguity in this message makes it unintelligible: Is the program
 attempting to set something on fire? Does it mean "The given object does
 not match the template"? Does it mean "The template does not fit for any
 of the objects"?
@@ -1818,7 +1841,7 @@ regardless whether in decimal, octal or hexadecimal.
 @cindex Java, string concatenation
 @cindex C#, string concatenation
 All this applies to other programming languages as well.  For example, in
-Java and C#, string contenation is very frequently used, because it is a
+Java and C#, string concatenation is very frequently used, because it is a
 compiler built-in operator.  Like in C, in Java, you would change
 
 @example
@@ -1849,6 +1872,32 @@ Console.WriteLine(
     String.Format("Replace @{0@} with @{1@}?", object1, object2));
 @end example
 
+@cindex markup
+@cindex control characters
+Unusual markup or control characters should not be used in translatable
+strings.  Translators will likely not understand the particular meaning
+of the markup or control characters.
+
+For example, if you have a convention that @samp{|} delimits the
+left-hand and right-hand part of some GUI elements, translators will
+often not understand it without specific comments.  It might be
+better to have the translator translate the left-hand and right-hand
+part separately.
+
+Another example is the @samp{argp} convention to use a single @samp{\v}
+(vertical tab) control character to delimit two sections inside a
+string.  This is flawed.  Some translators may convert it to a simple
+newline, some to blank lines.  With some PO file editors it may not be
+easy to even enter a vertical tab control character.  So, you cannot
+be sure that the translation will contain a @samp{\v} character, at the
+corresponding position.  The solution is, again, to let the translator
+translate two separate strings and combine at run-time the two translated
+strings with the @samp{\v} required by the convention.
+
+HTML markup, however, is common enough that it's probably ok to use in
+translatable strings.  But please bear in mind that the GNU gettext tools
+don't verify that the translations are well-formed HTML.
+
 @node Mark Keywords, Marking, Preparing Strings, Sources
 @section How Marks Appear in Sources
 @cindex marking strings that require translation
@@ -1868,7 +1917,7 @@ different instances that it is impractical to list them all in some
 
 This marking operation has two goals.  The first goal of marking
 is for triggering the retrieval of the translation, at run time.
-The keyword are possibly resolved into a routine able to dynamically
+The keyword is possibly resolved into a routine able to dynamically
 return the proper translation, as far as possible or wanted, for the
 argument string.  Most localizable strings are found in executable
 positions, that is, attached to variables or given as parameters to
@@ -1913,11 +1962,25 @@ it does not offer it officially.  The real, genuine keyword is truly
 @noindent
 instead of merely using @samp{#include <libintl.h>}.
 
+The marking keywords @samp{gettext} and @samp{_} take the translatable
+string as sole argument.  It is also possible to define marking functions
+that take it at another argument position.  It is even possible to make
+the marked argument position depend on the total number of arguments of
+the function call; this is useful in C++.  All this is achieved using
+@code{xgettext}'s @samp{--keyword} option.
+
+Note also that long strings can be split across lines, into multiple
+adjacent string tokens.  Automatic string concatenation is performed
+at compile time according to ISO C and ISO C++; @code{xgettext} also
+supports this syntax.
+
 Later on, the maintenance is relatively easy.  If, as a programmer,
 you add or modify a string, you will have to ask yourself if the
 new or altered string requires translation, and include it within
-@samp{_()} if you think it should be translated.  @samp{"%s: %d"} is
-an example of string @emph{not} requiring translation!
+@samp{_()} if you think it should be translated.  For example, @samp{"%s"}
+is an example of string @emph{not} requiring translation.  But
+@samp{"%s: %d"} @emph{does} require translation, because in French, unlike
+in English, it's customary to put a space before a colon.
 
 @node Marking, c-format Flag, Mark Keywords, Sources
 @section Marking Translatable Strings
@@ -1935,7 +1998,7 @@ strings in the program sources, while simultaneously producing a set of
 translation in some language, for the package being internationalized.
 
 @emindex @code{etags}, using for marking strings
-The set of program sources, targetted by the PO mode commands describe
+The set of program sources, targeted by the PO mode commands describe
 here, should have an Emacs tags table constructed for your project,
 prior to using these PO file commands.  This is easy to do.  In any
 shell window, change the directory to the root of your project, then
@@ -2156,7 +2219,7 @@ happens if the translation introduces a valid format specifier?  The
 exists because the original code does not pass any parameters.
 
 @code{xgettext} of course could make a wrong decision the other way
-round, i.e. a string marked as a format string actually is not a format
+round, i.e.@: a string marked as a format string actually is not a format
 string.  In this case the @code{msgfmt} might give too many warnings and
 would prevent translating the @file{.po} file.  The method to prevent
 this wrong decision is similar to the one used above, only the comment
@@ -2287,7 +2350,7 @@ printf (_("Written by %s.\n"),
            manual, section Names.  Note this is actually a non-ASCII
            name: The first name is (with Unicode escapes)
            "Fran\u00e7ois" or (with HTML entities) "Fran&ccedil;ois".
-           Pronounciation is like "fraa-swa pee-nar".  */
+           Pronunciation is like "fraa-swa pee-nar".  */
         _("Francois Pinard"));
 @end group
 @end example
@@ -2309,7 +2372,7 @@ script.  Here is an example, using Greek as the target script:
 #. manual, section Names.  Note this is actually a non-ASCII
 #. name: The first name is (with Unicode escapes)
 #. "Fran\u00e7ois" or (with HTML entities) "Fran&ccedil;ois".
-#. Pronounciation is like "fraa-swa pee-nar".
+#. Pronunciation is like "fraa-swa pee-nar".
 msgid "Francois Pinard"
 msgstr "\phi\rho\alpha\sigma\omicron\alpha \pi\iota\nu\alpha\rho"
        " (Francois Pinard)"
@@ -2323,7 +2386,7 @@ The translation project @url{http://sourceforge.net/projects/translation}
 has set up a POT file and translation domain consisting of program author
 names, with better facilities for the translator than those presented here.
 Namely, there the original name is written directly in Unicode (rather
-than with Unicode escapes or HTML entities), and the pronounciation is
+than with Unicode escapes or HTML entities), and the pronunciation is
 denoted using the International Phonetic Alphabet (see
 @url{http://www.wikipedia.org/wiki/International_Phonetic_Alphabet}).
 
@@ -2428,7 +2491,7 @@ it reads like this:
 @end smallexample
 
 In other words, @code{dgettext} is used instead of @code{gettext}.
-Similary, the @code{dngettext} function should be used in place of the
+Similarly, the @code{dngettext} function should be used in place of the
 @code{ngettext} function.
 @end enumerate
 
@@ -3999,7 +4062,7 @@ their @code{msgid} entries written by the same GNU @code{gettext} tools.
 @efindex normalize@r{, PO Mode command}
 However, PO files initially created by PO mode itself, while marking
 strings in source files, are normalised differently.  So are PO
-files resulting of the the @samp{M-x normalize} command.  Until these
+files resulting of the @samp{M-x normalize} command.  Until these
 discrepancies between PO mode and other GNU @code{gettext} tools get
 fully resolved, the translator should stay aware of normalisation issues.
 
@@ -4041,7 +4104,7 @@ msgcat -o compendium.po file1.po file2.po
 @end example
 
 By default, @code{msgcat} will accumulate divergent translations
-for the same string.  Those occurences will be marked as @code{fuzzy}
+for the same string.  Those occurrences will be marked as @code{fuzzy}
 and highly visible decorated; calling @code{msgcat} on
 @file{file1.po}:
 
@@ -4275,7 +4338,7 @@ write other specialized programs that process PO files.
 For the tasks for which a combination of @samp{msgattrib}, @samp{msgcat} etc.
 is not sufficient, a set of C functions is provided in a library, to make it
 possible to process PO files in your own programs.  When you use this library,
-you don't need to write routines to parse the PO file; instead, you retreive
+you don't need to write routines to parse the PO file; instead, you retrieve
 a pointer in memory to each of messages contained in the PO file.  Functions
 for writing PO files are not provided at this time.
 
@@ -4503,7 +4566,7 @@ that strings are @key{NUL} terminated, so embedded @key{NUL}s are
 somewhat useless.  But the MO file format is general enough so other
 interfaces would be later possible, if for example, we ever want to
 implement wide characters right in MO files, where @key{NUL} bytes may
-accidently appear.  (No, we don't want to have wide characters in MO
+accidentally appear.  (No, we don't want to have wide characters in MO
 files.  They would make the file unnecessarily large, and the
 @samp{wchar_t} type being platform dependent, MO files would be
 platform dependent as well.)
@@ -4611,10 +4674,10 @@ using this interface.  It is a fast, memory-saving implementation, an
 user can happily live with it.  But programmers hate it (at least I and
 some others do@dots{})
 
-But we must not forget one point: after all the trouble with transfering
+But we must not forget one point: after all the trouble with transferring
 the rights on Unix(tm) they at last came to X/Open, the very same who
 published this specification.  This leads me to making the prediction
-that this interface will be in future Unix standards (e.g. Spec1170) and
+that this interface will be in future Unix standards (e.g.@: Spec1170) and
 therefore part of all Unix implementation (implementations, which are
 @emph{allowed} to wear this name).
 
@@ -4898,7 +4961,7 @@ character set.
 The output character set is, by default, the value of @code{nl_langinfo
 (CODESET)}, which depends on the @code{LC_CTYPE} part of the current
 locale.  But programs which store strings in a locale independent way
-(e.g. UTF-8) can request that @code{gettext} and related functions
+(e.g.@: UTF-8) can request that @code{gettext} and related functions
 return the translations in that encoding, by use of the
 @code{bind_textdomain_codeset} function.
 
@@ -5117,7 +5180,7 @@ forms differs widely between the language families.  For example,
 Rafal Maszkowski @code{<rzm@@mat.uni.torun.pl>} reports:
 
 @quotation
-In Polish we use e.g. plik (file) this way:
+In Polish we use e.g.@: plik (file) this way:
 @example
 1 plik
 2,3,4 pliki
@@ -5198,6 +5261,28 @@ printf (ngettext ("%d file removed", "%d files removed", n), n);
 Please note that the numeric value @var{n} has to be passed to the
 @code{printf} function as well.  It is not sufficient to pass it only to
 @code{ngettext}.
+
+In the English singular case, the number -- always 1 -- can be replaced with
+"one":
+
+@smallexample
+printf (ngettext ("One file removed", "%d files removed", n), n);
+@end smallexample
+
+@noindent
+This works because the @samp{printf} function discards excess arguments that
+are not consumed by the format string.
+
+It is also possible to use this function when the strings don't contain a
+cardinal number:
+
+@smallexample
+puts (ngettext ("Delete the selected file?",
+                "Delete the selected files?",
+                n));
+@end smallexample
+
+In this case the number @var{n} is only used to choose the plural form.
 @end deftypefun
 
 @deftypefun {char *} dngettext (const char *@var{domain}, const char *@var{msgid1}, const char *@var{msgid2}, unsigned long int @var{n})
@@ -5257,7 +5342,7 @@ The following rules are known at this point.  The language with families
 are listed.  But this does not necessarily mean the information can be
 generalized for the whole family (as can be easily seen in the table
 below).@footnote{Additions are welcome.  Send appropriate information to
-@email{bug-glibc-manual@@gnu.org}.}
+@email{bug-gnu-gettext@@gnu.org} and @email{bug-glibc-manual@@gnu.org}.}
 
 @table @asis
 @item Only one form:
@@ -5273,8 +5358,6 @@ Plural-Forms: nplurals=1; plural=0;
 Languages with this property include:
 
 @table @asis
-@item Finno-Ugric family
-Hungarian
 @item Asian family
 Japanese, Korean, Vietnamese
 @item Turkic/Altaic family
@@ -5309,6 +5392,21 @@ Italian, Portuguese, Spanish
 @item Artificial
 Esperanto
 @end table
+
+@noindent
+Another language using the same header entry is:
+
+@table @asis
+@item Finno-Ugric family
+Hungarian
+@end table
+
+Hungarian does not appear to have a plural if you look at sentences involving
+cardinal numbers.  For example, ``1 apple'' is ``1 alma'', and ``123 apples'' is
+``123 alma''.  But when the number is not explicit, the distinction between
+singular and plural exists: ``the apple'' is ``az alma'', and ``the apples'' is
+``az alm@'{a}k''.  Since @code{ngettext} has to support both types of sentences,
+it is classified here, under ``two forms''.
 
 @item Two forms, singular used for zero and one
 Exceptional case in the language family.  The header entry would be:
@@ -5455,6 +5553,51 @@ Slovenian
 @end table
 @end table
 
+You might now ask, @code{ngettext} handles only numbers @var{n} of type
+@samp{unsigned long}.  What about larger integer types?  What about negative
+numbers?  What about floating-point numbers?
+
+About larger integer types, such as @samp{uintmax_t} or 
+@samp{unsigned long long}: they can be handled by reducing the value to a
+range that fits in an @samp{unsigned long}.  Simply casting the value to
+@samp{unsigned long} would not do the right thing, since it would treat
+@code{ULONG_MAX + 1} like zero, @code{ULONG_MAX + 2} like singular, and
+the like.  Here you can exploit the fact that all mentioned plural form
+formulas eventually become periodic, with a period that is a divisor of 100
+(or 1000 or 1000000).  So, when you reduce a large value to another one in
+the range [1000000, 1999999] that ends in the same 6 decimal digits, you
+can assume that it will lead to the same plural form selection.  This code
+does this:
+
+@smallexample
+#include <inttypes.h>
+uintmax_t nbytes = ...;
+printf (ngettext ("The file has %"PRIuMAX" byte.",
+                  "The file has %"PRIuMAX" bytes.",
+                  (nbytes > ULONG_MAX
+                   ? (nbytes % 1000000) + 1000000
+                   : nbytes)),
+        nbytes);
+@end smallexample
+
+Negative and floating-point values usually represent physical entities for
+which singular and plural don't clearly apply.  In such cases, there is no
+need to use @code{ngettext}; a simple @code{gettext} call with a form suitable
+for all values will do.  For example:
+
+@smallexample
+printf (gettext ("Time elapsed: %.3f seconds"),
+        num_milliseconds * 0.001);
+@end smallexample
+
+@noindent
+Even if @var{num_milliseconds} happens to be a multiple of 1000, the output
+@smallexample
+Time elapsed: 1.000 seconds
+@end smallexample
+@noindent
+is acceptable in English, and similarly for other languages.
+
 @node Optimized gettext,  , Plural forms, gettext
 @subsection Optimization of the *gettext functions
 @cindex optimization of @code{gettext} functions
@@ -5495,7 +5638,7 @@ string is always the same.  One way to use this is:
 @end example
 
 @noindent
-But this solution is not usable in all situation (e.g. when the locale
+But this solution is not usable in all situation (e.g.@: when the locale
 selection changes) nor does it lead to legible code.
 
 For this reason, GNU @code{gettext} caches previous translation results.
@@ -6002,9 +6145,9 @@ the GNU Library General Public License, when they do not want to make
 their program free, or want other kinds of freedom.  The simplest
 answer is ``normally not''.
 
-The @code{gettext-runtime} part of GNU @code{gettext}, i.e. the
+The @code{gettext-runtime} part of GNU @code{gettext}, i.e.@: the
 contents of @code{libintl}, is covered by the GNU Library General Public
-License.  The @code{gettext-tools} part of GNU @code{gettext}, i.e. the
+License.  The @code{gettext-tools} part of GNU @code{gettext}, i.e.@: the
 rest of the GNU @code{gettext} package, is covered by the GNU General
 Public License.
 
@@ -6835,18 +6978,22 @@ automake 1.9.
 If you do not have an @file{aclocal.m4} file in your distribution,
 the simplest is to concatenate the files @file{codeset.m4},
 @file{gettext.m4}, @file{glibc2.m4}, @file{glibc21.m4}, @file{iconv.m4},
-@file{intdiv0.m4}, @file{intmax.m4}, @file{inttypes_h.m4}, @file{inttypes-h.m4},
-@file{inttypes-pri.m4}, @file{lcmessage.m4},
+@file{intdiv0.m4}, @file{intl.m4}, @file{intldir.m4}, @file{intmax.m4},
+@file{inttypes_h.m4}, @file{inttypes-pri.m4}, @file{lcmessage.m4},
 @file{lib-ld.m4}, @file{lib-link.m4}, @file{lib-prefix.m4}, @file{lock.m4},
-@file{longdouble.m4}, @file{longlong.m4}, @file{printf-posix.m4},
-@file{progtest.m4}, @file{signed.m4}, @file{size_max.m4},
+@file{longdouble.m4}, @file{longlong.m4}, @file{nls.m4}, @file{po.m4},
+@file{printf-posix.m4}, @file{progtest.m4}, @file{size_max.m4},
 @file{stdint_h.m4}, @file{uintmax_t.m4}, @file{ulonglong.m4},
 @file{visibility.m4}, @file{wchar_t.m4}, @file{wint_t.m4}, @file{xsize.m4}
 from GNU @code{gettext}'s
 @file{m4/} directory into a single file.  If you have suppressed the
 @file{intl/} directory, only @file{gettext.m4}, @file{iconv.m4},
 @file{lib-ld.m4}, @file{lib-link.m4}, @file{lib-prefix.m4},
-@file{progtest.m4} need to be concatenated.
+@file{nls.m4}, @file{po.m4}, @file{progtest.m4} need to be concatenated.
+
+If you are not using GNU @code{automake} 1.8 or newer, you will need to
+add a file @file{mkdirp.m4} from a newer automake distribution to the
+list of files above.
 
 If you already have an @file{aclocal.m4} file, then you will have
 to merge the said macro files into your @file{aclocal.m4}.  Note that if
@@ -7175,7 +7322,7 @@ some older versions of GCC (older than 3.0).
 @item
 When the package does not include the @code{intl/} subdirectory, and the
 libintl.h header (with its associated libintl library, if any) is not
-already installed on the system, it is preferrable that the package builds
+already installed on the system, it is preferable that the package builds
 without internationalization support, rather than to give a compilation
 error.
 @end itemize
@@ -7228,6 +7375,8 @@ The primary macro is, of course, @code{AM_GNU_GETTEXT}.
 @menu
 * AM_GNU_GETTEXT::              AM_GNU_GETTEXT in @file{gettext.m4}
 * AM_GNU_GETTEXT_VERSION::      AM_GNU_GETTEXT_VERSION in @file{gettext.m4}
+* AM_GNU_GETTEXT_NEED::         AM_GNU_GETTEXT_NEED in @file{gettext.m4}
+* AM_GNU_GETTEXT_INTL_SUBDIR::  AM_GNU_GETTEXT_INTL_SUBDIR in @file{intldir.m4}
 * AM_PO_SUBDIRS::               AM_PO_SUBDIRS in @file{po.m4}
 * AM_ICONV::                    AM_ICONV in @file{iconv.m4}
 @end menu
@@ -7255,19 +7404,24 @@ AM_GNU_GETTEXT([@var{intlsymbol}], [@var{needsymbol}], [@var{intldir}])
 @c then it is in order to install shared libraries that depend on libintl.)
 @var{intlsymbol} can be @samp{external} or @samp{no-libtool}.  The default
 (if it is not specified or empty) is @samp{no-libtool}.  @var{intlsymbol}
-should be @samp{external} for packages with no @file{intl/} directory,
-and @samp{no-libtool} for packages with an @file{intl/} directory.  In
-the latter case, a static library @code{$(top_builddir)/intl/libintl.a}
-will be created.
+should be @samp{external} for packages with no @file{intl/} directory.
+For packages with an @file{intl/} directory, you can either use an
+@var{intlsymbol} equal to @samp{no-libtool}, or you can use @samp{external}
+and override by using the macro @code{AM_GNU_GETTEXT_INTL_SUBDIR} elsewhere.
+The two ways to specify the existence of an @file{intl/} directory are
+equivalent.  At build time, a static library
+@code{$(top_builddir)/intl/libintl.a} will then be created.
 
 If @var{needsymbol} is specified and is @samp{need-ngettext}, then GNU
 gettext implementations (in libc or libintl) without the @code{ngettext()}
 function will be ignored.  If @var{needsymbol} is specified and is
 @samp{need-formatstring-macros}, then GNU gettext implementations that don't
 support the ISO C 99 @file{<inttypes.h>} formatstring macros will be ignored.
-Only one @var{needsymbol} can be specified.  To specify more than one
-requirement, just specify the strongest one among them.  The hierarchy among
-the various alternatives is as follows: @samp{need-formatstring-macros}
+Only one @var{needsymbol} can be specified.  These requirements can also be
+specified by using the macro @code{AM_GNU_GETTEXT_NEED} elsewhere.  To specify
+more than one requirement, just specify the strongest one among them, or
+invoke the @code{AM_GNU_GETTEXT_NEED} macro several times.  The hierarchy
+among the various alternatives is as follows: @samp{need-formatstring-macros}
 implies @samp{need-ngettext}.
 
 @var{intldir} is used to find the intl libraries.  If empty, the value
@@ -7318,7 +7472,7 @@ linker options needed to use iconv and appends them to the @code{LIBINTL}
 and @code{LTLIBINTL} variables.
 @end itemize
 
-@node AM_GNU_GETTEXT_VERSION, AM_PO_SUBDIRS, AM_GNU_GETTEXT, autoconf macros
+@node AM_GNU_GETTEXT_VERSION, AM_GNU_GETTEXT_NEED, AM_GNU_GETTEXT, autoconf macros
 @subsection AM_GNU_GETTEXT_VERSION in @file{gettext.m4}
 
 @amindex AM_GNU_GETTEXT_VERSION
@@ -7328,7 +7482,46 @@ the GNU gettext infrastructure that is used by the package.
 The use of this macro is optional; only the @code{autopoint} program makes
 use of it (@pxref{CVS Issues}).
 
-@node AM_PO_SUBDIRS, AM_ICONV, AM_GNU_GETTEXT_VERSION, autoconf macros
+
+@node AM_GNU_GETTEXT_NEED, AM_GNU_GETTEXT_INTL_SUBDIR, AM_GNU_GETTEXT_VERSION, autoconf macros
+@subsection AM_GNU_GETTEXT_NEED in @file{gettext.m4}
+
+@amindex AM_GNU_GETTEXT_NEED
+The @code{AM_GNU_GETTEXT_NEED} macro declares a constraint regarding the
+GNU gettext implementation.  The syntax is
+
+@example
+AM_GNU_GETTEXT_NEED([@var{needsymbol}])
+@end example
+
+If @var{needsymbol} is @samp{need-ngettext}, then GNU gettext implementations
+(in libc or libintl) without the @code{ngettext()} function will be ignored.
+If @var{needsymbol} is @samp{need-formatstring-macros}, then GNU gettext
+implementations that don't support the ISO C 99 @file{<inttypes.h>}
+formatstring macros will be ignored.
+
+The optional second argument of @code{AM_GNU_GETTEXT} is also taken into
+account.
+
+The @code{AM_GNU_GETTEXT_NEED} invocations can occur before or after
+the @code{AM_GNU_GETTEXT} invocation; the order doesn't matter.
+
+@node AM_GNU_GETTEXT_INTL_SUBDIR, AM_PO_SUBDIRS, AM_GNU_GETTEXT_NEED, autoconf macros
+@subsection AM_GNU_GETTEXT_INTL_SUBDIR in @file{intldir.m4}
+
+@amindex AM_GNU_GETTEXT_INTL_SUBDIR
+The @code{AM_GNU_GETTEXT_INTL_SUBDIR} macro specifies that the
+@code{AM_GNU_GETTEXT} macro, although invoked with the first argument
+@samp{external}, should also prepare for building the @file{intl/}
+subdirectory.
+
+The @code{AM_GNU_GETTEXT_INTL_SUBDIR} invocation can occur before or after
+the @code{AM_GNU_GETTEXT} invocation; the order doesn't matter.
+
+The use of this macro requires GNU automake 1.10 or newer and
+GNU autoconf 2.61 or newer.
+
+@node AM_PO_SUBDIRS, AM_ICONV, AM_GNU_GETTEXT_INTL_SUBDIR, autoconf macros
 @subsection AM_PO_SUBDIRS in @file{po.m4}
 
 @amindex AM_PO_SUBDIRS
@@ -8406,7 +8599,7 @@ will, during its conversion from the translator's encoding to the user's
 locale's encoding, produce the dangerous @code{\x60} bytes.
 
 @item
-A translator could - voluntarily or inadvertantly - use backquotes
+A translator could - voluntarily or inadvertently - use backquotes
 @code{"`...`"} or dollar-parentheses @code{"$(...)"} in her translations.
 The enclosed strings would be executed as command lists by the shell.
 @end enumerate
@@ -9131,7 +9324,7 @@ The creation of the @code{ResourceManager} is done through
 @noindent
 
 The @code{GetString} function returns a string's translation.  Note that this
-function returns null when a translation is missing (i.e. not even found in
+function returns null when a translation is missing (i.e.@: not even found in
 the fallback resource file).
 
 @item
@@ -9795,7 +9988,7 @@ print $gettext@{Error@};
 @end example
 
 The exact rule is: You can omit the surrounding quotes, when the hash
-key is a valid C (!) identifier, i. e. when it starts with an
+key is a valid C (!) identifier, i.e.@: when it starts with an
 underscore or an ASCII letter and is followed by an arbitrary number
 of underscores, ASCII letters or digits.  Other Unicode characters
 are @emph{not} allowed, regardless of the @code{use utf8} pragma.
@@ -10064,7 +10257,7 @@ s/$gettext@{"U. S. A."@}/$gettext@{"U. S. A."@} $gettext@{"(dial +0)"@}/g;
 
 In Perl, parentheses around function arguments are mostly optional.
 @code{xgettext} will always assume that all
-recognized keywords (except for hashs and hash references) are names
+recognized keywords (except for hashes and hash references) are names
 of properly prototyped functions, and will (hopefully) only require
 parentheses where Perl itself requires them.  All constructs in the
 following example are therefore ok to use:
@@ -10158,7 +10351,7 @@ EOF
 @end group
 @end example
 
-Please do not forget, that the line breaks are real, i. e. they
+Please do not forget that the line breaks are real, i.e.@: they
 translate into newline characters that will consequently show up in
 the resulting POT file.
 
@@ -10580,7 +10773,7 @@ While Jim took some distance and time and became dad for a second
 time, Roland wanted to get GNU @code{libc} internationalized, and
 got Ulrich Drepper involved in that project.  Instead of starting
 from @code{glocale}, Ulrich rewrote something from scratch, but
-more conformant to the set of guidelines who emerged out of the
+more conforming to the set of guidelines who emerged out of the
 @code{glocale} effort.  Then, Ulrich got people from the previous
 forum to involve themselves into this new project, and the switch
 from @code{glocale} to what was first named @code{msgutils}, renamed
@@ -10678,12 +10871,35 @@ together with French translations of many Linux-related documents.
 @cindex language codes
 @cindex ISO 639
 
-The @w{ISO 639} standard defines two character codes for many languages.
+The @w{ISO 639} standard defines two-letter codes for many languages, and
+three-letter codes for more rarely used languages.
 All abbreviations for languages used in the Translation Project should
 come from this standard.
 
+@menu
+* Usual Language Codes::        Two-letter ISO 639 language codes
+* Rare Language Codes::         Three-letter ISO 639 language codes
+@end menu
+
+@node Usual Language Codes, Rare Language Codes, Language Codes, Language Codes
+@appendixsec Usual Language Codes
+
+For the commonly used languages, the @w{ISO 639-1} standard defines two-letter
+codes.
+
 @table @samp
 @include iso-639.texi
+@end table
+
+@node Rare Language Codes,  , Usual Language Codes, Language Codes
+@appendixsec Rare Language Codes
+
+For rarely used languages, the @w{ISO 639-2} standard defines three-letter
+codes.  Here is the current list, reduced to only living languages with at least
+one million of speakers.
+
+@table @samp
+@include iso-639-2.texi
 @end table
 
 @node Country Codes, Licenses, Language Codes, Top

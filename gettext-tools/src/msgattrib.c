@@ -35,8 +35,14 @@
 #include "relocatable.h"
 #include "basename.h"
 #include "message.h"
+#include "read-catalog.h"
 #include "read-po.h"
+#include "read-properties.h"
+#include "read-stringtable.h"
+#include "write-catalog.h"
 #include "write-po.h"
+#include "write-properties.h"
+#include "write-stringtable.h"
 #include "exit.h"
 #include "propername.h"
 #include "gettext.h"
@@ -65,7 +71,8 @@ enum
   SET_FUZZY		= 1 << 0,
   RESET_FUZZY		= 1 << 1,
   SET_OBSOLETE		= 1 << 2,
-  RESET_OBSOLETE	= 1 << 3
+  RESET_OBSOLETE	= 1 << 3,
+  REMOVE_PREV		= 1 << 4
 };
 static int to_change;
 
@@ -75,6 +82,7 @@ static const struct option long_options[] =
   { "add-location", no_argument, &line_comment, 1 },
   { "clear-fuzzy", no_argument, NULL, CHAR_MAX + 8 },
   { "clear-obsolete", no_argument, NULL, CHAR_MAX + 10 },
+  { "clear-previous", no_argument, NULL, CHAR_MAX + 18 },
   { "directory", required_argument, NULL, 'D' },
   { "escape", no_argument, NULL, 'E' },
   { "force-po", no_argument, &force_po, 1 },
@@ -133,6 +141,8 @@ main (int argc, char **argv)
   msgdomain_list_ty *only_mdlp;
   msgdomain_list_ty *ignore_mdlp;
   msgdomain_list_ty *result;
+  catalog_input_format_ty input_syntax = &input_format_po;
+  catalog_output_format_ty output_syntax = &output_format_po;
   bool sort_by_msgid = false;
   bool sort_by_filepos = false;
 
@@ -201,11 +211,11 @@ main (int argc, char **argv)
 	break;
 
       case 'p':
-	message_print_syntax_properties ();
+	output_syntax = &output_format_properties;
 	break;
 
       case 'P':
-	input_syntax = syntax_properties;
+	input_syntax = &input_format_properties;
 	break;
 
       case 's':
@@ -293,11 +303,15 @@ main (int argc, char **argv)
 	break;
 
       case CHAR_MAX + 16: /* --stringtable-input */
-	input_syntax = syntax_stringtable;
+	input_syntax = &input_format_stringtable;
 	break;
 
       case CHAR_MAX + 17: /* --stringtable-output */
-	message_print_syntax_stringtable ();
+	output_syntax = &output_format_stringtable;
+	break;
+
+      case CHAR_MAX + 18: /* --clear-previous */
+	to_change |= REMOVE_PREV;
 	break;
 
       default:
@@ -344,11 +358,15 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	   "--sort-output", "--sort-by-file");
 
   /* Read input file.  */
-  result = read_po_file (input_file);
+  result = read_catalog_file (input_file, input_syntax);
 
   /* Read optional files that limit the extent of the attribute changes.  */
-  only_mdlp = (only_file != NULL ? read_po_file (only_file) : NULL);
-  ignore_mdlp = (ignore_file != NULL ? read_po_file (ignore_file) : NULL);
+  only_mdlp = (only_file != NULL
+	       ? read_catalog_file (only_file, input_syntax)
+	       : NULL);
+  ignore_mdlp = (ignore_file != NULL
+		 ? read_catalog_file (ignore_file, input_syntax)
+		 : NULL);
 
   /* Filter the messages and manipulate the attributes.  */
   result = process_msgdomain_list (result, only_mdlp, ignore_mdlp);
@@ -360,7 +378,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
     msgdomain_list_sort_by_msgid (result);
 
   /* Write the PO file.  */
-  msgdomain_list_print (result, output_file, force_po, false);
+  msgdomain_list_print (result, output_file, output_syntax, force_po, false);
 
   exit (EXIT_SUCCESS);
 }
@@ -429,6 +447,8 @@ Attribute manipulation:\n"));
       --set-obsolete          set all messages obsolete\n"));
       printf (_("\
       --clear-obsolete        set all messages non-obsolete\n"));
+      printf (_("\
+      --clear-previous        remove the \"previous msgid\" from all messages\n"));
       printf (_("\
       --only-file=FILE.po     manipulate only entries listed in FILE.po\n"));
       printf (_("\
@@ -554,6 +574,12 @@ process_message_list (message_list_ty *mlp,
 		mp->obsolete = true;
 	      if (to_change & RESET_OBSOLETE)
 		mp->obsolete = false;
+	      if (to_change & REMOVE_PREV)
+		{
+		  mp->prev_msgctxt = NULL;
+		  mp->prev_msgid = NULL;
+		  mp->prev_msgid_plural = NULL;
+		}
 	    }
 	}
     }

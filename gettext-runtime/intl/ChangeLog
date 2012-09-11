@@ -1,3 +1,111 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* localename.c (HAVE_LOCALE_NULL): Test __GLIBC__ instead of
+	__GNU_LIBRARY__.
+
+2006-10-24  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (LIBINTL_VERSION): Bump to 0.16.
+
+2006-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h [C++]: Wrap definitions in extern "C".
+
+2006-10-17  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* localcharset.c: Do not check HAVE_SETLOCALE.
+
+2006-10-09  Bruno Haible  <bruno@clisp.org>
+
+	* langprefs.c: Update comment about locale name syntax.
+	* localename.c: Likewise.
+
+2006-10-11  Paul Eggert  <eggert@cs.ucla.edu>
+            Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.h (arg_type, argument): Test HAVE_LONG_LONG_INT
+	instead of HAVE_LONG_LONG.
+	* printf-args.c (printf_fetchargs): Likewise.
+	* printf-parse.c (PRINTF_PARSE): Likewise.
+	* vasnprintf.c (VASNPRINTF): Likewise.
+
+2006-10-08  Bruno Haible  <bruno@clisp.org>
+
+	* printf.c: Include errno.h, limits.h.
+	(EOVERFLOW): New fallback definition.
+	(libintl_vfprintf): Test whether the output length is > INT_MAX.
+	(libintl_vsprintf): Likewise.
+	(libintl_vsnprintf): Fix bug when vasnprintf requested more space than
+	needed. Fix return value when the entire result string would be larger
+	than the provided buffer. Test whether the output length is > INT_MAX.
+	(libintl_vasprintf): Test whether the output length is > INT_MAX.
+	(libintl_vfwprintf): Likewise.
+	(libintl_vswprintf): Fix bug when vasnwprintf requested more space than
+	needed. Test whether the output length is > INT_MAX.
+
+2006-09-14  Bruno Haible  <bruno@clisp.org>
+
+	* lock.c: Include <config.h> unconditionally.
+	* printf-args.c: Likewise.
+	* printf-parse.c: Likewise.
+	* relocatable.c: Likewise.
+	* vasnprintf.c: Likewise.
+
+2006-08-26  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (EOVERFLOW): Remove definition.
+	(VASNPRINTF): Return a string of length > INT_MAX without failing.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (LIBINTL_VERSION): Bump to 0.15.1.
+	* Makefile.in (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 8:1:0.
+
+2006-09-14  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c: Include <config.h> unconditionally.
+
+2006-09-10  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (install_sh): New variable.
+	Fixes "make install" errors in packages that have no 'mkinstalldirs'
+	file and use automake <= 1.9.x, on platforms where 'mkdir' does not
+	support the -p option.
+
+	* Makefile.in (mkinstalldirs): Prefix with $(SHELL).
+
+2006-08-29  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c: Include configmake.h in order to get LIBDIR defined.
+
+2006-08-18  Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (MKDIR_P): New variable. Needed by $(mkdir_p) with
+	Automake-1.10.
+
+2006-07-29  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c: Assume <stddef.h>, <stdlib.h>, <string.h> exist.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.msvc: Remove file.
+	* Makefile.in (DISTFILES.gettext): Remove libgnuintl.h.msvc-static,
+	libgnuintl.h.msvc-shared, Makefile.msvc.
+	(DISTFILES.obsolete): Add libgnuintl.h.msvc-static,
+	libgnuintl.h.msvc-shared, Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.in (DISTFILES.gettext): Remove libgnuintl.h_vms,
+	Makefile.vms.
+	(DISTFILES.obsolete): Add libgnuintl.h_vms, Makefile.vms.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

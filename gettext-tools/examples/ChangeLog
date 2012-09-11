@@ -1,3 +1,69 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-23  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c++-kde/admin/cvs.sh: Accept automake versions > 1.9.x.
+
+2006-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* hello-*/autoclean.sh: Remove also intldir.m4.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* po/fr.po: Update from Christophe Combelles <ccomb@free.fr>.
+	* po/id.po: New file, from Tedi Heriyanto <tedi_heriyanto@yahoo.com>.
+	* po/LINGUAS: Add id.
+	* hello-*/po/LINGUAS: Update.
+	* Makefile.am (EXAMPLESFILES): Add the new message catalogs.
+
+2006-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* hello-{c,c++,objc}*/{autoclean.sh,m4/Makefile.am}: Remove
+	inttypes-h.m4.
+
+2006-09-11  Bruno Haible  <bruno@clisp.org>
+
+	* hello-{c,c++,objc}*/autoclean.sh: Remove also intl.m4.
+
+2006-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* hello-*/autoclean.sh: Remove mention of signed.m4.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/autogen.sh: Replace gettext-tools/lib with
+	gettext-tools/gnulib-lib.
+	* hello-c++/autogen.sh: Likewise.
+	* hello-objc/autogen.sh: Likewise.
+	* hello-csharp/autogen.sh: Update for changed locations of *.m4 files.
+	* hello-csharp-forms/autogen.sh: Likewise.
+	* hello-java/autogen.sh: Likewise.
+	* hello-java-awt/autogen.sh: Likewise.
+	* hello-java-swing/autogen.sh: Likewise.
+
+2006-07-30  Bruno Haible  <bruno@clisp.org>
+
+	* hello-csharp*/autogen.sh: Update for changed location of
+	csharpcomp.sh.in and csharpexec.sh.in.
+	* hello-java*/autogen.sh: Update for changed location of
+	javacomp.sh.in and javaexec.sh.in.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.msvc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.msvc.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.vms: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove Makefile.vms.
+
+2006-07-23  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c++-kde/autoclean.sh: Fix syntax error.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

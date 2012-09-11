@@ -49,8 +49,11 @@
 #include "write-qt.h"
 #include "propername.h"
 #include "message.h"
-#include "open-po.h"
+#include "open-catalog.h"
+#include "read-catalog.h"
 #include "read-po.h"
+#include "read-properties.h"
+#include "read-stringtable.h"
 #include "po-charset.h"
 #include "msgl-check.h"
 #include "gettext.h"
@@ -188,7 +191,8 @@ static void usage (int status)
 static const char *add_mo_suffix (const char *);
 static struct msg_domain *new_domain (const char *name, const char *file_name);
 static bool is_nonobsolete (const message_ty *mp);
-static void read_po_file_msgfmt (char *filename);
+static void read_catalog_file_msgfmt (char *filename,
+				      catalog_input_format_ty input_syntax);
 
 
 int
@@ -198,6 +202,7 @@ main (int argc, char *argv[])
   bool do_help = false;
   bool do_version = false;
   bool strict_uniforum = false;
+  catalog_input_format_ty input_syntax = &input_format_po;
   const char *canon_encoding;
   struct msg_domain *domain;
 
@@ -273,7 +278,7 @@ main (int argc, char *argv[])
 	output_file_name = optarg;
 	break;
       case 'P':
-	input_syntax = syntax_properties;
+	input_syntax = &input_format_properties;
 	break;
       case 'r':
 	java_resource_name = optarg;
@@ -321,7 +326,7 @@ main (int argc, char *argv[])
 	tcl_mode = true;
 	break;
       case CHAR_MAX + 8: /* --stringtable-input */
-	input_syntax = syntax_stringtable;
+	input_syntax = &input_format_stringtable;
 	break;
       case CHAR_MAX + 9: /* --qt */
 	qt_mode = true;
@@ -506,17 +511,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	current_domain = NULL;
 
       /* And process the input file.  */
-      read_po_file_msgfmt (argv[optind]);
+      read_catalog_file_msgfmt (argv[optind], input_syntax);
 
       ++optind;
     }
 
-  /* We know a priori that properties_parse() and stringtable_parse() convert
+  /* We know a priori that some input_syntax->parse() functions convert
      strings to UTF-8.  */
-  canon_encoding =
-    (input_syntax == syntax_properties || input_syntax == syntax_stringtable
-     ? po_charset_utf8
-     : NULL);
+  canon_encoding = (input_syntax->produces_utf8 ? po_charset_utf8 : NULL);
 
   /* Remove obsolete messages.  They were only needed for duplicate
      checking.  */
@@ -810,8 +812,8 @@ is_nonobsolete (const message_ty *mp)
 }
 
 
-/* The rest of the file defines a subclass msgfmt_po_reader_ty of
-   default_po_reader_ty.  Its particularities are:
+/* The rest of the file defines a subclass msgfmt_catalog_reader_ty of
+   default_catalog_reader_ty.  Its particularities are:
    - The header entry check is performed on-the-fly.
    - Comments are not stored, they are discarded right away.
      (This is achieved by setting handle_comments = false and
@@ -820,13 +822,13 @@ is_nonobsolete (const message_ty *mp)
  */
 
 
-/* This structure defines a derived class of the default_po_reader_ty class.
-   (See read-po-abstract.h for an explanation.)  */
-typedef struct msgfmt_po_reader_ty msgfmt_po_reader_ty;
-struct msgfmt_po_reader_ty
+/* This structure defines a derived class of the default_catalog_reader_ty
+   class.  (See read-catalog-abstract.h for an explanation.)  */
+typedef struct msgfmt_catalog_reader_ty msgfmt_catalog_reader_ty;
+struct msgfmt_catalog_reader_ty
 {
   /* inherited instance variables, etc */
-  DEFAULT_PO_READER_TY
+  DEFAULT_CATALOG_READER_TY
 
   bool has_header_entry;
   bool has_nonfuzzy_header_entry;
@@ -835,9 +837,9 @@ struct msgfmt_po_reader_ty
 
 /* Prepare for first message.  */
 static void
-msgfmt_constructor (abstract_po_reader_ty *that)
+msgfmt_constructor (abstract_catalog_reader_ty *that)
 {
-  msgfmt_po_reader_ty *this = (msgfmt_po_reader_ty *) that;
+  msgfmt_catalog_reader_ty *this = (msgfmt_catalog_reader_ty *) that;
 
   /* Invoke superclass constructor.  */
   default_constructor (that);
@@ -849,9 +851,9 @@ msgfmt_constructor (abstract_po_reader_ty *that)
 
 /* Some checks after whole file is read.  */
 static void
-msgfmt_parse_debrief (abstract_po_reader_ty *that)
+msgfmt_parse_debrief (abstract_catalog_reader_ty *that)
 {
-  msgfmt_po_reader_ty *this = (msgfmt_po_reader_ty *) that;
+  msgfmt_catalog_reader_ty *this = (msgfmt_catalog_reader_ty *) that;
 
   /* Invoke superclass method.  */
   default_parse_debrief (that);
@@ -886,7 +888,7 @@ warning: older versions of msgfmt will give an error on this\n")));
 
 /* Set 'domain' directive when seen in .po file.  */
 static void
-msgfmt_set_domain (default_po_reader_ty *this, char *name)
+msgfmt_set_domain (default_catalog_reader_ty *this, char *name)
 {
   /* If no output file was given, we change it with each `domain'
      directive.  */
@@ -929,13 +931,16 @@ domain name \"%s\" not suitable as file name: will use prefix"), name);
 
 
 static void
-msgfmt_add_message (default_po_reader_ty *this,
+msgfmt_add_message (default_catalog_reader_ty *this,
 		    char *msgctxt,
 		    char *msgid,
 		    lex_pos_ty *msgid_pos,
 		    char *msgid_plural,
 		    char *msgstr, size_t msgstr_len,
 		    lex_pos_ty *msgstr_pos,
+		    char *prev_msgctxt,
+		    char *prev_msgid,
+		    char *prev_msgid_plural,
 		    bool force_fuzzy, bool obsolete)
 {
   /* Check whether already a domain is specified.  If not, use default
@@ -951,16 +956,18 @@ msgfmt_add_message (default_po_reader_ty *this,
 
   /* Invoke superclass method.  */
   default_add_message (this, msgctxt, msgid, msgid_pos, msgid_plural,
-		       msgstr, msgstr_len, msgstr_pos, force_fuzzy, obsolete);
+		       msgstr, msgstr_len, msgstr_pos,
+		       prev_msgctxt, prev_msgid, prev_msgid_plural,
+		       force_fuzzy, obsolete);
 }
 
 
 static void
-msgfmt_frob_new_message (default_po_reader_ty *that, message_ty *mp,
+msgfmt_frob_new_message (default_catalog_reader_ty *that, message_ty *mp,
 			 const lex_pos_ty *msgid_pos,
 			 const lex_pos_ty *msgstr_pos)
 {
-  msgfmt_po_reader_ty *this = (msgfmt_po_reader_ty *) that;
+  msgfmt_catalog_reader_ty *this = (msgfmt_catalog_reader_ty *) that;
 
   if (!mp->obsolete)
     {
@@ -1011,9 +1018,9 @@ msgfmt_frob_new_message (default_po_reader_ty *that, message_ty *mp,
 
 /* Test for `#, fuzzy' comments and warn.  */
 static void
-msgfmt_comment_special (abstract_po_reader_ty *that, const char *s)
+msgfmt_comment_special (abstract_catalog_reader_ty *that, const char *s)
 {
-  msgfmt_po_reader_ty *this = (msgfmt_po_reader_ty *) that;
+  msgfmt_catalog_reader_ty *this = (msgfmt_catalog_reader_ty *) that;
 
   /* Invoke superclass method.  */
   default_comment_special (that, s);
@@ -1039,10 +1046,10 @@ msgfmt_comment_special (abstract_po_reader_ty *that, const char *s)
    and all actions resulting from the parse will be through
    invocations of method functions of that object.  */
 
-static default_po_reader_class_ty msgfmt_methods =
+static default_catalog_reader_class_ty msgfmt_methods =
 {
   {
-    sizeof (msgfmt_po_reader_ty),
+    sizeof (msgfmt_catalog_reader_ty),
     msgfmt_constructor,
     default_destructor,
     default_parse_brief,
@@ -1062,13 +1069,13 @@ static default_po_reader_class_ty msgfmt_methods =
 
 /* Read .po file FILENAME and store translation pairs.  */
 static void
-read_po_file_msgfmt (char *filename)
+read_catalog_file_msgfmt (char *filename, catalog_input_format_ty input_syntax)
 {
   char *real_filename;
-  FILE *fp = open_po_file (filename, &real_filename, true);
-  default_po_reader_ty *pop;
+  FILE *fp = open_catalog_file (filename, &real_filename, true);
+  default_catalog_reader_ty *pop;
 
-  pop = default_po_reader_alloc (&msgfmt_methods);
+  pop = default_catalog_reader_alloc (&msgfmt_methods);
   pop->handle_comments = false;
   pop->handle_filepos_comments = false;
   pop->allow_domain_directives = true;
@@ -1083,9 +1090,9 @@ read_po_file_msgfmt (char *filename)
       pop->mlp = current_domain->mlp;
     }
   po_lex_pass_obsolete_entries (true);
-  po_scan ((abstract_po_reader_ty *) pop, fp, real_filename, filename,
-	   input_syntax);
-  po_reader_free ((abstract_po_reader_ty *) pop);
+  catalog_reader_parse ((abstract_catalog_reader_ty *) pop, fp, real_filename,
+			filename, input_syntax);
+  catalog_reader_free ((abstract_catalog_reader_ty *) pop);
 
   if (fp != stdin)
     fclose (fp);

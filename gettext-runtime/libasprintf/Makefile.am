@@ -108,9 +108,7 @@ CLEANFILES = autosprintf.pdf
 
 # Documentation in DVI format.
 
-install-dvi: autosprintf.dvi
-	$(mkdir_p) $(DESTDIR)$(dvidir)
-	$(INSTALL_DATA) `if test -f autosprintf.dvi; then echo .; else echo $(srcdir); fi`/autosprintf.dvi $(DESTDIR)$(dvidir)/autosprintf.dvi
+# The install-dvi target is already defined by automake.
 
 installdirs-dvi:
 	$(mkdir_p) $(DESTDIR)$(dvidir)
@@ -131,9 +129,7 @@ DVIPS = @DVIPS@ -D600
 autosprintf.ps: autosprintf.dvi
 	$(DVIPS) -o $@ `if test -f autosprintf.dvi; then echo autosprintf.dvi; else echo $(srcdir)/autosprintf.dvi; fi`
 
-install-ps: autosprintf.ps
-	$(mkdir_p) $(DESTDIR)$(psdir)
-	$(INSTALL_DATA) `if test -f autosprintf.ps; then echo .; else echo $(srcdir); fi`/autosprintf.ps $(DESTDIR)$(psdir)/autosprintf.ps
+# The install-ps target is already defined by automake.
 
 installdirs-ps:
 	$(mkdir_p) $(DESTDIR)$(psdir)
@@ -146,9 +142,7 @@ uninstall-ps:
 
 SUFFIXES = .pdf
 
-install-pdf: autosprintf.pdf
-	$(mkdir_p) $(DESTDIR)$(pdfdir)
-	$(INSTALL_DATA) `if test -f autosprintf.pdf; then echo .; else echo $(srcdir); fi`/autosprintf.pdf $(DESTDIR)$(pdfdir)/autosprintf.pdf
+# The install-pdf target is already defined by automake.
 
 installdirs-pdf:
 	$(mkdir_p) $(DESTDIR)$(pdfdir)
@@ -161,7 +155,9 @@ uninstall-pdf:
 
 TEXI2HTML = @PERL@ $(srcdir)/texi2html
 
-html-local: autosprintf_all.html
+HTMLS = autosprintf_all.html
+
+html-local: $(HTMLS)
 
 # Override of automake's definition.
 # We want to use texi2html, not makeinfo --html.
@@ -169,9 +165,7 @@ autosprintf_all.html: autosprintf.texi
 	$(TEXI2HTML) -expandinfo -number -monolithic `if test -f autosprintf.texi; then echo autosprintf.texi; else echo $(srcdir)/autosprintf.texi; fi`
 	mv autosprintf.html autosprintf_all.html
 
-install-html: autosprintf_all.html
-	$(mkdir_p) $(DESTDIR)$(htmldir)
-	$(INSTALL_DATA) `if test -f autosprintf_all.html; then echo .; else echo $(srcdir); fi`/autosprintf_all.html $(DESTDIR)$(htmldir)/autosprintf.html
+# The install-html target is already defined by automake.
 
 installdirs-html:
 	$(mkdir_p) $(DESTDIR)$(htmldir)
@@ -182,54 +176,6 @@ uninstall-html:
 EXTRA_DIST += texi2html autosprintf_all.html
 
 
-# VMS support.
-
-config.h_vms: config.h.in
-	(echo '#include <vms_jackets.h>'; \
-	 sed -e 's/#undef HAVE_ALLOCA$$/#define HAVE_ALLOCA 1/' \
-	     -e 's/#undef HAVE_DLFCN_H$$/#define HAVE_DLFCN_H 1/' \
-	     -e 's/#undef HAVE_INTTYPES_H$$/#define HAVE_INTTYPES_H 1/' \
-	     -e 's/#undef HAVE_LONG_DOUBLE$$/#define HAVE_LONG_DOUBLE 1/' \
-	     -e 's/#undef HAVE_LONG_LONG$$/#define HAVE_LONG_LONG 1/' \
-	     -e 's/#undef HAVE_MEMORY_H$$/#define HAVE_MEMORY_H 1/' \
-	     -e 's/#undef HAVE_POSIX_PRINTF$$/#define HAVE_POSIX_PRINTF 1/' \
-	     -e 's/#undef HAVE_PTRDIFF_T$$/#define HAVE_PTRDIFF_T 1/' \
-	     -e 's/#undef HAVE_STDLIB_H$$/#define HAVE_STDLIB_H 1/' \
-	     -e 's/#undef HAVE_STRINGS_H$$/#define HAVE_STRINGS_H 1/' \
-	     -e 's/#undef HAVE_STRING_H$$/#define HAVE_STRING_H 1/' \
-	     -e 's/#undef HAVE_SYS_STAT_H$$/#define HAVE_SYS_STAT_H 1/' \
-	     -e 's/#undef HAVE_SYS_TYPES_H$$/#define HAVE_SYS_TYPES_H 1/' \
-	     -e 's/#undef HAVE_UNISTD_H$$/#define HAVE_UNISTD_H 1/' \
-	     -e 's/#undef HAVE_WCHAR_T$$/#define HAVE_WCHAR_T 1/' \
-	     -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
-	     -e 's/#undef HAVE_WINT_T$$/#define HAVE_WINT_T 1/' \
-	     -e 's/#undef STDC_HEADERS$$/#define STDC_HEADERS 1/' \
-	   < $(srcdir)/config.h.in; echo; echo '#define alloca __ALLOCA') > $@
-
-EXTRA_DIST += Makefile.vms config.h_vms
-
-
 # Woe32 support.
 
-config.h.msvc: config.h.in
-	sed -e 's/#undef HAVE_ALLOCA$$/#define HAVE_ALLOCA 1/' \
-	    -e 's/#undef HAVE_DECL__SNPRINTF$$/#define HAVE_DECL__SNPRINTF 1/' \
-	    -e 's/#undef HAVE_LONG_DOUBLE$$/#define HAVE_LONG_DOUBLE 1/' \
-	    -e 's/#undef HAVE_PTRDIFF_T$$/#define HAVE_PTRDIFF_T 1/' \
-	    -e 's/#undef HAVE_SNPRINTF$$/#define HAVE_SNPRINTF 1/' \
-	    -e 's/#undef HAVE_STDLIB_H$$/#define HAVE_STDLIB_H 1/' \
-	    -e 's/#undef HAVE_STRING_H$$/#define HAVE_STRING_H 1/' \
-	    -e 's/#undef HAVE_WCHAR_T$$/#define HAVE_WCHAR_T 1/' \
-	    -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
-	    -e 's/#undef HAVE_WINT_T$$/#define HAVE_WINT_T 1/' \
-	    -e 's/#undef SIZE_MAX$$/#define SIZE_MAX 4294967295U/' \
-	    -e 's/#undef inline$$/#define inline __inline/' \
-	  < $(srcdir)/config.h.in > $@
-
-autosprintf.h.msvc-shared: autosprintf.h.in windows/dllexport.h
-	sed -e 's/extern \([^"]\)/extern LIBASPRINTF_DLL_EXPORTED \1/' \
-	    -e 's/class /class LIBASPRINTF_DLL_EXPORTED /' \
-	    -e 's/struct /struct LIBASPRINTF_DLL_EXPORTED /' \
-	    -e '/#define _AUTOSPRINTF_H/r windows/dllexport.h' < $(srcdir)/autosprintf.h.in > $@
-
-EXTRA_DIST += README.woe32 Makefile.msvc config.h.msvc autosprintf.h.msvc-shared windows/dllexport.h windows/asprintf.rc
+EXTRA_DIST += README.woe32

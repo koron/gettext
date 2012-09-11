@@ -36,9 +36,12 @@
 #include "basename.h"
 #include "message.h"
 #include "exit.h"
+#include "read-catalog.h"
 #include "read-po.h"
+#include "read-properties.h"
+#include "read-stringtable.h"
 #include "msgl-iconv.h"
-#include "strstr.h"
+#include "c-strstr.h"
 #include "c-strcase.h"
 #include "propername.h"
 #include "gettext.h"
@@ -49,6 +52,12 @@
 /* Apply the .pot file to each of the domains in the PO file.  */
 static bool multi_domain_mode = false;
 
+/* Whether to consider fuzzy messages as translations.  */
+static bool include_fuzzies = false;
+
+/* Whether to consider untranslated messages as translations.  */
+static bool include_untranslated = false;
+
 /* Long options.  */
 static const struct option long_options[] =
 {
@@ -57,6 +66,8 @@ static const struct option long_options[] =
   { "multi-domain", no_argument, NULL, 'm' },
   { "properties-input", no_argument, NULL, 'P' },
   { "stringtable-input", no_argument, NULL, CHAR_MAX + 1 },
+  { "use-fuzzy", no_argument, NULL, CHAR_MAX + 2 },
+  { "use-untranslated", no_argument, NULL, CHAR_MAX + 3 },
   { "version", no_argument, NULL, 'V' },
   { NULL, 0, NULL, 0 }
 };
@@ -68,7 +79,8 @@ static void usage (int status)
 	__attribute__ ((noreturn))
 #endif
 ;
-static void compare (const char *fn1, const char *fn2);
+static void compare (const char *fn1, const char *fn2,
+		     catalog_input_format_ty input_syntax);
 
 
 int
@@ -77,6 +89,7 @@ main (int argc, char *argv[])
   int optchar;
   bool do_help;
   bool do_version;
+  catalog_input_format_ty input_syntax = &input_format_po;
 
   /* Set program name for messages.  */
   set_program_name (argv[0]);
@@ -118,15 +131,23 @@ main (int argc, char *argv[])
 	break;
 
       case 'P':
-	input_syntax = syntax_properties;
+	input_syntax = &input_format_properties;
 	break;
 
       case 'V':
 	do_version = true;
 	break;
 
-      case CHAR_MAX + 1: /* --stringtable-input */
-	input_syntax = syntax_stringtable;
+      case CHAR_MAX + 1:	/* --stringtable-input */
+	input_syntax = &input_format_stringtable;
+	break;
+
+      case CHAR_MAX + 2:	/* --use-fuzzy */
+	include_fuzzies = true;
+	break;
+
+      case CHAR_MAX + 3:	/* --use-untranslated */
+	include_untranslated = true;
 	break;
 
       default:
@@ -165,7 +186,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
     }
 
   /* compare the two files */
-  compare (argv[optind], argv[optind + 1]);
+  compare (argv[optind], argv[optind + 1], input_syntax);
   exit (EXIT_SUCCESS);
 }
 
@@ -209,6 +230,10 @@ Input file location:\n"));
 Operation modifiers:\n"));
       printf (_("\
   -m, --multi-domain          apply ref.pot to each of the domains in def.po\n"));
+      printf (_("\
+      --use-fuzzy             consider fuzzy entries\n"));
+      printf (_("\
+      --use-untranslated      consider untranslated entries\n"));
       printf ("\n");
       printf (_("\
 Input file syntax:\n"));
@@ -274,7 +299,22 @@ match_domain (const char *fn1, const char *fn2,
       /* See if it is in the other file.  */
       defmsg = message_list_search (defmlp, refmsg->msgctxt, refmsg->msgid);
       if (defmsg)
-	defmsg->used = 1;
+	{
+	  if (!include_untranslated && defmsg->msgstr[0] == '\0')
+	    {
+	      (*nerrors)++;
+	      po_gram_error_at_line (&defmsg->pos, _("\
+this message is untranslated"));
+	    }
+	  else if (!include_fuzzies && defmsg->is_fuzzy && !is_header (defmsg))
+	    {
+	      (*nerrors)++;
+	      po_gram_error_at_line (&defmsg->pos, _("\
+this message needs to be reviewed by the translator"));
+	    }
+	  else
+	    defmsg->used = 1;
+	}
       else
 	{
 	  /* If the message was not defined at all, try to find a very
@@ -301,7 +341,7 @@ this message is used but not defined in %s"), fn1);
 
 
 static void
-compare (const char *fn1, const char *fn2)
+compare (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax)
 {
   msgdomain_list_ty *def;
   msgdomain_list_ty *ref;
@@ -310,11 +350,11 @@ compare (const char *fn1, const char *fn2)
   message_list_ty *empty_list;
 
   /* This is the master file, created by a human.  */
-  def = remove_obsoletes (read_po_file (fn1));
+  def = remove_obsoletes (read_catalog_file (fn1, input_syntax));
 
   /* This is the generated file, created by groping the sources with
      the xgettext program.  */
-  ref = remove_obsoletes (read_po_file (fn2));
+  ref = remove_obsoletes (read_catalog_file (fn2, input_syntax));
 
   /* The references file can be either in ASCII or in UTF-8.  If it is
      in UTF-8, we have to convert the definitions to UTF-8 as well.  */
@@ -331,7 +371,7 @@ compare (const char *fn1, const char *fn2)
 
 	      if (header != NULL)
 		{
-		  const char *charsetstr = strstr (header, "charset=");
+		  const char *charsetstr = c_strstr (header, "charset=");
 
 		  if (charsetstr != NULL)
 		    {

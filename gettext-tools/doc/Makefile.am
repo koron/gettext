@@ -34,7 +34,7 @@ gettext_TEXINFOS = \
   xgettext.texi msginit.texi msgmerge.texi msgcat.texi msgconv.texi \
   msggrep.texi msgfilter.texi msguniq.texi msgcomm.texi msgcmp.texi \
   msgattrib.texi msgen.texi msgexec.texi msgfmt.texi msgunfmt.texi \
-  gettextize.texi autopoint.texi iso-639.texi iso-3166.texi \
+  gettextize.texi autopoint.texi iso-639.texi iso-639-2.texi iso-3166.texi \
   gpl.texi lgpl.texi fdl.texi \
   $(top_srcdir)/../gettext-runtime/doc/rt-gettext.texi \
   $(top_srcdir)/../gettext-runtime/doc/rt-ngettext.texi \
@@ -46,13 +46,20 @@ doc_DATA = FAQ.html tutorial.html
 EXTRA_DIST += $(doc_DATA)
 
 EXTRA_DIST += \
-  iso-639.sed iso-3166.sed ISO_639 ISO_3166 ISO_3166_de texi2html \
+  iso-639.sed iso-639-2.sed iso-3166.sed \
+  ISO_639 ISO_639-2 ISO_3166 ISO_3166_de \
+  texi2html \
   ChangeLog.0
 
 iso-639.texi: ISO_639 iso-639.sed
 	$(SED) -f $(srcdir)/iso-639.sed $(srcdir)/ISO_639 > iso-639.tmp
 	rm -f $(srcdir)/iso-639.texi
 	mv iso-639.tmp $(srcdir)/iso-639.texi
+
+iso-639-2.texi: ISO_639-2 iso-639-2.sed
+	$(SED) -f $(srcdir)/iso-639-2.sed $(srcdir)/ISO_639-2 > iso-639-2.tmp
+	rm -f $(srcdir)/iso-639-2.texi
+	mv iso-639-2.tmp $(srcdir)/iso-639-2.texi
 
 iso-3166.texi: ISO_3166 iso-3166.sed
 	$(SED) -f $(srcdir)/iso-3166.sed $(srcdir)/ISO_3166 > iso-3166.tmp
@@ -89,7 +96,11 @@ uninstall-local: uninstall-html
 #distdir: dist-html
 
 html-local: html-split
+# Override of automake's definition. The HTML files we want to distribute are
+# not the ones that automake knows about, and we cannot define HTMLS to a value
+# containing wildcards.
 install-html: install-html-split
+	@:
 uninstall-html: uninstall-html-split
 dist-html: dist-html-split
 
@@ -104,9 +115,7 @@ MAINTAINERCLEANFILES = gettext_*.html
 #TEXI2DVI = texi2dvi
 TEXI2DVI = texi2dvi $(TEXINCLUDES)
 
-install-dvi: gettext.dvi
-	$(mkdir_p) $(DESTDIR)$(dvidir)
-	$(INSTALL_DATA) `if test -f gettext.dvi; then echo .; else echo $(srcdir); fi`/gettext.dvi $(DESTDIR)$(dvidir)/gettext.dvi
+# The install-dvi target is already defined by automake.
 
 installdirs-dvi:
 	$(mkdir_p) $(DESTDIR)$(dvidir)
@@ -137,9 +146,7 @@ DVIPS = @DVIPS@ -D600
 gettext.ps: gettext.dvi
 	$(DVIPS) -o $@ `if test -f gettext.dvi; then echo gettext.dvi; else echo $(srcdir)/gettext.dvi; fi`
 
-install-ps: gettext.ps
-	$(mkdir_p) $(DESTDIR)$(psdir)
-	$(INSTALL_DATA) `if test -f gettext.ps; then echo .; else echo $(srcdir); fi`/gettext.ps $(DESTDIR)$(psdir)/gettext.ps
+# The install-ps target is already defined by automake.
 
 installdirs-ps:
 	$(mkdir_p) $(DESTDIR)$(psdir)
@@ -155,9 +162,7 @@ uninstall-ps:
 TEXI2PDF = @TEXI2PDF@ $(TEXINCLUDES)
 SUFFIXES = .pdf
 
-install-pdf: gettext.pdf
-	$(mkdir_p) $(DESTDIR)$(pdfdir)
-	$(INSTALL_DATA) `if test -f gettext.pdf; then echo .; else echo $(srcdir); fi`/gettext.pdf $(DESTDIR)$(pdfdir)/gettext.pdf
+# The install-pdf target is already defined by automake.
 
 installdirs-pdf:
 	$(mkdir_p) $(DESTDIR)$(pdfdir)
@@ -219,13 +224,3 @@ dist-html-split:
 	for file in `cd $$d && echo gettext_*.html`; do \
 	  cp -p $$d/$$file $(distdir)/$$file || exit 1; \
 	done
-
-
-# VMS support.
-
-EXTRA_DIST += Makefile.vms
-
-
-# Woe32 support.
-
-EXTRA_DIST += Makefile.msvc

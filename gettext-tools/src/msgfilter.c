@@ -53,8 +53,14 @@
 #include "relocatable.h"
 #include "basename.h"
 #include "message.h"
+#include "read-catalog.h"
 #include "read-po.h"
+#include "read-properties.h"
+#include "read-stringtable.h"
+#include "write-catalog.h"
 #include "write-po.h"
+#include "write-properties.h"
+#include "write-stringtable.h"
 #include "msgl-charset.h"
 #include "xalloc.h"
 #include "exit.h"
@@ -149,6 +155,8 @@ main (int argc, char **argv)
   char *output_file;
   const char *input_file;
   msgdomain_list_ty *result;
+  catalog_input_format_ty input_syntax = &input_format_po;
+  catalog_output_format_ty output_syntax = &output_format_po;
   bool sort_by_filepos = false;
   bool sort_by_msgid = false;
   int i;
@@ -216,11 +224,11 @@ main (int argc, char **argv)
 	break;
 
       case 'p':
-	message_print_syntax_properties ();
+	output_syntax = &output_format_properties;
 	break;
 
       case 'P':
-	input_syntax = syntax_properties;
+	input_syntax = &input_format_properties;
 	break;
 
       case 's':
@@ -258,11 +266,11 @@ main (int argc, char **argv)
 	break;
 
       case CHAR_MAX + 4: /* --stringtable-input */
-	input_syntax = syntax_stringtable;
+	input_syntax = &input_format_stringtable;
 	break;
 
       case CHAR_MAX + 5: /* --stringtable-output */
-	message_print_syntax_stringtable ();
+	output_syntax = &output_format_stringtable;
 	break;
 
       default:
@@ -338,7 +346,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
     input_file = "-";
 
   /* Read input file.  */
-  result = read_po_file (input_file);
+  result = read_catalog_file (input_file, input_syntax);
 
   /* Recognize special programs as built-ins.  */
   if (strcmp (sub_name, "recode-sr-latin") == 0 && sub_argc == 1)
@@ -374,7 +382,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
     msgdomain_list_sort_by_msgid (result);
 
   /* Write the merged message list out.  */
-  msgdomain_list_print (result, output_file, force_po, false);
+  msgdomain_list_print (result, output_file, output_syntax, force_po, false);
 
   exit (EXIT_SUCCESS);
 }

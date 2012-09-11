@@ -1,3 +1,58 @@
+2006-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16 released.
+
+2006-10-16  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Add libgettextpo/gettext-po.c, remove src/gettext-po.c.
+
+2006-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Add src/read-catalog.c, remove src/read-po.c.
+	Add src/open-catalog.c, remove src/open-po.c.
+
+2006-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Add src/write-catalog.c.
+
+2006-10-02  Bruno Haible  <bruno@clisp.org>
+
+	* fr.po: Update from Christophe Combelles <ccomb@free.fr>.
+	* sl.po: Update from
+	Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>.
+
+2006-09-28  Bruno Haible  <bruno@clisp.org>
+
+	* ca.po: Update from Ivan Vilata i Balaguer <ivan@selidor.net>.
+	* sv.po: Update from Jan Djärv <jan.h.d@swipnet.se>.
+	* zh_CN.po: Update from Funda Wang <fundawang@linux.net.cn>.
+
+2006-09-10  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (install_sh): New variable.
+	Fixes "make install" errors in packages that have no 'mkinstalldirs'
+	file and use automake <= 1.9.x, on platforms where 'mkdir' does not
+	support the -p option.
+
+2006-08-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in.in (MKDIR_P): New variable. Needed by $(mkdir_p) with
+	Automake-1.10.
+
+2006-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Refer to gnulib-lib/ instead of lib/. Drop xerror.c.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Rules-msvc: Remove file.
+	* Makefile.msvc.sh: Remove file.
+
+2006-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Rules-vms: Remove file.
+	* Makefile.vms.sh: Remove file.
+
 2006-07-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.15 released.

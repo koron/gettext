@@ -67,13 +67,3 @@ uninstall-local:
 	  echo "$(RM) $(DESTDIR)$(projectsdir)/$$f"; \
 	  $(RM) $(DESTDIR)$(projectsdir)/$$f; \
 	done
-
-
-# VMS support.
-
-EXTRA_DIST += Makefile.vms
-
-
-# Woe32 support.
-
-EXTRA_DIST += Makefile.msvc

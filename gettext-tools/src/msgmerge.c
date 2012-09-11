@@ -37,12 +37,19 @@
 #include "relocatable.h"
 #include "basename.h"
 #include "message.h"
+#include "read-catalog.h"
 #include "read-po.h"
+#include "read-properties.h"
+#include "read-stringtable.h"
+#include "write-catalog.h"
 #include "write-po.h"
+#include "write-properties.h"
+#include "write-stringtable.h"
 #include "format.h"
 #include "xalloc.h"
+#include "xallocsa.h"
 #include "obstack.h"
-#include "strstr.h"
+#include "c-strstr.h"
 #include "exit.h"
 #include "c-strcase.h"
 #include "stpcpy.h"
@@ -51,6 +58,7 @@
 #include "msgl-iconv.h"
 #include "msgl-equal.h"
 #include "msgl-fsearch.h"
+#include "lock.h"
 #include "plural-count.h"
 #include "backupfile.h"
 #include "copy-file.h"
@@ -77,6 +85,9 @@ static bool multi_domain_mode = false;
 
 /* Determines whether to use fuzzy matching.  */
 static bool use_fuzzy_matching = true;
+
+/* Determines whether to keep old msgids as previous msgids.  */
+static bool keep_previous = false;
 
 /* List of user-specified compendiums.  */
 static message_list_list_ty *compendiums;
@@ -106,6 +117,7 @@ static const struct option long_options[] =
   { "no-location", no_argument, &line_comment, 0 },
   { "no-wrap", no_argument, NULL, CHAR_MAX + 4 },
   { "output-file", required_argument, NULL, 'o' },
+  { "previous", no_argument, NULL, CHAR_MAX + 7 },
   { "properties-input", no_argument, NULL, 'P' },
   { "properties-output", no_argument, NULL, 'p' },
   { "quiet", no_argument, NULL, 'q' },
@@ -141,6 +153,7 @@ static void usage (int status)
 ;
 static void compendium (const char *filename);
 static msgdomain_list_ty *merge (const char *fn1, const char *fn2,
+				 catalog_input_format_ty input_syntax,
 				 msgdomain_list_ty **defp);
 
 
@@ -153,6 +166,8 @@ main (int argc, char **argv)
   char *output_file;
   msgdomain_list_ty *def;
   msgdomain_list_ty *result;
+  catalog_input_format_ty input_syntax = &input_format_po;
+  catalog_output_format_ty output_syntax = &output_format_po;
   bool sort_by_filepos = false;
   bool sort_by_msgid = false;
 
@@ -230,11 +245,11 @@ main (int argc, char **argv)
 	break;
 
       case 'p':
-	message_print_syntax_properties ();
+	output_syntax = &output_format_properties;
 	break;
 
       case 'P':
-	input_syntax = syntax_properties;
+	input_syntax = &input_format_properties;
 	break;
 
       case 'q':
@@ -284,11 +299,15 @@ main (int argc, char **argv)
 	break;
 
       case CHAR_MAX + 5: /* --stringtable-input */
-	input_syntax = syntax_stringtable;
+	input_syntax = &input_format_stringtable;
 	break;
 
       case CHAR_MAX + 6: /* --stringtable-output */
-	message_print_syntax_stringtable ();
+	output_syntax = &output_format_stringtable;
+	break;
+
+      case CHAR_MAX + 7: /* --previous */
+	keep_previous = true;
 	break;
 
       default:
@@ -360,14 +379,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	   "--sort-output", "--sort-by-file");
 
   /* In update mode, --properties-input implies --properties-output.  */
-  if (update_mode && input_syntax == syntax_properties)
-    message_print_syntax_properties ();
+  if (update_mode && input_syntax == &input_format_properties)
+    output_syntax = &output_format_properties;
   /* In update mode, --stringtable-input implies --stringtable-output.  */
-  if (update_mode && input_syntax == syntax_stringtable)
-    message_print_syntax_stringtable ();
+  if (update_mode && input_syntax == &input_format_stringtable)
+    output_syntax = &output_format_stringtable;
 
   /* Merge the two files.  */
-  result = merge (argv[optind], argv[optind + 1], &def);
+  result = merge (argv[optind], argv[optind + 1], input_syntax, &def);
 
   /* Sort the results.  */
   if (sort_by_filepos)
@@ -407,13 +426,15 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	    }
 
 	  /* Write the merged message list out.  */
-	  msgdomain_list_print (result, output_file, true, false);
+	  msgdomain_list_print (result, output_file, output_syntax, true,
+				false);
 	}
     }
   else
     {
       /* Write the merged message list out.  */
-      msgdomain_list_print (result, output_file, force_po, false);
+      msgdomain_list_print (result, output_file, output_syntax, force_po,
+			    false);
     }
 
   exit (EXIT_SUCCESS);
@@ -501,6 +522,8 @@ Operation modifiers:\n"));
   -m, --multi-domain          apply ref.pot to each of the domains in def.po\n"));
       printf (_("\
   -N, --no-fuzzy-matching     do not use fuzzy matching\n"));
+      printf (_("\
+      --previous              keep previous msgids of translated messages\n"));
       printf ("\n");
       printf (_("\
 Input file syntax:\n"));
@@ -565,7 +588,7 @@ compendium (const char *filename)
   msgdomain_list_ty *mdlp;
   size_t k;
 
-  mdlp = read_po_file (filename);
+  mdlp = read_catalog_file (filename, &input_format_po);
   if (compendiums == NULL)
     {
       compendiums = message_list_list_alloc ();
@@ -594,6 +617,9 @@ struct definitions_ty
   /* A fuzzy index of the compendiums, for speed when doing fuzzy searches.
      Used only if use_fuzzy_matching is true and compendiums != NULL.  */
   message_fuzzy_index_ty *findex;
+  /* A once-only execution guard for the initialization of the fuzzy index.
+     Needed for OpenMP.  */
+  gl_lock_define(, findex_init_lock)
   /* The canonical encoding of the compendiums.  */
   const char *canon_charset;
 };
@@ -606,6 +632,7 @@ definitions_init (definitions_ty *definitions, const char *canon_charset)
   if (compendiums != NULL)
     message_list_list_append_list (definitions->lists, compendiums);
   definitions->findex = NULL;
+  gl_lock_init (definitions->findex_init_lock);
   definitions->canon_charset = canon_charset;
 }
 
@@ -614,24 +641,30 @@ definitions_init (definitions_ty *definitions, const char *canon_charset)
 static inline void
 definitions_init_findex (definitions_ty *definitions)
 {
-  /* Combine all the compendium message lists into a single one.  Don't
-     bother checking for duplicates.  */
-  message_list_ty *all_compendium;
-  size_t i;
-
-  all_compendium = message_list_alloc (false);
-  for (i = 0; i < compendiums->nitems; i++)
+  /* Protect against concurrent execution.  */
+  gl_lock_lock (definitions->findex_init_lock);
+  if (definitions->findex == NULL)
     {
-      message_list_ty *mlp = compendiums->item[i];
-      size_t j;
+      /* Combine all the compendium message lists into a single one.  Don't
+	 bother checking for duplicates.  */
+      message_list_ty *all_compendium;
+      size_t i;
 
-      for (j = 0; j < mlp->nitems; j++)
-	message_list_append (all_compendium, mlp->item[j]);
+      all_compendium = message_list_alloc (false);
+      for (i = 0; i < compendiums->nitems; i++)
+	{
+	  message_list_ty *mlp = compendiums->item[i];
+	  size_t j;
+
+	  for (j = 0; j < mlp->nitems; j++)
+	    message_list_append (all_compendium, mlp->item[j]);
+	}
+
+      /* Create the fuzzy index from it.  */
+      definitions->findex =
+	message_fuzzy_index_alloc (all_compendium, definitions->canon_charset);
     }
-
-  /* Create the fuzzy index from it.  */
-  definitions->findex =
-    message_fuzzy_index_alloc (all_compendium, definitions->canon_charset);
+  gl_lock_unlock (definitions->findex_init_lock);
 }
 
 /* Return the current list of non-compendium messages.  */
@@ -744,10 +777,13 @@ msgfmt_check_pair_fails (const lex_pos_ty *pos,
 
 
 static message_ty *
-message_merge (message_ty *def, message_ty *ref)
+message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
 {
   const char *msgstr;
   size_t msgstr_len;
+  const char *prev_msgctxt;
+  const char *prev_msgid;
+  const char *prev_msgid_plural;
   message_ty *result;
   size_t j, i;
 
@@ -863,7 +899,7 @@ message_merge (message_ty *def, message_ty *ref)
       {
 	const char *msgid_bugs_ptr;
 
-	msgid_bugs_ptr = strstr (ref->msgstr, "Report-Msgid-Bugs-To:");
+	msgid_bugs_ptr = c_strstr (ref->msgstr, "Report-Msgid-Bugs-To:");
 	if (msgid_bugs_ptr != NULL)
 	  {
 	    size_t msgid_bugs_len;
@@ -893,7 +929,7 @@ message_merge (message_ty *def, message_ty *ref)
       {
 	const char *pot_date_ptr;
 
-	pot_date_ptr = strstr (ref->msgstr, "POT-Creation-Date:");
+	pot_date_ptr = c_strstr (ref->msgstr, "POT-Creation-Date:");
 	if (pot_date_ptr != NULL)
 	  {
 	    size_t pot_date_len;
@@ -954,11 +990,28 @@ message_merge (message_ty *def, message_ty *ref)
 
       msgstr = cp;
       msgstr_len = strlen (cp) + 1;
+
+      prev_msgctxt = NULL;
+      prev_msgid = NULL;
+      prev_msgid_plural = NULL;
     }
   else
     {
       msgstr = def->msgstr;
       msgstr_len = def->msgstr_len;
+
+      if (def->is_fuzzy)
+	{
+	  prev_msgctxt = def->prev_msgctxt;
+	  prev_msgid = def->prev_msgid;
+	  prev_msgid_plural = def->prev_msgid_plural;
+	}
+      else
+	{
+	  prev_msgctxt = def->msgctxt;
+	  prev_msgid = def->msgid;
+	  prev_msgid_plural = def->msgid_plural;
+	}
     }
 
   result = message_alloc (ref->msgctxt != NULL ? xstrdup (ref->msgctxt) : NULL,
@@ -981,7 +1034,7 @@ message_merge (message_ty *def, message_ty *ref)
   /* The flags are mixed in a special way.  Some informations come
      from the reference message (such as format/no-format), others
      come from the definition file (fuzzy or not).  */
-  result->is_fuzzy = def->is_fuzzy;
+  result->is_fuzzy = def->is_fuzzy | force_fuzzy;
 
   for (i = 0; i < NFORMATS; i++)
     {
@@ -1003,6 +1056,21 @@ message_merge (message_ty *def, message_ty *ref)
     }
 
   result->do_wrap = ref->do_wrap;
+
+  /* Insert previous msgid, commented out with "#|".
+     Do so only when --previous is specified, for backward compatibility.
+     Since the "previous msgid" represents the original msgid that led to
+     the current msgstr,
+       - we can omit it if the resulting message is not fuzzy,
+       - otherwise, if the corresponding message from the definition file
+         was translated (not fuzzy), we use that message's msgid,
+       - otherwise, we use that message's prev_msgid.  */
+  if (keep_previous && result->is_fuzzy)
+    {
+      result->prev_msgctxt = prev_msgctxt;
+      result->prev_msgid = prev_msgid;
+      result->prev_msgid_plural = prev_msgid_plural;
+    }
 
   /* Take the file position comments from the reference file, as they
      are generated by xgettext.  Any in the definition file are old ones
@@ -1042,6 +1110,7 @@ match_domain (const char *fn1, const char *fn2,
   message_ty *header_entry;
   unsigned long int nplurals;
   char *untranslated_plural_msgstr;
+  struct search_result { message_ty *found; bool fuzzy; } *search_results;
   size_t j;
 
   header_entry =
@@ -1050,27 +1119,77 @@ match_domain (const char *fn1, const char *fn2,
   untranslated_plural_msgstr = (char *) xmalloc (nplurals);
   memset (untranslated_plural_msgstr, '\0', nplurals);
 
-  for (j = 0; j < refmlp->nitems; j++, (*processed)++)
+  /* Most of the time is spent in definitions_search_fuzzy.
+     Perform it in a separate loop that can be parallelized by an OpenMP
+     capable compiler.  */
+  search_results =
+    (struct search_result *)
+    xmalloc (refmlp->nitems * sizeof (struct search_result));
+  {
+    long int nn = refmlp->nitems;
+    long int jj;
+
+    /* Tell the OpenMP capable compiler to distribute this loop across
+       several threads.  The schedule is dynamic, because for some messages
+       the loop body can be executed very quickly, whereas for others it takes
+       a long time.  */
+    #ifdef _OPENMP
+    # pragma omp parallel for schedule(dynamic)
+    #endif
+    for (jj = 0; jj < nn; jj++)
+      {
+	message_ty *refmsg = refmlp->item[jj];
+	message_ty *defmsg;
+
+	/* Because merging can take a while we print something to signal
+	   we are not dead.  */
+	if (!quiet && verbosity_level <= 1 && *processed % DOT_FREQUENCY == 0)
+	  fputc ('.', stderr);
+	#ifdef _OPENMP
+	# pragma omp atomic
+	#endif
+	(*processed)++;
+
+	/* See if it is in the other file.  */
+	defmsg =
+	  definitions_search (definitions, refmsg->msgctxt, refmsg->msgid);
+	if (defmsg != NULL)
+	  {
+	    search_results[jj].found = defmsg;
+	    search_results[jj].fuzzy = false;
+	  }
+	else if (!is_header (refmsg)
+		 /* If the message was not defined at all, try to find a very
+		    similar message, it could be a typo, or the suggestion may
+		    help.  */
+		 && use_fuzzy_matching
+		 && ((defmsg =
+		        definitions_search_fuzzy (definitions,
+						  refmsg->msgctxt,
+						  refmsg->msgid)) != NULL))
+	  {
+	    search_results[jj].found = defmsg;
+	    search_results[jj].fuzzy = true;
+	  }
+	else
+	  search_results[jj].found = NULL;
+      }
+  }
+
+  for (j = 0; j < refmlp->nitems; j++)
     {
-      message_ty *refmsg;
-      message_ty *defmsg;
+      message_ty *refmsg = refmlp->item[j];
 
-      /* Because merging can take a while we print something to signal
-	 we are not dead.  */
-      if (!quiet && verbosity_level <= 1 && *processed % DOT_FREQUENCY == 0)
-	fputc ('.', stderr);
-
-      refmsg = refmlp->item[j];
-
-      /* See if it is in the other file.  */
-      defmsg = definitions_search (definitions, refmsg->msgctxt, refmsg->msgid);
-      if (defmsg)
+      /* See if it is in the other file.
+	 This used definitions_search.  */
+      if (search_results[j].found != NULL && !search_results[j].fuzzy)
 	{
+	  message_ty *defmsg = search_results[j].found;
 	  /* Merge the reference with the definition: take the #. and
 	     #: comments from the reference, take the # comments from
 	     the definition, take the msgstr from the definition.  Add
 	     this merged entry to the output message list.  */
-	  message_ty *mp = message_merge (defmsg, refmsg);
+	  message_ty *mp = message_merge (defmsg, refmsg, false);
 
 	  message_list_append (resultmlp, mp);
 
@@ -1083,13 +1202,11 @@ match_domain (const char *fn1, const char *fn2,
 	{
 	  /* If the message was not defined at all, try to find a very
 	     similar message, it could be a typo, or the suggestion may
-	     help.  */
-	  if (use_fuzzy_matching
-	      && ((defmsg =
-		     definitions_search_fuzzy (definitions,
-					       refmsg->msgctxt,
-					       refmsg->msgid)) != NULL))
+	     help.  This search assumed use_fuzzy_matching and used
+	     definitions_search_fuzzy.  */
+	  if (search_results[j].found != NULL && search_results[j].fuzzy)
 	    {
+	      message_ty *defmsg = search_results[j].found;
 	      message_ty *mp;
 
 	      if (verbosity_level > 1)
@@ -1105,9 +1222,7 @@ this message is used but not defined..."));
 		 #: comments from the reference, take the # comments from
 		 the definition, take the msgstr from the definition.  Add
 		 this merged entry to the output message list.  */
-	      mp = message_merge (defmsg, refmsg);
-
-	      mp->is_fuzzy = true;
+	      mp = message_merge (defmsg, refmsg, true);
 
 	      message_list_append (resultmlp, mp);
 
@@ -1157,6 +1272,8 @@ this message is used but not defined in %s"), fn1);
 	    }
 	}
     }
+
+  free (search_results);
 
   /* Now postprocess the problematic merges.  This is needed because we
      want the result to pass the "msgfmt -c -v" check.  */
@@ -1237,7 +1354,8 @@ this message should not define plural forms"));
 }
 
 static msgdomain_list_ty *
-merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
+merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
+       msgdomain_list_ty **defp)
 {
   msgdomain_list_ty *def;
   msgdomain_list_ty *ref;
@@ -1251,11 +1369,11 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
   stats.merged = stats.fuzzied = stats.missing = stats.obsolete = 0;
 
   /* This is the definitions file, created by a human.  */
-  def = read_po_file (fn1);
+  def = read_catalog_file (fn1, input_syntax);
 
   /* This is the references file, created by groping the sources with
      the xgettext program.  */
-  ref = read_po_file (fn2);
+  ref = read_catalog_file (fn2, input_syntax);
   /* Add a dummy header entry, if the references file contains none.  */
   for (k = 0; k < ref->nitems; k++)
     if (message_list_search (ref->item[k]->messages, NULL, "") == NULL)
@@ -1282,7 +1400,7 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 
 	      if (header != NULL)
 		{
-		  const char *charsetstr = strstr (header, "charset=");
+		  const char *charsetstr = c_strstr (header, "charset=");
 
 		  if (charsetstr != NULL)
 		    {
@@ -1305,9 +1423,152 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	    iconv_message_list (compendiums->item[k], NULL, po_charset_utf8,
 				compendium_filenames->item[k]);
       }
-    else
+    else if (compendiums != NULL && compendiums->nitems > 0)
       {
-	/* TODO: Convert all compendiums->item[k] to the same encoding.  */
+	/* Ensure that the definitions and the compendiums are in the same
+	   encoding.  Prefer the encoding of the definitions file, if
+	   possible; otherwise, if the definitions file is empty and the
+	   compendiums are all in the same encoding, use that encoding;
+	   otherwise, use UTF-8.  */
+	bool conversion_done = false;
+	{
+	  char *charset = NULL;
+
+	  /* Get the encoding of the definitions file.  */
+	  for (k = 0; k < def->nitems; k++)
+	    {
+	      message_list_ty *mlp = def->item[k]->messages;
+
+	      for (j = 0; j < mlp->nitems; j++)
+		if (is_header (mlp->item[j]) && !mlp->item[j]->obsolete)
+		  {
+		    const char *header = mlp->item[j]->msgstr;
+
+		    if (header != NULL)
+		      {
+			const char *charsetstr = c_strstr (header, "charset=");
+
+			if (charsetstr != NULL)
+			  {
+			    size_t len;
+
+			    charsetstr += strlen ("charset=");
+			    len = strcspn (charsetstr, " \t\n");
+			    charset = (char *) xallocsa (len + 1);
+			    memcpy (charset, charsetstr, len);
+			    charset[len] = '\0';
+			    break;
+			  }
+		      }
+		  }
+	      if (charset != NULL)
+		break;
+	    }
+	  if (charset != NULL)
+	    {
+	      const char *canon_charset = po_charset_canonicalize (charset);
+
+	      if (canon_charset != NULL)
+		{
+		  bool all_compendiums_iconvable = true;
+
+		  if (compendiums != NULL)
+		    for (k = 0; k < compendiums->nitems; k++)
+		      if (!is_message_list_iconvable (compendiums->item[k],
+						      NULL, canon_charset))
+			{
+			  all_compendiums_iconvable = false;
+			  break;
+			}
+
+		  if (all_compendiums_iconvable)
+		    {
+		      /* Convert the compendiums to def's encoding.  */
+		      if (compendiums != NULL)
+			for (k = 0; k < compendiums->nitems; k++)
+			  iconv_message_list (compendiums->item[k],
+					      NULL, canon_charset,
+					      compendium_filenames->item[k]);
+		      conversion_done = true;
+		    }
+		}
+	      freesa (charset);
+	    }
+	}
+	if (!conversion_done)
+	  {
+	    if (def->nitems == 0
+		|| (def->nitems == 1 && def->item[0]->messages->nitems == 0))
+	      {
+		/* The definitions file is empty.
+		   Compare the encodings of the compendiums.  */
+		const char *common_canon_charset = NULL;
+
+		for (k = 0; k < compendiums->nitems; k++)
+		  {
+		    message_list_ty *mlp = compendiums->item[k];
+		    char *charset = NULL;
+		    const char *canon_charset = NULL;
+
+		    for (j = 0; j < mlp->nitems; j++)
+		      if (is_header (mlp->item[j]) && !mlp->item[j]->obsolete)
+			{
+			  const char *header = mlp->item[j]->msgstr;
+
+			  if (header != NULL)
+			    {
+			      const char *charsetstr =
+				c_strstr (header, "charset=");
+
+			      if (charsetstr != NULL)
+				{
+				  size_t len;
+
+				  charsetstr += strlen ("charset=");
+				  len = strcspn (charsetstr, " \t\n");
+				  charset = (char *) xallocsa (len + 1);
+				  memcpy (charset, charsetstr, len);
+				  charset[len] = '\0';
+
+				  break;
+				}
+			    }
+			}
+		    if (charset != NULL)
+		      {
+			canon_charset = po_charset_canonicalize (charset);
+			freesa (charset);
+		      }
+		    /* If no charset declaration was found in this file,
+		       or if it is not a valid encoding name, or if it
+		       differs from the common charset found so far,
+		       we have no common charset.  */
+		    if (canon_charset == NULL
+			|| (common_canon_charset != NULL
+			    && canon_charset != common_canon_charset))
+		      {
+			common_canon_charset = NULL;
+			break;
+		      }
+		    common_canon_charset = canon_charset;
+		  }
+
+		if (common_canon_charset != NULL)
+		  /* No conversion needed in this case.  */
+		  conversion_done = true;
+	      }
+	    if (!conversion_done)
+	      {
+		/* It's too hairy to find out what would be the optimal target
+		   encoding.  So, convert everything to UTF-8.  */
+		def = iconv_msgdomain_list (def, "UTF-8", fn1);
+		if (compendiums != NULL)
+		  for (k = 0; k < compendiums->nitems; k++)
+		    iconv_message_list (compendiums->item[k],
+					NULL, po_charset_utf8,
+					compendium_filenames->item[k]);
+	      }
+	  }
       }
   }
 
