@@ -30,18 +30,18 @@ SHELL = /bin/sh
 all :
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(emacsdir)
-	-mkdir $(lispdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(emacsdir)
+	-MD $(lispdir)
 	$(INSTALL_DATA) po-mode.el $(lispdir)\po-mode.el
 	$(INSTALL_DATA) po-compat.el $(lispdir)\po-compat.el
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(emacsdir)
-	-mkdir $(lispdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(emacsdir)
+	-MD $(lispdir)
 
 uninstall : force
 	$(RM) $(lispdir)\po-mode.el

@@ -28,19 +28,19 @@ SHELL = /bin/sh
 all :
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 	$(INSTALL_DATA) FAQ.html $(docdir)
 	$(INSTALL_DATA) tutorial.html $(docdir)
 	$(INSTALL_DATA) gettext_*.html $(docdir)
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 
 uninstall : force
 	$(RM) $(docdir)\FAQ.html

@@ -30,10 +30,10 @@ SHELL = /bin/sh
 all :
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(mandir)
-	-mkdir $(man1dir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(mandir)
+	-MD $(man1dir)
 	$(INSTALL_DATA) msgcmp.1 $(man1dir)\msgcmp.1
 	$(INSTALL_DATA) msgfmt.1 $(man1dir)\msgfmt.1
 	$(INSTALL_DATA) msgmerge.1 $(man1dir)\msgmerge.1
@@ -49,8 +49,8 @@ install : all force
 	$(INSTALL_DATA) msggrep.1 $(man1dir)\msggrep.1
 	$(INSTALL_DATA) msginit.1 $(man1dir)\msginit.1
 	$(INSTALL_DATA) msguniq.1 $(man1dir)\msguniq.1
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 	$(INSTALL_DATA) msgcmp.1.html $(docdir)\msgcmp.1.html
 	$(INSTALL_DATA) msgfmt.1.html $(docdir)\msgfmt.1.html
 	$(INSTALL_DATA) msgmerge.1.html $(docdir)\msgmerge.1.html
@@ -68,12 +68,12 @@ install : all force
 	$(INSTALL_DATA) msguniq.1.html $(docdir)\msguniq.1.html
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(mandir)
-	-mkdir $(man1dir)
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(mandir)
+	-MD $(man1dir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 
 uninstall : force
 	$(RM) $(man1dir)\msgcmp.1

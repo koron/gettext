@@ -115,17 +115,17 @@ envsubst.exe : $(envsubst_OBJECTS)
 	$(CC) $(MFLAGS) $(DEBUGFLAGS) $(ngettext_OBJECTS) ..\lib\grt.lib ..\intl\intl.lib $(libdir)\iconv.lib $(LDADD) -Feenvsubst.exe
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
-	-mkdir $(bindir)
+	-MD $(prefix)
+	-MD $(exec_prefix)
+	-MD $(bindir)
 	$(INSTALL_PROGRAM) gettext.exe $(bindir)\gettext.exe
 	$(INSTALL_PROGRAM) ngettext.exe $(bindir)\ngettext.exe
 	$(INSTALL_PROGRAM) envsubst.exe $(bindir)\envsubst.exe
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
-	-mkdir $(bindir)
+	-MD $(prefix)
+	-MD $(exec_prefix)
+	-MD $(bindir)
 
 uninstall : force
 	$(RM) $(bindir)\gettext.exe

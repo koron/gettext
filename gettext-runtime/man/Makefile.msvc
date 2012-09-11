@@ -31,14 +31,14 @@ SHELL = /bin/sh
 all :
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(mandir)
-	-mkdir $(man1dir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(mandir)
+	-MD $(man1dir)
 	$(INSTALL_DATA) gettext.1.in $(man1dir)\gettext.1
 	$(INSTALL_DATA) ngettext.1.in $(man1dir)\ngettext.1
 	$(INSTALL_DATA) envsubst.1 $(man1dir)\envsubst.1
-	-mkdir $(man3dir)
+	-MD $(man3dir)
 	$(INSTALL_DATA) gettext.3 $(man3dir)\gettext.3
 	$(INSTALL_DATA) ngettext.3 $(man3dir)\ngettext.3
 	$(INSTALL_DATA) textdomain.3 $(man3dir)\textdomain.3
@@ -48,8 +48,8 @@ install : all force
 	$(INSTALL_DATA) dcgettext.3 $(man3dir)\dcgettext.3
 	$(INSTALL_DATA) dngettext.3 $(man3dir)\dngettext.3
 	$(INSTALL_DATA) dcngettext.3 $(man3dir)\dcngettext.3
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 	$(INSTALL_DATA) gettext.1.html.in $(docdir)\gettext.1.html
 	$(INSTALL_DATA) ngettext.1.html.in $(docdir)\ngettext.1.html
 	$(INSTALL_DATA) envsubst.1.html $(docdir)\envsubst.1.html
@@ -60,13 +60,13 @@ install : all force
 	$(INSTALL_DATA) bind_textdomain_codeset.3.html $(docdir)\bind_textdomain_codeset.3.html
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(datadir)
-	-mkdir $(mandir)
-	-mkdir $(man1dir)
-	-mkdir $(man3dir)
-	-mkdir $(datadir)\doc
-	-mkdir $(docdir)
+	-MD $(prefix)
+	-MD $(datadir)
+	-MD $(mandir)
+	-MD $(man1dir)
+	-MD $(man3dir)
+	-MD $(datadir)\doc
+	-MD $(docdir)
 
 uninstall : force
 	$(RM) $(man1dir)\gettext.1

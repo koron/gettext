@@ -533,10 +533,10 @@ gettextpo.res : ../windows/gettextpo.rc
 !endif
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
+	-MD $(prefix)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 	$(INSTALL_DATA) gettextsrc.dll $(bindir)\gettextsrc.dll
 !endif
 	$(INSTALL_PROGRAM) msgcmp.exe $(bindir)\msgcmp.exe
@@ -554,27 +554,27 @@ install : all force
 	$(INSTALL_PROGRAM) msggrep.exe $(bindir)\msggrep.exe
 	$(INSTALL_PROGRAM) msginit.exe $(bindir)\msginit.exe
 	$(INSTALL_PROGRAM) msguniq.exe $(bindir)\msguniq.exe
-	-mkdir $(datadir)
-	-mkdir $(pkgdatadir)
+	-MD $(datadir)
+	-MD $(pkgdatadir)
 	$(INSTALL_DATA) msgunfmt.tcl $(pkgdatadir)\msgunfmt.tcl
-	-mkdir $(includedir)
+	-MD $(includedir)
 	$(INSTALL_DATA) gettext-po.h $(includedir)\gettext-po.h
 !if $(DLL)
 	$(INSTALL_DATA) gettextpo.dll $(bindir)\gettextpo.dll
 !endif
-	-mkdir $(libdir)
+	-MD $(libdir)
 	$(INSTALL_DATA) gettextpo.lib $(libdir)\gettextpo.lib
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
+	-MD $(prefix)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 !endif
-	-mkdir $(datadir)
-	-mkdir $(pkgdatadir)
-	-mkdir $(includedir)
-	-mkdir $(libdir)
+	-MD $(datadir)
+	-MD $(pkgdatadir)
+	-MD $(includedir)
+	-MD $(libdir)
 
 uninstall : force
 !if $(DLL)

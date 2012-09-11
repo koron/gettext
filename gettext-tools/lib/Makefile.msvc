@@ -334,18 +334,18 @@ gettextlib.res : ../windows/gettextlib.rc
 !endif
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
+	-MD $(prefix)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 	$(INSTALL_DATA) gettextlib.dll $(bindir)\gettextlib.dll
 !endif
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(exec_prefix)
+	-MD $(prefix)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 !endif
 
 uninstall : force

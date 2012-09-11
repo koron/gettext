@@ -205,25 +205,25 @@ libintl.h : libgnuintl.h
 	$(LN) libgnuintl.h libintl.h
 
 install : all force
-	-mkdir $(prefix)
-	-mkdir $(includedir)
+	-MD $(prefix)
+	-MD $(includedir)
 	$(INSTALL_DATA) libintl.h $(includedir)\libintl.h
-	-mkdir $(exec_prefix)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 	$(INSTALL_DATA) intl.dll $(bindir)\intl.dll
 !endif
-	-mkdir $(libdir)
+	-MD $(libdir)
 	$(INSTALL_DATA) intl.lib $(libdir)\intl.lib
 
 installdirs : force
-	-mkdir $(prefix)
-	-mkdir $(includedir)
-	-mkdir $(exec_prefix)
+	-MD $(prefix)
+	-MD $(includedir)
+	-MD $(exec_prefix)
 !if $(DLL)
-	-mkdir $(bindir)
+	-MD $(bindir)
 !endif
-	-mkdir $(libdir)
+	-MD $(libdir)
 
 uninstall : force
 	$(RM) $(includedir)\libintl.h
