@@ -38,6 +38,7 @@
 #include "gmo.h"
 #include "hash-string.h"
 
+#include "byteswap.h"
 #include "error.h"
 #include "hash.h"
 #include "message.h"
@@ -67,8 +68,15 @@
 /* Alignment of strings in resulting .mo file.  */
 size_t alignment;
 
+/* True if writing a .mo file in opposite endianness than the host.  */
+bool byteswap;
+
 /* True if no hash table in .mo is wanted.  */
 bool no_hash_table;
+
+
+/* Destructively changes the byte order of a 32-bit value in memory.  */
+#define BSWAP32(x) (x) = bswap_32 (x)
 
 
 /* Indices into the strings contained in 'struct pre_message' and
@@ -137,6 +145,7 @@ struct pre_sysdep_message
 static void
 write_table (FILE *output_file, message_list_ty *mlp)
 {
+  char **msgctid_arr;
   size_t nstrings;
   struct pre_message *msg_arr;
   size_t n_sysdep_strings;
@@ -161,6 +170,7 @@ write_table (FILE *output_file, message_list_ty *mlp)
   /* First pass: Move the static string pairs into an array, for sorting,
      and at the same time, compute the segments of the system dependent
      strings.  */
+  msgctid_arr = (char **) xmalloc (mlp->nitems * sizeof (char *));
   nstrings = 0;
   msg_arr =
     (struct pre_message *)
@@ -175,8 +185,21 @@ write_table (FILE *output_file, message_list_ty *mlp)
   for (j = 0; j < mlp->nitems; j++)
     {
       message_ty *mp = mlp->item[j];
+      size_t msgctlen;
+      char *msgctid;
       struct interval *intervals[2];
       size_t nintervals[2];
+
+      /* Concatenate mp->msgctxt and mp->msgid into msgctid.  */
+      msgctlen = (mp->msgctxt != NULL ? strlen (mp->msgctxt) + 1 : 0);
+      msgctid = (char *) xmalloc (msgctlen + strlen (mp->msgid) + 1);
+      if (mp->msgctxt != NULL)
+	{
+	  memcpy (msgctid, mp->msgctxt, msgctlen - 1);
+	  msgctid[msgctlen - 1] = MSGCTXT_SEPARATOR;
+	}
+      strcpy (msgctid + msgctlen, mp->msgid);
+      msgctid_arr[j] = msgctid;
 
       intervals[M_ID] = NULL;
       nintervals[M_ID] = 0;
@@ -196,6 +219,22 @@ write_table (FILE *output_file, message_list_ty *mlp)
 
 	  get_sysdep_c_format_directives (mp->msgid, false,
 					  &intervals[M_ID], &nintervals[M_ID]);
+	  if (msgctlen > 0)
+	    {
+	      struct interval *id_intervals = intervals[M_ID];
+	      size_t id_nintervals = nintervals[M_ID];
+
+	      if (id_nintervals > 0)
+		{
+		  unsigned int i;
+
+		  for (i = 0; i < id_nintervals; i++)
+		    {
+		      id_intervals[i].startpos += msgctlen;
+		      id_intervals[i].endpos += msgctlen;
+		    }
+		}
+	    }
 
 	  p_end = mp->msgstr + mp->msgstr_len;
 	  for (p = mp->msgstr; p < p_end; p += strlen (p) + 1)
@@ -244,8 +283,8 @@ write_table (FILE *output_file, message_list_ty *mlp)
 
 	      if (m == M_ID)
 		{
-		  str = mp->msgid;
-		  str_len = strlen (mp->msgid) + 1;
+		  str = msgctid; /* concatenation of mp->msgctxt + mp->msgid  */
+		  str_len = strlen (msgctid) + 1;
 		}
 	      else
 		{
@@ -313,8 +352,8 @@ write_table (FILE *output_file, message_list_ty *mlp)
       else
 	{
 	  /* Static string pair.  */
-	  msg_arr[nstrings].str[M_ID].pointer = mp->msgid;
-	  msg_arr[nstrings].str[M_ID].length = strlen (mp->msgid) + 1;
+	  msg_arr[nstrings].str[M_ID].pointer = msgctid;
+	  msg_arr[nstrings].str[M_ID].length = strlen (msgctid) + 1;
 	  msg_arr[nstrings].str[M_STR].pointer = mp->msgstr;
 	  msg_arr[nstrings].str[M_STR].length = mp->msgstr_len;
 	  msg_arr[nstrings].id_plural = mp->msgid_plural;
@@ -447,6 +486,24 @@ write_table (FILE *output_file, message_list_ty *mlp)
      compute the offsets of each string, including the proper alignment.  */
 
   /* Write the header out.  */
+  if (byteswap)
+    {
+      BSWAP32 (header.magic);
+      BSWAP32 (header.revision);
+      BSWAP32 (header.nstrings);
+      BSWAP32 (header.orig_tab_offset);
+      BSWAP32 (header.trans_tab_offset);
+      BSWAP32 (header.hash_tab_size);
+      BSWAP32 (header.hash_tab_offset);
+      if (minor_revision >= 1)
+	{
+	  BSWAP32 (header.n_sysdep_segments);
+	  BSWAP32 (header.sysdep_segments_offset);
+	  BSWAP32 (header.n_sysdep_strings);
+	  BSWAP32 (header.orig_sysdep_tab_offset);
+	  BSWAP32 (header.trans_sysdep_tab_offset);
+	}
+    }
   fwrite (&header, header_size, 1, output_file);
 
   /* Table for original string offsets.  */
@@ -462,6 +519,12 @@ write_table (FILE *output_file, message_list_ty *mlp)
       /* Subtract 1 because of the terminating NUL.  */
       orig_tab[j].length--;
     }
+  if (byteswap)
+    for (j = 0; j < nstrings; j++)
+      {
+	BSWAP32 (orig_tab[j].length);
+	BSWAP32 (orig_tab[j].offset);
+      }
   fwrite (orig_tab, nstrings * sizeof (struct string_desc), 1, output_file);
 
   /* Table for translated string offsets.  */
@@ -476,6 +539,12 @@ write_table (FILE *output_file, message_list_ty *mlp)
       /* Subtract 1 because of the terminating NUL.  */
       trans_tab[j].length--;
     }
+  if (byteswap)
+    for (j = 0; j < nstrings; j++)
+      {
+	BSWAP32 (trans_tab[j].length);
+	BSWAP32 (trans_tab[j].offset);
+      }
   fwrite (trans_tab, nstrings * sizeof (struct string_desc), 1, output_file);
 
   /* Skip this part when no hash table is needed.  */
@@ -514,6 +583,9 @@ write_table (FILE *output_file, message_list_ty *mlp)
 	}
 
       /* Write the hash table out.  */
+      if (byteswap)
+	for (j = 0; j < hash_tab_size; j++)
+	  BSWAP32 (hash_tab[j]);
       fwrite (hash_tab, hash_tab_size * sizeof (nls_uint32), 1, output_file);
 
       free (hash_tab);
@@ -540,6 +612,12 @@ write_table (FILE *output_file, message_list_ty *mlp)
 	  offset += sysdep_segments_tab[i].length;
 	}
 
+      if (byteswap)
+	for (i = 0; i < n_sysdep_segments; i++)
+	  {
+	    BSWAP32 (sysdep_segments_tab[i].length);
+	    BSWAP32 (sysdep_segments_tab[i].offset);
+	  }
       fwrite (sysdep_segments_tab,
 	      n_sysdep_segments * sizeof (struct sysdep_segment), 1,
 	      output_file);
@@ -564,6 +642,9 @@ write_table (FILE *output_file, message_list_ty *mlp)
 			    * sizeof (struct segment_pair);
 	    }
 	  /* Write the table for original/translated sysdep string offsets.  */
+	  if (byteswap)
+	    for (j = 0; j < n_sysdep_strings; j++)
+	      BSWAP32 (sysdep_tab[j]);
 	  fwrite (sysdep_tab, n_sysdep_strings * sizeof (nls_uint32), 1,
 		  output_file);
 	}
@@ -595,6 +676,15 @@ write_table (FILE *output_file, message_list_ty *mlp)
 	      {
 		str->segments[pre->segmentcount].segsize += msg->id_plural_len;
 		offset += msg->id_plural_len;
+	      }
+	    if (byteswap)
+	      {
+		BSWAP32 (str->offset);
+		for (i = 0; i <= pre->segmentcount; i++)
+		  {
+		    BSWAP32 (str->segments[i].segsize);
+		    BSWAP32 (str->segments[i].sysdepref);
+		  }
 	      }
 	    fwrite (str,
 		    sizeof (struct sysdep_string)
@@ -686,8 +776,11 @@ write_table (FILE *output_file, message_list_ty *mlp)
     }
 
   freea (null);
+  for (j = 0; j < mlp->nitems; j++)
+    free (msgctid_arr[j]);
   free (sysdep_msg_arr);
   free (msg_arr);
+  free (msgctid_arr);
 }
 
 

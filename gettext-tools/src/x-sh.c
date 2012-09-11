@@ -1,5 +1,5 @@
 /* xgettext sh backend.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software; you can redistribute it and/or modify
@@ -85,25 +85,19 @@ x_sh_keyword (const char *name)
   else
     {
       const char *end;
-      int argnum1;
-      int argnum2;
+      struct callshape shape;
       const char *colon;
 
       if (keywords.table == NULL)
-	init_hash (&keywords, 100);
+	hash_init (&keywords, 100);
 
-      split_keywordspec (name, &end, &argnum1, &argnum2);
+      split_keywordspec (name, &end, &shape);
 
       /* The characters between name and end should form a valid C identifier.
 	 A colon means an invalid parse in split_keywordspec().  */
       colon = strchr (name, ':');
       if (colon == NULL || colon >= end)
-	{
-	  if (argnum1 == 0)
-	    argnum1 = 1;
-	  insert_entry (&keywords, name, end - name,
-			(void *) (long) (argnum1 + (argnum2 << 10)));
-	}
+	insert_keyword_callshape (&keywords, name, end - name, &shape);
     }
 }
 
@@ -114,6 +108,8 @@ init_keywords ()
 {
   if (default_keywords)
     {
+      /* When adding new keywords here, also update the documentation in
+	 xgettext.texi!  */
       x_sh_keyword ("gettext");
       x_sh_keyword ("ngettext:1,2");
       x_sh_keyword ("eval_gettext");
@@ -324,7 +320,7 @@ comment_line_end ()
       buffer = xrealloc (buffer, bufmax);
     }
   buffer[buflen] = '\0';
-  xgettext_comment_add (buffer);
+  savable_comment_add (buffer);
 }
 
 
@@ -361,6 +357,10 @@ static bool open_doublequote;
 /* A bit indicating whether a single-quote is currently open inside the
    innermost backquotes nesting.  */
 static bool open_singlequote;
+
+/* The expected terminator of the currently open single-quote.
+   Usually '\'', but can be '"' for i18n-quotes.  */
+static char open_singlequote_terminator;
 
 
 /* Functions to update the state.  */
@@ -407,6 +407,7 @@ saw_opening_singlequote ()
   if (open_doublequote || open_singlequote)
     abort ();
   open_singlequote = true;
+  open_singlequote_terminator = '\'';
 }
 
 static inline void
@@ -502,6 +503,9 @@ is_operator_start (int c)
 #define OPENING_BACKQUOTE (2 * (UCHAR_MAX + 1) + '`')
 #define CLOSING_BACKQUOTE (3 * (UCHAR_MAX + 1) + '`')
 
+/* 2 characters of pushback are supported.
+   2 characters of pushback occur only when the first is an 'x'; in all
+   other cases only one character of pushback is needed.  */
 static int phase2_pushback[2];
 static int phase2_pushback_length;
 
@@ -529,8 +533,16 @@ phase2_getc ()
   if (c == EOF)
     return c;
   if (c == '\'')
-    return (open_doublequote ? QUOTED (c) : c);
-  if (!open_singlequote)
+    return ((open_doublequote
+	     || (open_singlequote && open_singlequote_terminator != c))
+	    ? QUOTED (c)
+	    : c);
+  if (open_singlequote)
+    {
+      if (c == open_singlequote_terminator)
+	return c;
+    }
+  else
     {
       if (c == '"' || c == '$')
 	return c;
@@ -573,7 +585,10 @@ phase2_getc ()
 	      return '\\';
 	    }
 	  else
-	    return (open_doublequote ? QUOTED (c) : c);
+	    return ((open_doublequote
+		     || (open_singlequote && open_singlequote_terminator != c))
+		    ? QUOTED (c)
+		    : c);
 	}
       else if (c == '"')
 	{
@@ -590,7 +605,7 @@ phase2_getc ()
 		  return '\\';
 		}
 	      else
-		return QUOTED (c);
+		return (open_singlequote_terminator != c ? QUOTED (c) : c);
 	    }
 	  else
 	    {
@@ -729,7 +744,7 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 	     precede it, with no non-whitespace token on a line between
 	     both.  */
 	  if (last_non_comment_line > last_comment_line)
-	    xgettext_comment_reset ();
+	    savable_comment_reset ();
 	  wp->type = t_separator;
 	  return;
 	}
@@ -744,21 +759,27 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 
   if (c == '<' || c == '>')
     {
-      /* Recognize the redirection operators < > >| << <<- >> <> <& >&  */
+      /* Recognize the redirection operators < > >| << <<- >> <> <& >&
+	 But <( and >) are handled below, not here.  */
       int c2 = phase2_getc ();
-      if ((c == '<' ? c2 == '<' : c2 == '|') || c2 == '>' || c2 == '&')
+      if (c2 != '(')
 	{
-	  if (c == '<' && c2 == '<')
+	  if ((c == '<' ? c2 == '<' : c2 == '|') || c2 == '>' || c2 == '&')
 	    {
-	      int c3 = phase2_getc ();
-	      if (c3 != '-')
-		phase2_ungetc (c3);
+	      if (c == '<' && c2 == '<')
+		{
+		  int c3 = phase2_getc ();
+		  if (c3 != '-')
+		    phase2_ungetc (c3);
+		}
 	    }
+	  else
+	    phase2_ungetc (c2);
+	  wp->type = t_redirect;
+	  return;
 	}
       else
 	phase2_ungetc (c2);
-      wp->type = t_redirect;
-      return;
     }
 
   if (looking_for == CLOSING_BACKQUOTE && c == CLOSING_BACKQUOTE)
@@ -823,14 +844,43 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 
       if (c == '$')
 	{
-	  int c2 = phase2_getc ();
+	  int c2;
+
+	  /* An unquoted dollar indicates we are not inside '...'.  */
+	  if (open_singlequote)
+	    abort ();
+	  /* After reading a dollar, we know that there is no pushed back
+	     character from an earlier lookahead.  */
+	  if (phase2_pushback_length > 0)
+	    abort ();
+	  /* Therefore we can use phase1 without interfering with phase2.
+	     We need to recognize $( outside and inside double-quotes.
+	     It would be incorrect to do
+		c2 = phase2_getc ();
+		if (c2 == '(' || c2 == QUOTED ('('))
+	     because that would also trigger for $\(.  */
+	  c2 = phase1_getc ();
 	  if (c2 == '(')
 	    {
-	      int c3 = phase2_getc ();
+	      bool saved_open_doublequote;
+	      int c3;
+
+	      phase1_ungetc (c2);
+
+	      /* The entire inner command or arithmetic expression is read
+		 ignoring possible surrounding double-quotes.  */
+	      saved_open_doublequote = open_doublequote;
+	      open_doublequote = false;
+
+	      c2 = phase2_getc ();
+	      if (c2 != '(')
+		abort ();
+
+	      c3 = phase2_getc ();
 	      if (c3 == '(')
 		{
-		  /* Arithmetic expression.  Skip until the matching closing
-		     parenthesis.  */
+		  /* Arithmetic expression (Bash syntax).  Skip until the
+		     matching closing parenthesis.  */
 		  unsigned int depth = 2;
 
 		  do
@@ -846,181 +896,191 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 		}
 	      else
 		{
-		  /* Command substitution.  */
+		  /* Command substitution (Bash syntax).  */
 		  phase2_ungetc (c3);
 		  read_command_list (')', context);
 		}
+
+	      open_doublequote = saved_open_doublequote;
 	    }
-	  else if (c2 == '\'' && !open_singlequote)
+	  else
 	    {
-	      /* Bash builtin for string with ANSI-C escape sequences.  */
-	      saw_opening_singlequote ();
-	      for (;;)
+	      phase1_ungetc (c2);
+	      c2 = phase2_getc ();
+
+	      if (c2 == '\'' && !open_singlequote)
 		{
-		  c = phase2_getc ();
-		  if (c == EOF)
-		    break;
-		  if (c == '\'')
-		    {
-		      saw_closing_singlequote ();
-		      break;
-		    }
-		  if (c == '\\')
+		  /* Bash builtin for string with ANSI-C escape sequences.  */
+		  saw_opening_singlequote ();
+		  for (;;)
 		    {
 		      c = phase2_getc ();
-		      switch (c)
+		      if (c == EOF)
+			break;
+		      if (c == '\'')
 			{
-			default:
-			  phase2_ungetc (c);
-			  c = '\\';
+			  saw_closing_singlequote ();
 			  break;
-
-			case '\\':
-			  break;
-			case '\'':
-			  /* Don't call saw_closing_singlequote () here.  */
-			  break;
-
-			case 'a':
-			  c = '\a';
-			  break;
-			case 'b':
-			  c = '\b';
-			  break;
-			case 'e':
-			  c = 0x1b; /* ESC */
-			  break;
-			case 'f':
-			  c = '\f';
-			  break;
-			case 'n':
-			  c = '\n';
-			  break;
-			case 'r':
-			  c = '\r';
-			  break;
-			case 't':
-			  c = '\t';
-			  break;
-			case 'v':
-			  c = '\v';
-			  break;
-
-			case 'x':
+			}
+		      if (c == '\\')
+			{
 			  c = phase2_getc ();
-			  if ((c >= '0' && c <= '9')
-			      || (c >= 'A' && c <= 'F')
-			      || (c >= 'a' && c <= 'f'))
+			  switch (c)
 			    {
-			      int n;
+			    default:
+			      phase2_ungetc (c);
+			      c = '\\';
+			      break;
 
-			      if (c >= '0' && c <= '9')
-				n = c - '0';
-			      else if (c >= 'A' && c <= 'F')
-				n = 10 + c - 'A';
-			      else if (c >= 'a' && c <= 'f')
-				n = 10 + c - 'a';
-			      else
-				abort ();
+			    case '\\':
+			      break;
+			    case '\'':
+			      /* Don't call saw_closing_singlequote ()
+				 here.  */
+			      break;
 
+			    case 'a':
+			      c = '\a';
+			      break;
+			    case 'b':
+			      c = '\b';
+			      break;
+			    case 'e':
+			      c = 0x1b; /* ESC */
+			      break;
+			    case 'f':
+			      c = '\f';
+			      break;
+			    case 'n':
+			      c = '\n';
+			      break;
+			    case 'r':
+			      c = '\r';
+			      break;
+			    case 't':
+			      c = '\t';
+			      break;
+			    case 'v':
+			      c = '\v';
+			      break;
+
+			    case 'x':
 			      c = phase2_getc ();
 			      if ((c >= '0' && c <= '9')
 				  || (c >= 'A' && c <= 'F')
 				  || (c >= 'a' && c <= 'f'))
 				{
+				  int n;
+
 				  if (c >= '0' && c <= '9')
-				    n = n * 16 + c - '0';
+				    n = c - '0';
 				  else if (c >= 'A' && c <= 'F')
-				    n = n * 16 + 10 + c - 'A';
+				    n = 10 + c - 'A';
 				  else if (c >= 'a' && c <= 'f')
-				    n = n * 16 + 10 + c - 'a';
+				    n = 10 + c - 'a';
 				  else
 				    abort ();
+
+				  c = phase2_getc ();
+				  if ((c >= '0' && c <= '9')
+				      || (c >= 'A' && c <= 'F')
+				      || (c >= 'a' && c <= 'f'))
+				    {
+				      if (c >= '0' && c <= '9')
+					n = n * 16 + c - '0';
+				      else if (c >= 'A' && c <= 'F')
+					n = n * 16 + 10 + c - 'A';
+				      else if (c >= 'a' && c <= 'f')
+					n = n * 16 + 10 + c - 'a';
+				      else
+					abort ();
+				    }
+				  else
+				    phase2_ungetc (c);
+
+				  c = n;
 				}
 			      else
-				phase2_ungetc (c);
+				{
+				  phase2_ungetc (c);
+				  phase2_ungetc ('x');
+				  c = '\\';
+				}
+			      break;
 
-			      c = n;
-			    }
-			  else
-			    {
-			      phase2_ungetc (c);
-			      phase2_ungetc ('x');
-			      c = '\\';
-			    }
-			  break;
-
-			case '0': case '1': case '2': case '3':
-			case '4': case '5': case '6': case '7':
-			  {
-			    int n = c - '0';
-
-			    c = phase2_getc ();
-			    if (c >= '0' && c <= '7')
+			    case '0': case '1': case '2': case '3':
+			    case '4': case '5': case '6': case '7':
 			      {
-				n = n * 8 + c - '0';
+				int n = c - '0';
 
 				c = phase2_getc ();
 				if (c >= '0' && c <= '7')
-				  n = n * 8 + c - '0';
+				  {
+				    n = n * 8 + c - '0';
+
+				    c = phase2_getc ();
+				    if (c >= '0' && c <= '7')
+				      n = n * 8 + c - '0';
+				    else
+				      phase2_ungetc (c);
+				  }
 				else
 				  phase2_ungetc (c);
-			      }
-			    else
-			      phase2_ungetc (c);
 
-			    c = n;
-			  }
-			  break;
+				c = n;
+			      }
+			      break;
+			    }
+			}
+		      if (wp->type == t_string)
+			{
+			  grow_token (wp->token);
+			  wp->token->chars[wp->token->charcount++] =
+			    (unsigned char) c;
 			}
 		    }
-		  if (wp->type == t_string)
-		    {
-		      grow_token (wp->token);
-		      wp->token->chars[wp->token->charcount++] =
-			(unsigned char) c;
-		    }
+		  /* The result is a literal string.  Don't change wp->type.  */
+		  continue;
 		}
-	      /* The result is a literal string.  Don't change wp->type.  */
-	      continue;
-	    }
-	  else if (c2 == '"' && !open_doublequote)
-	    {
-	      /* Bash builtin for internationalized string.  */
-	      lex_pos_ty pos;
-	      struct token string;
-
-	      saw_opening_doublequote ();
-	      pos.file_name = logical_file_name;
-	      pos.line_number = line_number;
-	      init_token (&string);
-	      for (;;)
+	      else if (c2 == '"' && !open_doublequote)
 		{
-		  c = phase2_getc ();
-		  if (c == EOF)
-		    break;
-		  if (c == '"')
+		  /* Bash builtin for internationalized string.  */
+		  lex_pos_ty pos;
+		  struct token string;
+
+		  saw_opening_singlequote ();
+		  open_singlequote_terminator = '"';
+		  pos.file_name = logical_file_name;
+		  pos.line_number = line_number;
+		  init_token (&string);
+		  for (;;)
 		    {
-		      saw_closing_doublequote ();
-		      break;
+		      c = phase2_getc ();
+		      if (c == EOF)
+			break;
+		      if (c == '"')
+			{
+			  saw_closing_singlequote ();
+			  break;
+			}
+		      grow_token (&string);
+		      string.chars[string.charcount++] = (unsigned char) c;
 		    }
-		  grow_token (&string);
-		  string.chars[string.charcount++] = (unsigned char) c;
+		  remember_a_message (mlp, NULL, string_of_token (&string),
+				      context, &pos, savable_comment);
+		  free_token (&string);
+
+		  error_with_progname = false;
+		  error (0, 0, _("%s:%lu: warning: the syntax $\"...\" is deprecated due to security reasons; use eval_gettext instead"),
+			 pos.file_name, (unsigned long) pos.line_number);
+		  error_with_progname = true;
+
+		  /* The result at runtime is not constant. Therefore we
+		     change wp->type.  */
 		}
-	      remember_a_message (mlp, string_of_token (&string),
-				  context, &pos);
-	      free_token (&string);
-
-	      error_with_progname = false;
-	      error (0, 0, _("%s:%lu: warning: the syntax $\"...\" is deprecated due to security reasons; use eval_gettext instead"),
-		     pos.file_name, (unsigned long) pos.line_number);
-	      error_with_progname = true;
-
-	      /* The result at runtime is not constant. Therefore we
-		 change wp->type.  */
+	      else
+		phase2_ungetc (c2);
 	    }
-	  else
-	    phase2_ungetc (c2);
 	  wp->type = t_other;
 	  continue;
 	}
@@ -1042,7 +1102,12 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 
       if (c == '"')
 	{
-	  if (!open_doublequote)
+	  if (open_singlequote && open_singlequote_terminator == '"')
+	    {
+	      /* Handle a closing i18n quote.  */
+	      saw_closing_singlequote ();
+	    }
+	  else if (!open_doublequote)
 	    {
 	      /* Handle an opening double quote.  */
 	      saw_opening_doublequote ();
@@ -1067,6 +1132,27 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
 	}
       if (c == CLOSING_BACKQUOTE)
 	break;
+
+      if (c == '<' || c == '>')
+	{
+	  int c2;
+
+	  /* An unquoted c indicates we are not inside '...' nor "...".  */
+	  if (open_singlequote || open_doublequote)
+	    abort ();
+
+	  c2 = phase2_getc ();
+	  if (c2 == '(')
+	    {
+	      /* Process substitution (Bash syntax).  */
+	      read_command_list (')', context);
+
+	      wp->type = t_other;
+	      continue;
+	    }
+	  else
+	    phase2_ungetc (c2);
+	}
 
       if (!open_singlequote && !open_doublequote
 	  && (is_whitespace (c) || is_operator_start (c)))
@@ -1110,9 +1196,8 @@ read_command (int looking_for, flag_context_ty outer_context)
   int arg = 0;			/* Current argument number.  */
   bool arg_of_redirect = false;	/* True right after a redirection operator.  */
   flag_context_list_iterator_ty context_iter;
-  int argnum1 = -1;		/* First string position.  */
-  int argnum2 = -1;		/* Plural string position.  */
-  message_ty *plural_mp = NULL;	/* Remember the msgid.  */
+  const struct callshapes *shapes = NULL;
+  struct arglist_parser *argparser = NULL;
 
   for (;;)
     {
@@ -1133,7 +1218,11 @@ read_command (int looking_for, flag_context_ty outer_context)
       if (inner.type == t_separator
 	  || inner.type == t_backquote || inner.type == t_paren
 	  || inner.type == t_eof)
-	return inner.type;
+	{
+	  if (argparser != NULL)
+	    arglist_parser_done (argparser, arg);
+	  return inner.type;
+	}
 
       if (extract_all)
 	{
@@ -1143,8 +1232,8 @@ read_command (int looking_for, flag_context_ty outer_context)
 
 	      pos.file_name = logical_file_name;
 	      pos.line_number = inner.line_number_at_start;
-	      remember_a_message (mlp, string_of_word (&inner),
-				  inner_context, &pos);
+	      remember_a_message (mlp, NULL, string_of_word (&inner),
+				  inner_context, &pos, savable_comment);
 	    }
 	}
 
@@ -1160,7 +1249,7 @@ read_command (int looking_for, flag_context_ty outer_context)
 	}
       else
 	{
-	  if (argnum1 < 0 && argnum2 < 0)
+	  if (argparser == NULL)
 	    {
 	      /* This is the function position.  */
 	      arg = 0;
@@ -1169,14 +1258,13 @@ read_command (int looking_for, flag_context_ty outer_context)
 		  char *function_name = string_of_word (&inner);
 		  void *keyword_value;
 
-		  if (find_entry (&keywords,
-				  function_name, strlen (function_name),
-				  &keyword_value)
+		  if (hash_find_entry (&keywords,
+				       function_name, strlen (function_name),
+				       &keyword_value)
 		      == 0)
-		    {
-		      argnum1 = (int) (long) keyword_value & ((1 << 10) - 1);
-		      argnum2 = (int) (long) keyword_value >> 10;
-		    }
+		    shapes = (const struct callshapes *) keyword_value;
+
+		  argparser = arglist_parser_alloc (mlp, shapes);
 
 		  context_iter =
 		    flag_context_list_iterator (
@@ -1191,44 +1279,22 @@ read_command (int looking_for, flag_context_ty outer_context)
 	    }
 	  else
 	    {
-	      /* These are the argument positions.
-		 Extract a string if we have reached the right
-		 argument position.  */
-	      if (arg == argnum1)
-		{
-		  if (inner.type == t_string)
-		    {
-		      lex_pos_ty pos;
-		      message_ty *mp;
+	      /* These are the argument positions.  */
+	      if (inner.type == t_string)
+		arglist_parser_remember (argparser, arg,
+					 string_of_word (&inner),
+					 inner_context,
+					 logical_file_name,
+					 inner.line_number_at_start,
+					 savable_comment);
 
-		      pos.file_name = logical_file_name;
-		      pos.line_number = inner.line_number_at_start;
-		      mp = remember_a_message (mlp, string_of_word (&inner),
-					       inner_context, &pos);
-		      if (argnum2 > 0)
-			plural_mp = mp;
-		    }
-		}
-	      else if (arg == argnum2)
-		{
-		  if (inner.type == t_string && plural_mp != NULL)
-		    {
-		      lex_pos_ty pos;
-
-		      pos.file_name = logical_file_name;
-		      pos.line_number = inner.line_number_at_start;
-		      remember_a_message_plural (plural_mp, string_of_word (&inner),
-						 inner_context, &pos);
-		    }
-		}
-
-	      if (arg >= argnum1 && arg >= argnum2)
+	      if (arglist_parser_decidedp (argparser, arg))
 		{
 		  /* Stop looking for arguments of the last function_name.  */
 		  /* FIXME: What about context_iter?  */
-		  argnum1 = -1;
-		  argnum2 = -1;
-		  plural_mp = NULL;
+		  arglist_parser_done (argparser, arg);
+		  shapes = NULL;
+		  argparser = NULL;
 		}
 	    }
 

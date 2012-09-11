@@ -1,5 +1,5 @@
 dnl Configuration for the gettext-tools directory of GNU gettext
-dnl Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -26,34 +26,32 @@ AM_INIT_AUTOMAKE(gettext-tools, $VERSION_NUMBER)
 AM_CONFIG_HEADER(config.h)
 
 dnl Installation directories.
-AC_SUBST([localedir], ['${datadir}/locale'])
-AC_SUBST([docdir], ['${datadir}/doc/gettext'])
-dnl Prefer modern Filesystem Hierarchy Standard over antiquated GNU standards.
-test "$mandir" != '${prefix}/man' || mandir='${datadir}/man'
+test "$docdir" != '${datarootdir}/doc/${PACKAGE}' || docdir='${datarootdir}/doc/gettext'
 
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_YACC
 
+gt_JAVA_CHOICE
+
 gt_GCJ
-if test -n "$HAVE_GCJ"; then
+if test -n "$HAVE_GCJ" && test "$JAVA_CHOICE" = yes; then
   BUILDJAVAEXE=yes
 else
   BUILDJAVAEXE=no
 fi
 AC_SUBST(BUILDJAVAEXE)
 
-gt_JAVACOMP
+gt_JAVAEXEC
+gt_JAVACOMP([1.3])
 AC_CHECK_PROG(JAR, jar, jar)
-if test -n "$HAVE_JAVACOMP" && test -n "$JAR"; then
+if test -n "$HAVE_JAVACOMP" && test -n "$JAR" && test "$JAVA_CHOICE" != no; then
   BUILDJAVA=yes
 else
   BUILDJAVA=no
 fi
 AC_SUBST(BUILDJAVA)
-
-gt_JAVAEXEC
 if test -n "$HAVE_JAVAEXEC" && test $BUILDJAVA = yes; then
   TESTJAVA=yes
 else
@@ -69,7 +67,7 @@ else
 fi
 AC_SUBST(BUILDCSHARP)
 
-gt_CSHARPEXEC
+gt_CSHARPEXEC([csharpexec-test.exe], [$srcdir/m4])
 if test -n "$HAVE_CSHARPEXEC" && test $BUILDCSHARP = yes; then
   TESTCSHARP=yes
 else
@@ -80,9 +78,6 @@ AC_SUBST(TESTCSHARP)
 dnl Check for host type.
 AC_CANONICAL_HOST
 
-dnl Checks for UNIX variants that set DEFS,
-AC_ISC_POSIX
-
 dnl Checks for compiler output filename suffixes.
 AC_OBJEXT
 AC_EXEEXT
@@ -92,17 +87,51 @@ AC_GNU_SOURCE
 gl_USE_SYSTEM_EXTENSIONS
 
 dnl Check for build configuration.
+gl_WOE32_DLL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+case "$host_os" in
+  # On Cygwin, without -no-undefined, a warning is emitted and only a static
+  # library is built.
+  beos* | mingw* | cygwin*) LTNOUNDEF='-no-undefined' ;;
+  *) LTNOUNDEF='' ;;
+esac
+AC_SUBST([LTNOUNDEF])
 
 AC_RELOCATABLE
 
 dnl Checks for libraries.
 
+dnl These are the only lines required to internationalize the package.
+dnl (OK, not quite, the AC_CONFIG_FILES has also some parts.)
+AM_GNU_GETTEXT(use-libtool, need-ngettext)
+
+dnl This line internationalizes the bison generated parsers.
+BISON_I18N
+
+dnl Test whether msgmerge must be linked against libm. This is the case on
+dnl most systems; but BeOS has all <math.h> functions in libc and doesn't have
+dnl a libm.
+MSGMERGE_LIBM=?
+AC_TRY_LINK([#include <math.h>], [static double x; x = ceil(x); x = sqrt(x);],
+  [MSGMERGE_LIBM=])
+if test "$MSGMERGE_LIBM" = "?"; then
+  save_LIBS="$LIBS" 
+  LIBS="$LIBS -lm"
+  AC_TRY_LINK([#include <math.h>], [static double x; x = ceil(x); x = sqrt(x);],
+    [MSGMERGE_LIBM="-lm"])
+  LIBS="$save_LIBS"
+fi
+if test "$MSGMERGE_LIBM" = "?"; then
+  MSGMERGE_LIBM=
+fi
+AC_SUBST([MSGMERGE_LIBM])
+
 dnl Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS(limits.h malloc.h pwd.h string.h unistd.h utime.h values.h)
+gl_STDARG_H
 AM_STDBOOL_H
+gl_HEADER_UNISTD
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -115,10 +144,13 @@ gt_TYPE_SSIZE_T
 AC_TYPE_PID_T
 AC_TYPE_MODE_T
 gt_TYPE_SIG_ATOMIC_T
+gl_GLIBC21
+if test $GLIBC21 = yes; then
+  AC_CHECK_MEMBERS([struct __locale_struct.__names], , , [#include <xlocale.h>])
+fi
 
 dnl Checks for library functions.
 gl_ALLOCSA
-AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([chown getcwd posix_spawn raise select strerror strtoul uname \
 utime utimes waitid])
 AC_REPLACE_FUNCS([atexit memmove memset stpcpy strcspn \
@@ -132,7 +164,6 @@ gl_FUNC_FNMATCH_POSIX
 gl_GETOPT
 gl_FUNC_EACCESS
 gl_FUNC_STPNCPY
-gl_STRCASE
 gl_FUNC_STRTOUL
 gl_MBSWIDTH
 gt_PREREQ_BACKUPFILE
@@ -155,12 +186,36 @@ gl_CANONICALIZE
 gt_SETLOCALE
 gl_XSIZE
 gt_LIBGREP
+gl_BYTESWAP
+AC_C_BIGENDIAN([endianness=1], [endianness=0],
+  [echo "AC-C-BIGENDIAN fails to work on your system." | sed -e 's,-,_,g' 1>&2
+   echo "Please report this as a bug to bug-autoconf@gnu.org" 1>&2
+   exit 1])
+AC_DEFINE_UNQUOTED([ENDIANNESS], [$endianness],
+  [Define according to the byte order of the target machine: 1 for big endian, 0 for little endian.])
 
 gt_PREREQ_HOSTNAME
 
-dnl These are the only lines required to internationalize the package.
-dnl (OK, not quite, the AC_CONFIG_FILES has also some parts.)
-AM_GNU_GETTEXT(use-libtool, need-ngettext)
+dnl Compilation on mingw and Cygwin needs special Makefile rules, because
+dnl 1. when we install a shared library, we must arrange to export
+dnl    auxiliary pointer variables for every exported variable,
+dnl 2. when we install a shared library and a static library simultaneously,
+dnl    the include file specifies __declspec(dllimport) and therefore we
+dnl    must arrange to define the auxiliary pointer variables for the
+dnl    exported variables _also_ in the static library.
+if test "$enable_shared" = yes; then
+  case "$host_os" in
+    mingw* | cygwin*) is_woe32dll=yes ;;
+    *) is_woe32dll=no ;;
+  esac
+else
+  is_woe32dll=no
+fi
+AM_CONDITIONAL([WOE32DLL], [test $is_woe32dll = yes])
+if test $is_woe32dll = yes; then
+  AC_DEFINE([WOE32DLL], 1,
+    [Define when --enable-shared is used on mingw or Cygwin.])
+fi
 
 dnl Put some default definitions into config.h.
 AH_TOP([
@@ -168,6 +223,9 @@ AH_TOP([
 #define DEFAULT_OUTPUT_ALIGNMENT 1
 ])
 AH_BOTTOM([
+/* Indicator for intl/ that it is compiled for testing purposes only.  */
+#define USE_IN_GETTEXT_TESTS
+
 /* A file name cannot consist of any character possible.  INVALID_PATH_CHAR
    contains the characters not allowed.  */
 #if defined _MSC_VER || defined __MINGW32__
@@ -190,7 +248,7 @@ AH_BOTTOM([
 #define PAGE_WIDTH 79
 
 /* On Windows, variables that may be in a DLL must be marked specially.  */
-#if defined _MSC_VER && defined _DLL
+#if (defined _MSC_VER && defined _DLL) || defined WOE32DLL
 # define DLL_VARIABLE __declspec (dllimport)
 #else
 # define DLL_VARIABLE
@@ -223,6 +281,18 @@ esac
 
 dnl Check for Emacs and where to install .elc files.
 AM_PATH_LISPDIR
+dnl Sometimes Emacs is badly installed. Allow the user to work around it.
+AC_ARG_WITH([emacs],
+  [  --without-emacs         do not use Emacs, don't install po-mode],
+  [gt_use_emacs=$withval],
+  [gt_use_emacs=yes])
+if test "$EMACS" != no; then
+  AC_MSG_CHECKING([whether Emacs support is requested])
+  AC_MSG_RESULT([$gt_use_emacs])
+  if test "$gt_use_emacs" = no; then
+    EMACS=no
+  fi
+fi
 
 aclocaldir='${datadir}/aclocal'
 AC_SUBST(aclocaldir)
@@ -268,6 +338,8 @@ $RELEASE_DATE  GNU  <bug-gnu-gettext@gnu.org>
 
 EOF
 
+AC_CONFIG_SUBDIRS(examples)
+
 AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_FILES([doc/Makefile],
@@ -278,6 +350,7 @@ AC_CONFIG_FILES([doc/Makefile],
 AC_CONFIG_FILES([intl/Makefile:../gettext-runtime/intl/Makefile.in], [
   # Change srcdir variable so that it points to ../gettext-runtime/intl.
   sed -e 's|^srcdir =.*$|srcdir = $(top_srcdir)/../gettext-runtime/intl|' \
+      -e 's|^VPATH =.*$||' \
     < intl/Makefile > intl/Makefile.tmp
   mv intl/Makefile.tmp intl/Makefile
   ])
@@ -313,10 +386,5 @@ AC_CONFIG_FILES([m4/Makefile])
 
 AC_CONFIG_FILES([tests/Makefile],
                 [FIX_MAKEFILE_COMPILE])
-
-AC_CONFIG_FILES([examples/Makefile],
-                [FIX_MAKEFILE_DISTRIB])
-AC_CONFIG_FILES([examples/installpaths])
-AC_CONFIG_FILES([examples/po/Makefile], [AM_POSTPROCESS_PO_MAKEFILE])
 
 AC_OUTPUT

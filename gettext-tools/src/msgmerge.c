@@ -1,5 +1,5 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
    This program is free software; you can redistribute it and/or modify
@@ -47,11 +47,14 @@
 #include "c-strcase.h"
 #include "stpcpy.h"
 #include "stpncpy.h"
+#include "po-charset.h"
 #include "msgl-iconv.h"
 #include "msgl-equal.h"
+#include "msgl-fsearch.h"
 #include "plural-count.h"
 #include "backupfile.h"
 #include "copy-file.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -77,6 +80,9 @@ static bool use_fuzzy_matching = true;
 
 /* List of user-specified compendiums.  */
 static message_list_list_ty *compendiums;
+
+/* List of corresponding filenames.  */
+static string_list_ty *compendium_filenames;
 
 /* Update mode.  */
 static bool update_mode = false;
@@ -164,6 +170,7 @@ main (int argc, char **argv)
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -298,8 +305,8 @@ main (int argc, char **argv)
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "1995-1998, 2000-2005");
-      printf (_("Written by %s.\n"), "Peter Miller");
+	      "1995-1998, 2000-2006");
+      printf (_("Written by %s.\n"), proper_name ("Peter Miller"));
       exit (EXIT_SUCCESS);
     }
 
@@ -559,10 +566,132 @@ compendium (const char *filename)
   size_t k;
 
   mdlp = read_po_file (filename);
-  if (!compendiums)
-    compendiums = message_list_list_alloc ();
+  if (compendiums == NULL)
+    {
+      compendiums = message_list_list_alloc ();
+      compendium_filenames = string_list_alloc ();
+    }
   for (k = 0; k < mdlp->nitems; k++)
-    message_list_list_append (compendiums, mdlp->item[k]->messages);
+    {
+      message_list_list_append (compendiums, mdlp->item[k]->messages);
+      string_list_append (compendium_filenames, filename);
+    }
+}
+
+
+/* Data structure representing the messages with known translations.
+   They are composed of
+     - A message list from def.po,
+     - The compendiums.
+   The data structure is optimized for exact and fuzzy searches.  */
+typedef struct definitions_ty definitions_ty;
+struct definitions_ty
+{
+  /* A list of message lists.  The first comes from def.po, the other ones
+     from the compendiums.  Each message list has a built-in hash table,
+     for speed when doing the exact searches.  */
+  message_list_list_ty *lists;
+  /* A fuzzy index of the compendiums, for speed when doing fuzzy searches.
+     Used only if use_fuzzy_matching is true and compendiums != NULL.  */
+  message_fuzzy_index_ty *findex;
+  /* The canonical encoding of the compendiums.  */
+  const char *canon_charset;
+};
+
+static inline void
+definitions_init (definitions_ty *definitions, const char *canon_charset)
+{
+  definitions->lists = message_list_list_alloc ();
+  message_list_list_append (definitions->lists, NULL);
+  if (compendiums != NULL)
+    message_list_list_append_list (definitions->lists, compendiums);
+  definitions->findex = NULL;
+  definitions->canon_charset = canon_charset;
+}
+
+/* Create the fuzzy index.
+   Used only if use_fuzzy_matching is true and compendiums != NULL.  */
+static inline void
+definitions_init_findex (definitions_ty *definitions)
+{
+  /* Combine all the compendium message lists into a single one.  Don't
+     bother checking for duplicates.  */
+  message_list_ty *all_compendium;
+  size_t i;
+
+  all_compendium = message_list_alloc (false);
+  for (i = 0; i < compendiums->nitems; i++)
+    {
+      message_list_ty *mlp = compendiums->item[i];
+      size_t j;
+
+      for (j = 0; j < mlp->nitems; j++)
+	message_list_append (all_compendium, mlp->item[j]);
+    }
+
+  /* Create the fuzzy index from it.  */
+  definitions->findex =
+    message_fuzzy_index_alloc (all_compendium, definitions->canon_charset);
+}
+
+/* Return the current list of non-compendium messages.  */
+static inline message_list_ty *
+definitions_current_list (const definitions_ty *definitions)
+{
+  return definitions->lists->item[0];
+}
+
+/* Set the current list of non-compendium messages.  */
+static inline void
+definitions_set_current_list (definitions_ty *definitions, message_list_ty *mlp)
+{
+  definitions->lists->item[0] = mlp;
+}
+
+/* Exact search.  */
+static inline message_ty *
+definitions_search (const definitions_ty *definitions,
+		    const char *msgctxt, const char *msgid)
+{
+  return message_list_list_search (definitions->lists, msgctxt, msgid);
+}
+
+/* Fuzzy search.
+   Used only if use_fuzzy_matching is true.  */
+static inline message_ty *
+definitions_search_fuzzy (definitions_ty *definitions,
+			  const char *msgctxt, const char *msgid)
+{
+  message_ty *mp1 =
+    message_list_search_fuzzy (definitions_current_list (definitions),
+			       msgctxt, msgid);
+  if (compendiums != NULL)
+    {
+      message_ty *mp2;
+
+      /* Create the fuzzy index lazily.  */
+      if (definitions->findex == NULL)
+	definitions_init_findex (definitions);
+
+      mp2 = message_fuzzy_index_search (definitions->findex, msgctxt, msgid);
+
+      /* Choose the best among mp1, mp2.  */
+      if (mp1 == NULL
+	  || (mp2 != NULL
+	      && (fuzzy_search_goal_function (mp2, msgctxt, msgid)
+		  > fuzzy_search_goal_function (mp1, msgctxt, msgid))))
+	mp1 = mp2;
+    }
+
+  return mp1;
+}
+
+static inline void
+definitions_destroy (definitions_ty *definitions)
+{
+  message_list_list_free (definitions->lists, 2);
+  if (definitions->findex != NULL)
+    message_fuzzy_index_free (definitions->findex);
 }
 
 
@@ -630,7 +759,7 @@ message_merge (message_ty *def, message_ty *ref)
      is usually empty, as it was generated by xgettext.  If we currently
      process the header entry we have to merge the msgstr by using the
      Report-Msgid-Bugs-To and POT-Creation-Date fields from the reference.  */
-  if (ref->msgid[0] == '\0')
+  if (is_header (ref))
     {
       /* Oh, oh.  The header entry and we have something to fill in.  */
       static const struct
@@ -832,7 +961,8 @@ message_merge (message_ty *def, message_ty *ref)
       msgstr_len = def->msgstr_len;
     }
 
-  result = message_alloc (xstrdup (ref->msgid), ref->msgid_plural,
+  result = message_alloc (ref->msgctxt != NULL ? xstrdup (ref->msgctxt) : NULL,
+			  xstrdup (ref->msgid), ref->msgid_plural,
 			  msgstr, msgstr_len, &def->pos);
 
   /* Take the comments from the definition file.  There will be none at
@@ -905,7 +1035,7 @@ message_merge (message_ty *def, message_ty *ref)
 
 static void
 match_domain (const char *fn1, const char *fn2,
-	      message_list_list_ty *definitions, message_list_ty *refmlp,
+	      definitions_ty *definitions, message_list_ty *refmlp,
 	      message_list_ty *resultmlp,
 	      struct statistics *stats, unsigned int *processed)
 {
@@ -914,7 +1044,8 @@ match_domain (const char *fn1, const char *fn2,
   char *untranslated_plural_msgstr;
   size_t j;
 
-  header_entry = message_list_search (definitions->item[0], "");
+  header_entry =
+    message_list_search (definitions_current_list (definitions), NULL, "");
   nplurals = get_plural_count (header_entry ? header_entry->msgstr : NULL);
   untranslated_plural_msgstr = (char *) xmalloc (nplurals);
   memset (untranslated_plural_msgstr, '\0', nplurals);
@@ -932,7 +1063,7 @@ match_domain (const char *fn1, const char *fn2,
       refmsg = refmlp->item[j];
 
       /* See if it is in the other file.  */
-      defmsg = message_list_list_search (definitions, refmsg->msgid);
+      defmsg = definitions_search (definitions, refmsg->msgctxt, refmsg->msgid);
       if (defmsg)
 	{
 	  /* Merge the reference with the definition: take the #. and
@@ -948,15 +1079,16 @@ match_domain (const char *fn1, const char *fn2,
 	  defmsg->used = 1;
 	  stats->merged++;
 	}
-      else if (refmsg->msgid[0] != '\0')
+      else if (!is_header (refmsg))
 	{
 	  /* If the message was not defined at all, try to find a very
 	     similar message, it could be a typo, or the suggestion may
 	     help.  */
 	  if (use_fuzzy_matching
 	      && ((defmsg =
-		     message_list_list_search_fuzzy (definitions,
-						     refmsg->msgid)) != NULL))
+		     definitions_search_fuzzy (definitions,
+					       refmsg->msgctxt,
+					       refmsg->msgid)) != NULL))
 	    {
 	      message_ty *mp;
 
@@ -964,6 +1096,7 @@ match_domain (const char *fn1, const char *fn2,
 		{
 		  po_gram_error_at_line (&refmsg->pos, _("\
 this message is used but not defined..."));
+		  error_message_count--;
 		  po_gram_error_at_line (&defmsg->pos, _("\
 ...but this definition is similar"));
 		}
@@ -1042,7 +1175,8 @@ this message is used but not defined in %s"), fn1);
 	if (problematic & 1)
 	  {
 	    /* Need to know nplurals of the result domain.  */
-	    message_ty *header_entry = message_list_search (resultmlp, "");
+	    message_ty *header_entry =
+	      message_list_search (resultmlp, NULL, "");
 
 	    nplurals = get_plural_count (header_entry
 					 ? header_entry->msgstr
@@ -1111,7 +1245,7 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
   unsigned int processed;
   struct statistics stats;
   msgdomain_list_ty *result;
-  message_list_list_ty *definitions;
+  definitions_ty definitions;
   message_list_ty *empty_list;
 
   stats.merged = stats.fuzzied = stats.missing = stats.obsolete = 0;
@@ -1119,30 +1253,22 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
   /* This is the definitions file, created by a human.  */
   def = read_po_file (fn1);
 
-  /* Create the set of places to look for message definitions: a list
-     whose first element will be definitions for the current domain, and
-     whose other elements come from the compendiums.  */
-  definitions = message_list_list_alloc ();
-  message_list_list_append (definitions, NULL);
-  if (compendiums)
-    message_list_list_append_list (definitions, compendiums);
-  empty_list = message_list_alloc (false);
-
   /* This is the references file, created by groping the sources with
      the xgettext program.  */
   ref = read_po_file (fn2);
   /* Add a dummy header entry, if the references file contains none.  */
   for (k = 0; k < ref->nitems; k++)
-    if (message_list_search (ref->item[k]->messages, "") == NULL)
+    if (message_list_search (ref->item[k]->messages, NULL, "") == NULL)
       {
 	static lex_pos_ty pos = { __FILE__, __LINE__ };
-	message_ty *refheader = message_alloc ("", NULL, "", 1, &pos);
+	message_ty *refheader = message_alloc (NULL, "", NULL, "", 1, &pos);
 
 	message_list_prepend (ref->item[k]->messages, refheader);
       }
 
   /* The references file can be either in ASCII or in UTF-8.  If it is
-     in UTF-8, we have to convert the definitions to UTF-8 as well.  */
+     in UTF-8, we have to convert the definitions and the compendiums to
+     UTF-8 as well.  */
   {
     bool was_utf8 = false;
     for (k = 0; k < ref->nitems; k++)
@@ -1150,7 +1276,7 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	message_list_ty *mlp = ref->item[k]->messages;
 
 	for (j = 0; j < mlp->nitems; j++)
-	  if (mlp->item[j]->msgid[0] == '\0' && !mlp->item[j]->obsolete)
+	  if (is_header (mlp->item[j]) && !mlp->item[j]->obsolete)
 	    {
 	      const char *header = mlp->item[j]->msgstr;
 
@@ -1172,8 +1298,22 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	    }
 	}
     if (was_utf8)
-      def = iconv_msgdomain_list (def, "UTF-8", fn1);
+      {
+	def = iconv_msgdomain_list (def, "UTF-8", fn1);
+	if (compendiums != NULL)
+	  for (k = 0; k < compendiums->nitems; k++)
+	    iconv_message_list (compendiums->item[k], NULL, po_charset_utf8,
+				compendium_filenames->item[k]);
+      }
+    else
+      {
+	/* TODO: Convert all compendiums->item[k] to the same encoding.  */
+      }
   }
+
+  /* Initialize and preprocess the total set of message definitions.  */
+  definitions_init (&definitions, po_charset_utf8);
+  empty_list = message_list_alloc (false);
 
   result = msgdomain_list_alloc (false);
   processed = 0;
@@ -1186,12 +1326,14 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	message_list_ty *refmlp = ref->item[k]->messages;
 	message_list_ty *resultmlp =
 	  msgdomain_list_sublist (result, domain, true);
+	message_list_ty *defmlp;
 
-	definitions->item[0] = msgdomain_list_sublist (def, domain, false);
-	if (definitions->item[0] == NULL)
-	  definitions->item[0] = empty_list;
+	defmlp = msgdomain_list_sublist (def, domain, false);
+	if (defmlp == NULL)
+	  defmlp = empty_list;
+	definitions_set_current_list (&definitions, defmlp);
 
-	match_domain (fn1, fn2, definitions, refmlp, resultmlp,
+	match_domain (fn1, fn2, &definitions, refmlp, resultmlp,
 		      &stats, &processed);
       }
   else
@@ -1211,13 +1353,15 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	      message_list_ty *resultmlp =
 		msgdomain_list_sublist (result, domain, true);
 
-	      definitions->item[0] = defmlp;
+	      definitions_set_current_list (&definitions, defmlp);
 
-	      match_domain (fn1, fn2, definitions, refmlp, resultmlp,
+	      match_domain (fn1, fn2, &definitions, refmlp, resultmlp,
 			    &stats, &processed);
 	    }
 	}
     }
+
+  definitions_destroy (&definitions);
 
   /* Look for messages in the definition file, which are not present
      in the reference file, indicating messages which defined but not
@@ -1238,6 +1382,24 @@ merge (const char *fn1, const char *fn2, msgdomain_list_ty **defp)
 	      message_ty *mp;
 
 	      mp = message_copy (defmsg);
+	      /* Clear the extracted comments.  */
+	      if (mp->comment_dot != NULL)
+		{
+		  string_list_free (mp->comment_dot);
+		  mp->comment_dot = NULL;
+		}
+	      /* Clear the file position comments.  */
+	      if (mp->filepos != NULL)
+		{
+		  size_t i;
+
+		  for (i = 0; i < mp->filepos_count; i++)
+		    free ((char *) mp->filepos[i].file_name);
+		  mp->filepos_count = 0;
+		  free (mp->filepos);
+		  mp->filepos = NULL;
+		}
+	      /* Mark as obsolete.   */
 	      mp->obsolete = true;
 
 	      message_list_append (msgdomain_list_sublist (result, domain, true),

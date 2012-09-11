@@ -87,6 +87,7 @@ following file list.
       $prefix/bin/xgettext
       $prefix/bin/gettextize
       $prefix/bin/autopoint
+      $prefix/bin/recode*
       $prefix/share/man/man1/msg*.1
       $prefix/share/man/man1/xgettext.1
       $prefix/share/man/man1/gettextize.1
@@ -107,7 +108,6 @@ following file list.
       $prefix/lib/gettext/*
       $prefix/share/locale/*/LC_MESSAGES/gettext-tools.mo
       $prefix/share/gettext/config.rpath
-      $prefix/share/gettext/mkinstalldirs
       $prefix/share/gettext/intl/*
       $prefix/share/gettext/po/*
       $prefix/share/gettext/projects/*
@@ -122,14 +122,14 @@ following file list.
       $prefix/share/aclocal/iconv.m4
       $prefix/share/aclocal/intdiv0.m4
       $prefix/share/aclocal/intmax.m4
-      $prefix/share/aclocal/inttypes.m4
       $prefix/share/aclocal/inttypes_h.m4
+      $prefix/share/aclocal/inttypes-h.m4
       $prefix/share/aclocal/inttypes-pri.m4
-      $prefix/share/aclocal/isc-posix.m4
       $prefix/share/aclocal/lcmessage.m4
       $prefix/share/aclocal/lib-ld.m4
       $prefix/share/aclocal/lib-link.m4
       $prefix/share/aclocal/lib-prefix.m4
+      $prefix/share/aclocal/lock.m4
       $prefix/share/aclocal/longdouble.m4
       $prefix/share/aclocal/longlong.m4
       $prefix/share/aclocal/nls.m4
@@ -141,6 +141,7 @@ following file list.
       $prefix/share/aclocal/stdint_h.m4
       $prefix/share/aclocal/uintmax_t.m4
       $prefix/share/aclocal/ulonglong.m4
+      $prefix/share/aclocal/visibility.m4
       $prefix/share/aclocal/wchar_t.m4
       $prefix/share/aclocal/wint_t.m4
       $prefix/share/aclocal/xsize.m4

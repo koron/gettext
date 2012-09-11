@@ -1,3 +1,216 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Update file list.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* Makefile.am (docdir, dvidir, psdir, pdfdir, htmldir): Remove
+	variables.
+
+2006-06-18  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (configure.in): Document where to put AC_GNU_SOURCE.
+	* gettextize.texi: Refer to this explanation.
+
+2006-06-15  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (po/Makevars): Mention real purpose of this file.
+	(po/Rules-*): New section.
+	Reported by Karl Berry <karl@freefriends.org>.
+
+2006-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Update file list.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am: Use $(mkdir_p) instead of $(mkinstalldirs).
+	* gettext.texi (config.guess): Don't mention mkinstalldirs file any
+	more.
+	(mkinstalldirs): Say it's obsolete.
+	* gettextize.texi: Don't mention mkinstalldirs.
+
+2006-04-11  Bruno Haible  <bruno@clisp.org>
+
+	* gpl.texi: New file, from GNU with typesetting modifications.
+	* lgpl.texi: New file, from GNU with typesetting modifications.
+	* fdl.texi: New file, from GNU with typesetting modifications.
+	* gettext.texi: Change license terms to FDL | GPL. Don't reproduce
+	the @direntry statement in the HTML documentation.
+	(Licenses): New appendix chapter.
+
+2006-04-11  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Comment out @documentencoding, since we are using
+	texi2html, not makeinfo, to produce the HTML documentation.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (wxWidgets): Renamed from wxWindows. Clarify formatting
+	with positions.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Contexts): Document the macros pgettext_expr,
+	dpgettext_expr, dcpgettext_expr.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural Forms): More details about the expression
+	syntax.
+	Reported by Martin von Löwis <martin@v.loewis.de>.
+
+2006-04-01  Bruno Haible  <bruno@clisp.org>
+
+	* texi2html: Add option -expandtex. Expand @ifhtml by default, not
+	@ifinfo. Use Unicode quotation marks instead of grave and acute
+	accents. Emit charset=UTF-8 declaration. Bump version number to 1.52b.
+	* Makefile.am (gettext.html, gettext_toc.html): Remove -expandinfo
+	option.
+	* gettext.texi: If in HTML mode, use Unicode quotation marks and
+	box drawing characters.
+	* msgattrib.texi: Likewise.
+
+2006-04-01  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Introduction): Swap paragraphs.
+
+2006-04-01  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (gettext grok, Temp Programmers, Trans Intro 0,
+	Trans Intro 1, Discussions, Organization, Information Flow,
+	References): Mark as outdated.
+
+2006-04-01  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--keyword): Document the default keywords.
+	Suggested by Bjoern Voigt <bjoern@cs.tu-berlin.de>.
+
+2006-03-28  Bruno Haible  <bruno@clisp.org>
+
+	* msgfilter.texi: Explain built-in filters and recode-sr-latin.
+
+2006-03-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Java): Recommend a simpler idiom for Java 1.5.
+
+2006-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (C): Also mention the hello-c++-wxwidgets example.
+
+2006-03-19  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--keyword): Document the extracted comments syntax.
+
+2006-03-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (PO Files): Clarify the terms "automatic comments" and
+	"extracted comments".
+	* msggrep.texi: Document the -X/--extracted-comment option.
+
+2006-03-16  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--keyword): Document suffix 'g'.
+
+2006-02-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Introduction): Fix typo.
+	Reported by <atras-ch@mail.msiu.ru>.
+
+2006-02-12  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (PO Files): Mention boost-format.
+	(boost-format): New subsection.
+	* xgettext.texi: Document --boost option.
+
+2005-11-29  Colin Watson  <cjwatson@ubuntu.com>
+
+	* msggrep.texi: Document --invert-match option.
+
+2005-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--keyword): Document how to specify the total number
+	of arguments.
+
+2005-10-03  Bruno Haible  <bruno@clisp.org>
+
+	Add support for contexts in xgettext.
+	* xgettext.texi (--keyword): Document how to specify context arguments.
+
+2005-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (PO Files, Preparing Strings, Contexts): Small fixes.
+	Patch by Pavel Roskin <proski@gnu.org>.
+
+2005-10-01  Bruno Haible  <bruno@clisp.org>
+
+	Support for context dependent translations in PO files.
+	* gettext.texi (PO Files): Explain syntax of msgctxt.
+	(MO Files): Explain how contexts are stored.
+	(Contexts): New subsection.
+	(GUI program problems): Remove subsection.
+	* msgexec.texi: Mention MSGEXEC_MSGCTXT environment variable.
+	* msggrep.texi: Document option -J.
+
+2005-09-25  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--from-code): Python input is no longer always in
+	ISO-8859-1.
+
+2005-09-20  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi (--from-code): Python input is always assumed to be
+	in ISO-8859-1, not UTF-8.
+	Reported by Danilo Segan <dsegan@gmx.net>.
+
+2005-08-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Plural forms): Add info about Romanian.
+	Explanations by Eddy Petrişor <eddy.petrisor@gmail.com>.
+
+2005-07-24  Bruno Haible  <bruno@clisp.org>
+
+	Tidy up exported symbols.
+	* gettext.texi (aclocal): Mention visibility.m4.
+
+2005-05-17  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Why): Mention libgettextpo.
+	(Overview, PO Files, Header Entry, Prioritizing messages): De-emphasize
+	PO mode. Talk about PO file editors instead.
+	(Sources): New section 'Importing'.
+	(PO Mode): Move introducing paragraph from Overview to here.
+
+2005-07-17  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Editing): New chapter, including all the PO Mode
+	descriptions.
+	(PO Files): Chapter renamed from Basics.
+
+2005-07-17  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Users): Move chapter to become the second.
+	(Installers): New chapter, extracted from Users chapter.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Add lock.m4 to file list.
+
+2005-07-01  Bruno Haible  <bruno@clisp.org>
+
+	* FAQ.html (windows_howto): Mention the three debugging runtime libs.
+	Reported by Stephane Matamontero <stephane.matamontero@gemodek.de>.
+
+2005-05-02  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (c-format): Write fprintf() instead of fprintf(3).
+	Requested by Richard Stallman.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

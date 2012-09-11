@@ -1,3 +1,166 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): Use a multiline -e argument
+	instead of multiple -e arguments. Needed for AIX 4.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* version.sh: Bump version number to 0.15.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/compile: Update from automake-1.9.6.
+	* build-aux/elisp-comp: Likewise.
+	* build-aux/install-sh: Likewise.
+	* build-aux/mdate-sh: Likewise.
+	* build-aux/missing: Likewise.
+	* build-aux/mkinstalldirs: Likewise.
+	* build-aux/ylwrap: Likewise.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/config.guess, build-aux/config.sub: Update to GNU version
+	2006-07-02.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* m4/fixautomake.m4 (FIX_MAKEFILE_TOPDIR_DISTRIB): New macro.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (SUBDIRS): Put autoconf-lib-link last.
+
+2006-06-29  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Recurse also into the gettext-tools/examples directory
+	and update the PO files there.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Don't mention isc-posix.m4.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume vprintf function.
+	* os2/configure.awk: Remove unused HAVE_VPRINTF substitution.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Require autoconf-2.60.
+
+2006-03-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/libtool.m4 (_LT_SYS_DYNAMIC_LINKER) [ linux ]: Avoid warning when
+	"parsing" /etc/ld.so.conf and empty /etc/ld.so.conf.d.
+
+2006-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Mention inttypes-h.m4.
+
+2006-05-14  Bruno Haible  <bruno@clisp.org>,
+            Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/libtool.m4 [ linux ] (AC_LIBTOOL_LANG_CXX_CONFIG)
+	(AC_LIBTOOL_POSTDEP_PREDEP, AC_LIBTOOL_PROG_COMPILER_PIC)
+	(AC_LIBTOOL_PROG_LD_SHLIBS): Add support for Sun C 5.9,
+	Sun C++ 5.9, and Sun Fortran 8.3 on Linux.
+
+2006-05-06  Charles Wilson  <cygwin@cwilson.fastmail.fm>
+
+	* m4/libtool.m4: On Cygwin, like on mingw, define DLL_EXPORT when
+	compiling a shared library object.
+
+2006-04-26  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/config.guess, build-aux/config.sub: Update to GNU version
+	2006-04-26.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Remove mkinstalldirs file.
+
+2006-04-20  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Also regenerate examples PO files.
+	Reported by Charles Wilson <cygwin@cwilson.fastmail.fm>.
+
+2006-03-28  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Mention bin/recode* programs.
+
+2005-12-29  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/install-reloc: If hard linking is not possible, use a
+	simple copy. Needed on Woe32 filesystems.
+
+2005-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/ltmain.sh: Upgrade to libtool-1.5.22.
+	2001-11-03  Bruno Haible  <bruno@clisp.org>
+		* build-aux/ltmain.sh: chmod 777 the .libs directory, so that
+		"make install" succeeds.
+	* m4/libtool.m4: Upgrade to libtool-1.5.22.
+	2004-02-22  Bruno Haible  <bruno@clisp.org>
+		* m4/libtool.m4: Add support for Comeau C++ on Linux.
+		Reported by Prof. Roberto Bagnara <bagnara@cs.unipr.it>.
+
+2005-11-23  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* build-aux/install-reloc: Expect additional exeext argument. On
+	Cygwin, use suffix ".bin.exe" instead of just ".bin".
+	* m4/woe32-dll.m4: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2005-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/ltmain.sh: Upgrade to libtool-1.5.20.
+	2003-11-27  Bruno Haible  <bruno@clisp.org>
+		* build-aux/ltmain.sh: In the trampoline code, include
+		string.h, ctype.h. Fixes warnings on cygwin.
+	2001-11-03  Bruno Haible  <bruno@clisp.org>
+		* build-aux/ltmain.sh: chmod 777 the .libs directory, so that
+		"make install" succeeds.
+	* m4/libtool.m4: Upgrade to libtool-1.5.20.
+	2004-02-22  Bruno Haible  <bruno@clisp.org>
+		* m4/libtool.m4: Add support for Comeau C++ on Linux.
+		Reported by Prof. Roberto Bagnara <bagnara@cs.unipr.it>.
+
+2008-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Make the script executable.
+
+2008-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Remove code for gettext-runtime/glocale.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Add commands for gettext-runtime/glocale directory.
+
+2005-07-24  Bruno Haible  <bruno@clisp.org>
+
+	Tidy up exported symbols.
+	* PACKAGING: Mention visibility.m4.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Add lock.m4.
+
+2005-07-08  Bruno Haible  <bruno@clisp.org>
+
+	* m4/libtool.m4 (postinstall_cmds) [cygwin,mingw,pw32]: Make DLL
+	executable after installing it.
+
+2005-07-06  Bruno Haible  <bruno@clisp.org>
+
+	* README.mingw: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove README.mingw.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

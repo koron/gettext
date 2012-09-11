@@ -16,12 +16,13 @@ typedef union
 # define	COMMENT	257
 # define	DOMAIN	258
 # define	JUNK	259
-# define	MSGID	260
-# define	MSGID_PLURAL	261
-# define	MSGSTR	262
-# define	NAME	263
-# define	NUMBER	264
-# define	STRING	265
+# define	MSGCTXT	260
+# define	MSGID	261
+# define	MSGID_PLURAL	262
+# define	MSGSTR	263
+# define	NAME	264
+# define	NUMBER	265
+# define	STRING	266
 
 
 extern YYSTYPE yylval;

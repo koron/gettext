@@ -1,5 +1,5 @@
 /* Python format strings.
-   Copyright (C) 2001-2004 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "format.h"
 #include "c-ctype.h"
 #include "xalloc.h"
-#include "xerror.h"
+#include "xvasprintf.h"
 #include "format-invalid.h"
 #include "gettext.h"
 
@@ -507,8 +507,32 @@ struct formatstring_parser formatstring_python =
   format_parse,
   format_free,
   format_get_number_of_directives,
+  NULL,
   format_check
 };
+
+
+unsigned int
+get_python_format_unnamed_arg_count (const char *string)
+{
+  /* Parse the format string.  */
+  char *invalid_reason = NULL;
+  struct spec *descr =
+    (struct spec *) format_parse (string, false, &invalid_reason);
+
+  if (descr != NULL)
+    {
+      unsigned int result = descr->unnamed_arg_count;
+
+      format_free (descr);
+      return result;
+    }
+  else
+    {
+      free (invalid_reason);
+      return 0;
+    }
+}
 
 
 #ifdef TEST

@@ -1,5 +1,5 @@
 /* xgettext PHP backend.
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <bruno@clisp.org>, 2002.
 
@@ -40,7 +40,11 @@
 
 
 /* The PHP syntax is defined in phpdoc/manual/langref.html.
-   See also php-4.1.0/Zend/zend_language_scanner.l.  */
+   See also php-4.1.0/Zend/zend_language_scanner.l.
+   Note that variable and function names can contain bytes in the range
+   0x7f..0xff; see
+     http://www.php.net/manual/en/language.variables.php
+     http://www.php.net/manual/en/language.functions.php  */
 
 
 /* ====================== Keyword set customization.  ====================== */
@@ -67,25 +71,19 @@ x_php_keyword (const char *name)
   else
     {
       const char *end;
-      int argnum1;
-      int argnum2;
+      struct callshape shape;
       const char *colon;
 
       if (keywords.table == NULL)
-	init_hash (&keywords, 100);
+	hash_init (&keywords, 100);
 
-      split_keywordspec (name, &end, &argnum1, &argnum2);
+      split_keywordspec (name, &end, &shape);
 
       /* The characters between name and end should form a valid C identifier.
 	 A colon means an invalid parse in split_keywordspec().  */
       colon = strchr (name, ':');
       if (colon == NULL || colon >= end)
-	{
-	  if (argnum1 == 0)
-	    argnum1 = 1;
-	  insert_entry (&keywords, name, end - name,
-			(void *) (long) (argnum1 + (argnum2 << 10)));
-	}
+	insert_keyword_callshape (&keywords, name, end - name, &shape);
     }
 }
 
@@ -96,6 +94,8 @@ init_keywords ()
 {
   if (default_keywords)
     {
+      /* When adding new keywords here, also update the documentation in
+	 xgettext.texi!  */
       x_php_keyword ("_");
       x_php_keyword ("gettext");
       x_php_keyword ("dgettext:2");
@@ -565,7 +565,7 @@ comment_line_end (size_t chars_to_remove)
       buffer = xrealloc (buffer, bufmax);
     }
   buffer[buflen] = '\0';
-  xgettext_comment_add (buffer);
+  savable_comment_add (buffer);
 }
 
 
@@ -785,7 +785,7 @@ x_php_lex (token_ty *tp)
 
 	case '\n':
 	  if (last_non_comment_line > last_comment_line)
-	    xgettext_comment_reset ();
+	    savable_comment_reset ();
 	  /* FALLTHROUGH */
 	case ' ':
 	case '\t':
@@ -807,6 +807,25 @@ x_php_lex (token_ty *tp)
 	case 'h': case 'i': case 'j': case 'k': case 'l': case 'm': case 'n':
 	case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u':
 	case 'v': case 'w': case 'x': case 'y': case 'z':
+	case 127: case 128: case 129: case 130: case 131: case 132: case 133:
+	case 134: case 135: case 136: case 137: case 138: case 139: case 140:
+	case 141: case 142: case 143: case 144: case 145: case 146: case 147:
+	case 148: case 149: case 150: case 151: case 152: case 153: case 154:
+	case 155: case 156: case 157: case 158: case 159: case 160: case 161:
+	case 162: case 163: case 164: case 165: case 166: case 167: case 168:
+	case 169: case 170: case 171: case 172: case 173: case 174: case 175:
+	case 176: case 177: case 178: case 179: case 180: case 181: case 182:
+	case 183: case 184: case 185: case 186: case 187: case 188: case 189:
+	case 190: case 191: case 192: case 193: case 194: case 195: case 196:
+	case 197: case 198: case 199: case 200: case 201: case 202: case 203:
+	case 204: case 205: case 206: case 207: case 208: case 209: case 210:
+	case 211: case 212: case 213: case 214: case 215: case 216: case 217:
+	case 218: case 219: case 220: case 221: case 222: case 223: case 224:
+	case 225: case 226: case 227: case 228: case 229: case 230: case 231:
+	case 232: case 233: case 234: case 235: case 236: case 237: case 238:
+	case 239: case 240: case 241: case 242: case 243: case 244: case 245:
+	case 246: case 247: case 248: case 249: case 250: case 251: case 252:
+	case 253: case 254: case 255:
 	  bufpos = 0;
 	  for (;;)
 	    {
@@ -832,6 +851,28 @@ x_php_lex (token_ty *tp)
 		case 'y': case 'z':
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
+		case 127: case 128: case 129: case 130: case 131: case 132:
+		case 133: case 134: case 135: case 136: case 137: case 138:
+		case 139: case 140: case 141: case 142: case 143: case 144:
+		case 145: case 146: case 147: case 148: case 149: case 150:
+		case 151: case 152: case 153: case 154: case 155: case 156:
+		case 157: case 158: case 159: case 160: case 161: case 162:
+		case 163: case 164: case 165: case 166: case 167: case 168:
+		case 169: case 170: case 171: case 172: case 173: case 174:
+		case 175: case 176: case 177: case 178: case 179: case 180:
+		case 181: case 182: case 183: case 184: case 185: case 186:
+		case 187: case 188: case 189: case 190: case 191: case 192:
+		case 193: case 194: case 195: case 196: case 197: case 198:
+		case 199: case 200: case 201: case 202: case 203: case 204:
+		case 205: case 206: case 207: case 208: case 209: case 210:
+		case 211: case 212: case 213: case 214: case 215: case 216:
+		case 217: case 218: case 219: case 220: case 221: case 222:
+		case 223: case 224: case 225: case 226: case 227: case 228:
+		case 229: case 230: case 231: case 232: case 233: case 234:
+		case 235: case 236: case 237: case 238: case 239: case 240:
+		case 241: case 242: case 243: case 244: case 245: case 246:
+		case 247: case 248: case 249: case 250: case 251: case 252:
+		case 253: case 254: case 255: 
 		  continue;
 
 		default:
@@ -1097,13 +1138,17 @@ x_php_lex (token_ty *tp)
 				    phase1_ungetc (c);
 				    break;
 				  }
+				bufidx++;
 			      }
-			    c = phase1_getc ();
-			    if (c != ';')
-			      phase1_ungetc (c);
-			    c = phase1_getc ();
-			    if (c == '\n' || c == '\r')
-			      break;
+			    if (bufidx == bufpos)
+			      {
+				c = phase1_getc ();
+				if (c != ';')
+				  phase1_ungetc (c);
+				c = phase1_getc ();
+				if (c == '\n' || c == '\r')
+				  break;
+			      }
 			  }
 		      }
 
@@ -1216,25 +1261,19 @@ static flag_context_list_table_ty *flag_context_list_table;
 
 /* Extract messages until the next balanced closing parenthesis.
    Extracted messages are added to MLP.
-   When a specific argument shall be extracted, COMMAS_TO_SKIP >= 0 and,
-   if also a plural argument shall be extracted, PLURAL_COMMAS > 0,
-   otherwise PLURAL_COMMAS = 0.
-   When no specific argument shall be extracted, COMMAS_TO_SKIP < 0.
    Return true upon eof, false upon closing parenthesis.  */
 static bool
 extract_parenthesized (message_list_ty *mlp,
 		       flag_context_ty outer_context,
 		       flag_context_list_iterator_ty context_iter,
-		       int commas_to_skip, int plural_commas)
+		       struct arglist_parser *argparser)
 {
-  /* Remember the message containing the msgid, for msgid_plural.  */
-  message_ty *plural_mp = NULL;
-
+  /* Current argument number.  */
+  int arg = 1;
   /* 0 when no keyword has been seen.  1 right after a keyword is seen.  */
   int state;
   /* Parameters of the keyword just seen.  Defined only in state 1.  */
-  int next_commas_to_skip = -1;
-  int next_plural_commas = 0;
+  const struct callshapes *next_shapes = NULL;
   /* Context iterator that will be used if the next token is a '('.  */
   flag_context_list_iterator_ty next_context_iter =
     passthrough_context_list_iterator;
@@ -1257,15 +1296,11 @@ extract_parenthesized (message_list_ty *mlp,
 	  {
 	    void *keyword_value;
 
-	    if (find_entry (&keywords, token.string, strlen (token.string),
-			    &keyword_value)
+	    if (hash_find_entry (&keywords, token.string, strlen (token.string),
+				 &keyword_value)
 		== 0)
 	      {
-		int argnum1 = (int) (long) keyword_value & ((1 << 10) - 1);
-		int argnum2 = (int) (long) keyword_value >> 10;
-
-		next_commas_to_skip = argnum1 - 1;
-		next_plural_commas = (argnum2 > argnum1 ? argnum2 - argnum1 : 0);
+		next_shapes = (const struct callshapes *) keyword_value;
 		state = 1;
 	      }
 	    else
@@ -1281,30 +1316,22 @@ extract_parenthesized (message_list_ty *mlp,
 
 	case token_type_lparen:
 	  if (extract_parenthesized (mlp, inner_context, next_context_iter,
-				     state ? next_commas_to_skip : -1,
-				     state ? next_plural_commas: 0))
-	    return true;
+				     arglist_parser_alloc (mlp,
+							   state ? next_shapes : NULL)))
+	    {
+	      arglist_parser_done (argparser, arg);
+	      return true;
+	    }
 	  next_context_iter = null_context_list_iterator;
 	  state = 0;
 	  continue;
 
 	case token_type_rparen:
+	  arglist_parser_done (argparser, arg);
 	  return false;
 
 	case token_type_comma:
-	  if (commas_to_skip >= 0)
-	    {
-	      if (commas_to_skip > 0)
-		commas_to_skip--;
-	      else
-		if (plural_mp != NULL && plural_commas > 0)
-		  {
-		    commas_to_skip = plural_commas - 1;
-		    plural_commas = 0;
-		  }
-		else
-		  commas_to_skip = -1;
-	    }
+	  arg++;
 	  inner_context =
 	    inherited_context (outer_context,
 			       flag_context_list_iterator_advance (
@@ -1320,31 +1347,13 @@ extract_parenthesized (message_list_ty *mlp,
 	    pos.line_number = token.line_number;
 
 	    if (extract_all)
-	      remember_a_message (mlp, token.string, inner_context, &pos);
+	      remember_a_message (mlp, NULL, token.string, inner_context,
+				  &pos, savable_comment);
 	    else
-	      {
-		if (commas_to_skip == 0)
-		  {
-		    if (plural_mp == NULL)
-		      {
-			/* Seen an msgid.  */
-			message_ty *mp =
-			  remember_a_message (mlp, token.string,
-					      inner_context, &pos);
-			if (plural_commas > 0)
-			  plural_mp = mp;
-		      }
-		    else
-		      {
-			/* Seen an msgid_plural.  */
-			remember_a_message_plural (plural_mp, token.string,
-						   inner_context, &pos);
-			plural_mp = NULL;
-		      }
-		  }
-		else
-		  free (token.string);
-	      }
+	      arglist_parser_remember (argparser, arg, token.string,
+				       inner_context,
+				       pos.file_name, pos.line_number,
+				       savable_comment);
 	  }
 	  next_context_iter = null_context_list_iterator;
 	  state = 0;
@@ -1356,6 +1365,7 @@ extract_parenthesized (message_list_ty *mlp,
 	  continue;
 
 	case token_type_eof:
+	  arglist_parser_done (argparser, arg);
 	  return true;
 
 	default:
@@ -1391,7 +1401,7 @@ extract_php (FILE *f,
   /* Eat tokens until eof is seen.  When extract_parenthesized returns
      due to an unbalanced closing parenthesis, just restart it.  */
   while (!extract_parenthesized (mlp, null_context, null_context_list_iterator,
-				 -1, 0))
+				 arglist_parser_alloc (mlp, NULL)))
     ;
 
   /* Close scanner.  */

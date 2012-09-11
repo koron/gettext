@@ -1,3 +1,591 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (mkinstalldirs): New variable. Needed for mkdir_p.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (HAVE_NL_LOCALE_NAME): Undefine.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (LIBINTL_VERSION): Bump to 0.15.0.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 8:0:0.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* printf.c (libintl_printf): Define to __printf__ on NetBSD, Cygwin,
+	mingw.
+	Reported by haibin zhang <dragzhb@yahoo.com.cn>.
+
+2006-06-22  Ulrich Drepper  <drepper@redhat.com>
+
+	* dcigettext.c (DCIGETTEXT): If _nl_find_msg returns -1 don't look
+	further, return original strings.
+	(_nl_find_msg): Do not return found translation if the conversion
+	failed.  Either signal the string is unusable or that something went
+	wrong and the original should be used.
+
+2006-06-23  Bruno Haible  <bruno@clisp.org>
+
+	* l10nflist.c (__argz_count, __argz_stringify, __argz_next): Define
+	using the non-underscored functions when available. Avoids warnings
+	on Cygwin.
+	Reported by Eric Blake.
+
+2006-06-19  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (libintl_printf): Define to __printf__ on NetBSD,
+	Cygwin, mingw.
+	Reported by Henry Nelson <netb@yuba.ne.jp>.
+
+2006-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* bindtextdom.c (gl_rwlock_define, gl_rwlock_wrlock, gl_rwlock_unlock)
+	[_LIBC]: New macros.
+	(_nl_state_lock, set_binding_values): Use gl_rwlock_* instead of
+	__libc_rwlock_*.
+	* dcigettext.c (gl_rwlock_define_initialized, gl_rwlock_rdlock,
+	gl_rwlock_wrlock, gl_rwlock_unlock) [_LIBC]: New macros.
+	(tree_lock, _nl_state_lock, DCIGETTEXT): Use gl_rwlock_* instead of
+	__libc_rwlock_*.
+	* finddomain.c (gl_rwlock_define_initialized, gl_rwlock_rdlock,
+	gl_rwlock_wrlock, gl_rwlock_unlock) [_LIBC]: New macros.
+	(_nl_find_domain): Use gl_rwlock_* instead of __libc_rwlock_*.
+	* textdomain.c (gl_rwlock_define, gl_rwlock_wrlock, gl_rwlock_unlock)
+	[_LIBC]: New macros.
+	(_nl_state_lock, TEXTDOMAIN): Use gl_rwlock_* instead of
+	__libc_rwlock_*.
+	Needed because NetBSD 3.0 <pthread.h> does
+	#define pthread_rwlock_rdlock __libc_rwlock_rdlock etc.
+
+2006-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* config.charset: Update for NetBSD 3.0.
+
+2006-05-24  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.c (printf_fetchargs): Turn NULL pointers for
+	TYPE_STRING and TYPE_WIDE_STRING into a non-NULL replacement.
+	Reported by Thorsten Maerz <torte@netztorte.de> via
+	Aaron Stone <aaron@serendipity.cx>.
+
+2006-05-15  Ulrich Drepper  <drepper@redhat.com>
+
+	* dcigettext.c (category_to_name): Adjust for _nl_category_names
+	change.
+
+2006-04-06  Ulrich Drepper  <drepper@redhat.com>
+
+	* finddomain.c (_nl_find_domain): We never return NULL if we found the
+	locale.
+
+2005-12-21  Roland McGrath  <roland@redhat.com>
+
+	* l10nflist.c (_nl_make_l10nflist): Free ABS_FILENAME when later malloc
+	fails.
+
+2006-05-17  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* loadinfo.h (PATH_SEPARATOR) [CYGWIN]: Define as ':'.
+	* localename.c (WIN32_NATIVE): Renamed from WIN32.
+	* localcharset.c (WIN32_NATIVE): Renamed from WIN32.
+
+2006-05-16  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c [CYGWIN]: Include <windows.h>.
+	(get_charset_aliases): For Cygwin, return the same CPxxx aliases list
+	as under WIN32.
+	(locale_charset) [CYGWIN]: Try to retrieve the encoding from the
+	environment variables. Fall back to GetACP().
+
+2006-05-15  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (LDFLAGS, libgnuintl.h): Treat mingw like Cygwin.
+
+2006-05-15  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in: Move the _INTL_MAY_RETURN_STRING_ARG annotations
+	from the function definition to the function declaration. Needed in
+	C++ mode.
+
+2006-05-11  Bruno Haible  <bruno@clisp.org>
+
+	* intl-exports.c: New file.
+	* osdep.c: Include it on Cygwin.
+	* Makefile.in (LDFLAGS_yes, LDFLAGS_no): New variables.
+	(LDFLAGS): Use it.
+	(SOURCES): Add intl-exports.c.
+	(libgnuintl.h): When compiling a DLL on Cygwin, mark all exported
+	variables as to be imported.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (MKINSTALLDIRS, mkinstalldirs): Remove variables.
+	(mkdir_p): New variable.
+	(install-exec, install-data, installdirs): Use $(mkdir_p) instead of
+	$(mkinstalldirs).
+
+2006-04-05  Bruno Haible  <bruno@clisp.org>
+
+	* config.charset: Update Juan Manuel Guerrero's address.
+
+2006-03-11  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (_INTL_MAY_RETURN_STRING_ARG): Define to empty when
+	using g++ on MacOS X.
+
+2006-01-22  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): In the computation of the size of the
+	temporary buffer for sprintf, take into account the precision also
+	for 'd', 'i', 'u', 'o', 'x', 'X'.
+
+2006-01-10  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c: Assume ANSI C. Fixes a gcc warning.
+	Reported by Werner Lemberg <wl@gnu.org>.
+
+2005-12-25  Bruno Haible  <bruno@clisp.org>
+
+	Fix compilation error when plural.c is generated by bison-2.1.
+	* Makefile.in (PLURAL_DEPS_yes, PLURAL_DEPS_no): New macros.
+	(plural.$lo): Add conditional dependency to libintl.h.
+
+2005-12-04  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* relocatable.c: Include <windows.h> also on Cygwin.
+	(DllMain): Add support for Cygwin.
+	(get_shared_library_fullname): Update.
+	Patches partially from Charles Wilson <cygwin@cwilson.fastmail.fm>.
+
+2005-10-09  Bruno Haible  <bruno@clisp.org>
+2002-07-24  Ulrich Drepper  <drepper@redhat.com>
+
+	* explodename.c (_nl_explode_name): Simplify.
+
+2005-10-09  Bruno Haible  <bruno@clisp.org>
+2002-07-24  Ulrich Drepper  <drepper@redhat.com>
+
+	* explodename.c: Recognize the syntax
+	  language[_territory][.codeset][@modifier]
+	instead of only
+	  language[_territory[.codeset]][@modifier]
+	(_nl_find_language): Accept '.' as terminator.
+	(_nl_explode_name): Accept to parse a codeset without a territory.
+	Accept an underscore in the territory.
+
+2005-10-09  Bruno Haible  <bruno@clisp.org>
+2002-07-24  Ulrich Drepper  <drepper@redhat.com>
+
+	* explodename.c (_nl_find_language, _nl_explode_name): Remove support
+	for CEN-style locale variables. It was never used and shouldn't be
+	since it's not portable.
+	* finddomain.c (_nl_find_domain): Likewise.
+	* l10nflist.c (_nl_make_l10nflist): Likewise.
+	* loadinfo.h (_nl_make_l10nflist, _nl_explode_name): Likewise.
+	(CEN_*, XPG_SPECIFIC): Remove macros.
+	(XPG_TERRITORY): Renamed from TERRITORY.
+
+2005-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in: Add IN_LIBGLOCALE conditional.
+	* Makefile.in (libgnuintl.h, libintl.h): Remove the IN_LIBGLOCALE
+	conditional.
+	* dcigettext.c [IN_LIBGLOCALE]: Include also <libintl.h>, for
+	bindtextdomain().
+
+2005-08-25  Bruno Haible  <bruno@clisp.org>
+
+	* libintl.glibc: Update from current glibc.
+	* libgnuintl.h.in (_INTL_MAY_RETURN_STRING_ARG): New macro.
+	(gettext, dgettext, dcgettext, ngettext, dngettext, dcngettext):
+
+2005-08-21  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h: Add multiple inclusion guard.
+
+2005-08-19  Bruno Haible  <bruno@clisp.org>
+
+	* localealias.c (read_alias_file): In case of failure, close the
+	file descriptor and sort the array before returning.
+
+2005-08-19  Bruno Haible  <bruno@clisp.org>
+
+	* localealias.c (read_alias_file) [IN_LIBGLOCALE]: Ignore aliases
+	containing an underscore.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	Make code usable in libglocale.
+	* gettextP.h (gl_dcigettext): New declaration.
+	(_nl_msg_cat_cntr): Export also from libglocale.
+	(_nl_find_msg): In libglocale, take the encoding as argument and no
+	convert flag.
+	* dcigettext.c (HAVE_PER_THREAD_LOCALE): Define in libglocale.
+	(struct known_translation_t): In libglocale, add encoding field.
+	(transcmp): In libglocale, compare also the encoding fields.
+	(libintl_version): Don't define in libglocale.
+	(_nl_current_default_domain, _nl_domain_bindings): Likewise.
+	(DCIGETTEXT): In libglocale, also take the localename and encoding
+	as arguments. Don't call nl_langinfo. Instead of walking the other
+	library's _nl_domain_bindings, use bindtextdomain.
+	(_nl_find_msg): In libglocale, take the encoding as argument and no
+	convert flag. Don't call get_output_charset.
+	(guess_category_value): In libglocale, take the locale name as
+	argument. Don't call __current_locale_name or uselocale or
+	_nl_locale_name_posix and _nl_locale_name_default.
+	(get_output_charset): Don't define in libglocale.
+	* loadmsgcat.c (_nl_load_domain): Update.
+	* plural-exp.h (plural_eval): Don't declare in libglocale.
+
+2005-08-03  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in: Add comments about VPATH.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h (gl_lock_initializer): New macro.
+	(gl_lock_define_initialized): Use it.
+	(gl_rwlock_initializer): New macro.
+	(gl_rwlock_define_initialized): Use it.
+	(gl_recursive_lock_initializer): New macro.
+	(gl_recursive_lock_define_initialized): Use it.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	Avoid const-cast.
+	* dcigettext.c (DCIGETTEXT): Change type of 'dirname' to const char *.
+	Use an auxiliary variable 'resolved_dirname' of type 'char *'.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (tree_lock): Remove extraneous semicolon.
+
+2005-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (LIBINTL_VERSION): New macro.
+	(libintl_version): New declaration.
+	* version.c: New file.
+	* Makefile.in (SOURCES): Add version.c.
+	(OBJECTS): Add version.$lo.
+	(version.lo): New rule.
+	* Makefile.msvc (OBJECTS): Add version.obj.
+	(version.obj): New rule.
+	* Makefile.vms (OBJECTS): Add version.obj.
+	(version.obj): New rule.
+
+2005-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* intl-compat.c (DLL_EXPORTED) [HAVE_VISIBILITY]: Define to the gcc
+	visibility attribute.
+
+2005-07-24  Bruno Haible  <bruno@clisp.org>
+
+	Tidy up exported symbols.
+	* export.h: New file.
+	* gettextP.h: Move declarations so that libgnuintl.h is included
+	before loadinfo.h. Needed because libgnuintl.h defines
+	LIBINTL_DLL_EXPORTED and loadinfo.h uses it.
+	(_nl_msg_cat_cntr): Export.
+	* loadinfo.h (LIBINTL_DLL_EXPORTED): Provide fallback declaration.
+	(_nl_expand_alias): Export.
+	* bindtextdom.c: Include gettextP.h before libgnuintl.h. Needed so
+	that _INTL_REDIRECT_MACROS is defined when libgnuintl.h is included.
+	Otherwise libgnuintl.h may choose to use _INTL_REDIRECT_ASM, and then
+	gcc-4.0 ignores visibility declarations.
+	* textdomain.c: Likewise.
+	* relocatable.h (RELOCATABLE_DLL_EXPORTED) [HAVE_VISIBILITY]: Define
+	to the gcc visibility attribute.
+	* Makefile.in (DEFS): Define also BUILDING_LIBINTL and BUILDING_DLL.
+	(CFLAGS): Add CFLAG_VISIBILITY.
+	(DISTFILES.common): Add export.h.
+	(libgnuintl.h): Add LIBINTL_DLL_EXPORTED definition and uses.
+	(libintl.h): Create directly from libgnuintl.h.in, without
+	LIBINTL_DLL_EXPORTED.
+
+2005-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* plural.y: Modify comment about #pragma alloca.
+	Suggested by Paul Eggert.
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (datarootdir): New variable.
+
+2005-07-25  Bruno Haible  <bruno@clisp.org>
+
+	Make pthread_in_use() return 0 on Solaris and HP-UX when not linking
+	with -lpthread.
+	* lock.h (pthread_in_use) [PTHREAD_IN_USE_DETECTION_HARD]: Define
+	through glthread_in_use.
+	* lock.c (dummy_thread_func, glthread_in_use): New functions.
+
+2005-07-22  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (libintl.la, libgnuintl.la): Link with @LTLIBTHREADS@.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h (gl_once_t): New type.
+	(gl_once_define, gl_once): New macros.
+	* lock.c (fresh_once): New variable.
+	(glthread_once, glthread_once_call, glthread_once_singlethreaded): New
+	functions.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h: New file.
+	* lock.c: New file.
+	* bindtextdom.c: Include lock.h. Don't include THREAD_H. Remove
+	definitions of __libc_rwlock_*.
+	* finddomain.c: Likewise.
+	* textdomain.c: Likewise.
+	* dcigettext.c: Include lock.h. Don't include THREAD_H. Remove
+	definitions of __libc_lock_*, __libc_rwlock_*.
+	* loadmsgcat.c: Include lock.h. Don't include THREAD_H. Remove
+	definitions of __libc_lock_*_recursive.
+	* localealias.c: Include lock.h. Don't include THREAD_H. Remove
+	definitions of __libc_lock_*.
+	* log.c: Likewise.
+	* Makefile.in (HEADERS): Add lock.h.
+	(SOURCES): Add lock.c.
+	(OBJECTS): Add lock.$lo.
+	(lock.lo): New rule.
+	(bindtextdom.$lo, dcigettext.$lo, finddomain.$lo, loadmsgcat.$lo,
+	localealias.$lo, lock.$lo, log.$lo): Depend on lock.h.
+	* Makefile.msvc (OBJECTS): Add lock.obj.
+	(bindtextdom.obj, finddomain.obj, loadmsgcat.obj, localealias.obj,
+	dcigettext.obj, log.obj): Depend on lock.h.
+	(lock.obj): New rule.
+	* Makefile.vms (OBJECTS): Add lock.obj.
+	(bindtextdom.obj, finddomain.obj, loadmsgcat.obj, localealias.obj,
+	dcigettext.obj, log.obj): Depend on lock.h.
+	(lock.obj): New rule.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.c (printf_fetchargs): Work around broken definition of
+	wint_t on mingw.
+
+2005-07-02  Bruno Haible  <bruno@clisp.org>
+
+	* localcharset.c (get_charset_aliases) [WIN32]: Add CP65001 and others.
+	Reported by <mus1876@gmx.info> via Alain Bench <messtic@oreka.com>.
+
+2005-05-05  Bruno Haible  <bruno@clisp.org>
+
+	Make libintl multithread-safe outside glibc.
+	* bindtextdom.c: Include THREAD_H.
+	(__libc_rwlock_*): Define also for USE_POSIX_THREADS or
+	USE_PTH_THREADS.
+	* dcigettext.c: Include THREAD_H.
+	(__libc_lock_*, __libc_rwlock_*): Define also for USE_POSIX_THREADS or
+	USE_PTH_THREADS.
+	(_nl_state_lock): Define always.
+	(tree_lock): Define outside DCIGETTEXT.
+	(DCIGETTEXT): ... not here.
+	* finddomain.c: Include THREAD_H.
+	(__libc_rwlock_*): Define also for USE_POSIX_THREADS or
+	USE_PTH_THREADS.
+	* loadmsgcat.c: Include THREAD_H.
+	(__libc_lock_*_recursive): Define also for USE_POSIX_THREADS or
+	USE_PTH_THREADS.
+	(_nl_load_domain): Remove extraneous comma.
+	* localealias.c: Include THREAD_H.
+	(__libc_lock_*): Define also for USE_POSIX_THREADS or USE_PTH_THREADS.
+	(lock): Define always.
+	(_nl_expand_alias): Use lock always.
+	* textdomain.c: Include THREAD_H.
+	(__libc_rwlock_*): Define also for USE_POSIX_THREADS or
+	USE_PTH_THREADS.
+	* log.c: Include THREAD_H.
+	(__libc_lock_*): Define also for USE_POSIX_THREADS or USE_PTH_THREADS.
+	(last_logfilename, last_logfile, lock): New variables.
+	(_nl_log_untranslated_locked): Renamed from _nl_log_untranslated.
+	(_nl_log_untranslated): Rewritten.
+
+2005-02-16  Roland McGrath  <roland@redhat.com>
+
+	* dcigettext.c (_nl_find_msg): Add a cast.
+
+	* dcigettext.c (INTVARDEF, INTUSE): Macros removed.
+	(_nl_default_dirname): Use libc_hidden_data_def instead of INTVARDEF.
+	(libc_freeres_fn, DCIGETTEXT): Don't use INTUSE.
+	* bindtextdom.c (INTUSE): Macro removed.
+	(_nl_default_dirname): Use libc_hidden_proto.
+	(set_binding_values): Don't use INTUSE.
+
+2005-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (__libc_rwlock_wrlock): Define fallback.
+	* finddomain.c (__libc_rwlock_define_initialized,
+	__libc_rwlock_rdlock, __libc_rwlock_wrlock, __libc_rwlock_unlock):
+	Define fallbacks.
+	* loadmsgcat.c (__libc_lock_define_initialized_recursive,
+	__libc_lock_lock_recursive, __libc_lock_unlock_recursive): Define
+	fallbacks.
+	(_nl_load_domain): Fix portability problems in last patch.
+
+2004-09-25  Ulrich Drepper  <drepper@redhat.com>
+
+	* dcigettext.c (DCIGETTEXT): Protect tfind/tsearch calls.
+	* dcigettext.c (_nl_find_msg): Call _nl_load_domain also if
+	decided < 0.
+	* finddomain.c (_nl_find_domain): Likewise.
+	* loadmsgcat.c (_nl_load_domain): Set decided to 1 only once we
+	are done.  First set to -1 to signal initialization is ongoing.
+	Protect against concurrent callers with recursive lock.
+	* finddomain.c (_nl_find_domain): Protect calls to
+	_nl_make_l10nflist.  [BZ #322]
+
+2004-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* finddomain.c (free_mem): Rename to...
+	(_nl_finddomain_subfreeres): ... this.  Add __libc_freeres_fn_section.
+	* loadmsgcat.c (_nl_unload_domain): Add __libc_freeres_fn_section.
+	* gettextP.h (_nl_unload_domain): Move into #ifdef _LIBC.
+	Add attribute_hidden.
+	(_nl_findomain_subfreeres): New prototype.
+
+2005-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (_nl_find_msg) [_LIBC]: Update norm_add_slashes call.
+	2004-03-24  Roland McGrath  <roland@redhat.com>
+		* loadmsgcat.c (_nl_init_domain_conv): Update norm_add_slashes
+		call.
+
+2005-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* localealias.c (read_alias_file): Limit last patch to _LIBC case.
+
+2003-09-04  Ulrich Drepper  <drepper@redhat.com>
+
+	* localealias.c (read_alias_file): Use fopen with 'c' mode flag.
+
+2003-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* loadmsgcat.c (open, close, read, mmap, munmap): Define as
+	function-like macros.
+
+2003-09-02  Ulrich Drepper  <drepper@redhat.com>
+
+	* loadmsgcat.c: For _LIBC, call not cancelable versions of open, close,
+	and read.
+
+2003-06-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* localealias.c (read_alias_file): Determine whether line is read
+	incompletely early, before we modify the line.
+
+2005-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* hash-string.h (__hash_string): Define differently outside glibc.
+	* hash-string.c: Include config.h.
+	* Makefile.in (SOURCES): Add hash-string.c.
+	(OBJECTS): Add hash-string.$lo.
+	(hash-string.lo): New rule.
+	(hash-string.$lo): Depend on hash-string.h.
+	* Makefile.msvc (OBJECTS): Add hash-string.obj.
+	(hash-string.obj): New rule.
+	* Makefile.vms (OBJECTS): Add hash-string.obj.
+	(hash-string.obj): New rule.
+
+2003-06-11  Ulrich Drepper  <drepper@redhat.com>
+
+	Remove warnings gcc 3.3 shows.
+	* hash-string.c: New file.
+	* hash-string.h: Remove hash_string definition.  Declare __hash_string.
+	* dcigettext.c (_nl_find_msg): Adjust hash_string caller.
+	* loadmsgcat.c (_nl_load_domain): Likewise.
+
+2003-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* plural.y: Include string.h. Needed because recent versions of bison
+	generate output that uses memcpy().
+
+2003-01-07  Ulrich Drepper  <drepper@redhat.com>
+
+	* explodename.c (_nl_find_language.c): Mark as static.
+	* loadinfo.h: Remove _nl_find_language prototype.
+
+2005-04-30  Bruno Haible  <bruno@clisp.org>
+
+	* langprefs.c: Use #include <CoreFoundation/...> syntax. It's a
+	special Apple syntax implemented in the C compiler, but since
+	<CFString.h> already uses it, all compilers usable on MacOS X must
+	support it.
+	* localename.c: Likewise.
+
+2005-05-03  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c: Include langinfo.h.
+	(HAVE_PER_THREAD_LOCALE): Define also if HAVE_NL_LOCALE_NAME.
+	(DCIGETTEXT): Support retrieving the locale name through nl_langinfo
+	and NL_LOCALE_NAME.
+
+2005-03-20  Bruno Haible  <bruno@clisp.org>
+
+	Make it possible for multiple threads to use gettext() in different
+	locales.
+	* dcigettext.c (HAVE_PER_THREAD_LOCALE): New macro.
+	(struct known_translation_t): If HAVE_PER_THREAD_LOCALE, add localename
+	field.
+	(transcmp): If HAVE_PER_THREAD_LOCALE, compare localename fields.
+	(DCIGETTEXT): If HAVE_PER_THREAD_LOCALE, fill the localename field in
+	search and newp.
+	(guess_category_value): If HAVE_PER_THREAD_LOCALE, look at the thread's
+	locale.
+
+2005-03-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettextP.h (struct loaded_domain): Remove codeset_cntr field.
+	(struct binding): Likewise.
+	* bindtextdom.c (set_binding_values): Drop codeset_cntr modifications.
+
+2005-03-19  Bruno Haible  <bruno@clisp.org>
+
+	Fix gettext-tools/tests/gettext-5 bug.
+	* gettextP.h (struct converted_domain): New type.
+	(struct loaded_domain): Remove the conv, conv_tab fields. Add
+	conversions, nconversions fields.
+	(_nl_init_domain_conv): Remove declaration.
+	(_nl_free_domain_conv): Remove declaration.
+	(_nl_find_msg): Add convert argument.
+	* dcigettext.c (DCIGETTEXT): Call _nl_find_msg with convert=1.
+	(_nl_find_msg): Add convert argument. When a conversion to a different
+	charset is needed, create a new converted_domain element, instead of
+	throwing away the old converted translations.
+	(get_output_charset): New function.
+	* loadmsgcat.c (_nl_init_domain_conv): Remove function.
+	(_nl_free_domain_conv): Remove function.
+	(_nl_load_domain): Initialize the conversions array to empty. Use
+	_nl_find_msg instead of _nl_init_domain_conv to retrieve the header
+	entry.
+	(_nl_unload_domain): Free the conversions array and its contents.
+
+2005-03-19  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (struct known_translation_t): Change type of domainname
+	field to 'const char *'.
+	(DCIGETTEXT): Remove const-cast.
+
+2005-04-18  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (_INTL_REDIRECT_ASM): Test for __APPLE_CC__ > 1.
+	Needed because gcc-4.0 defines __APPLE_CC__ and implements
+	__USER_LABEL_PREFIX__ correctly.
+	* plural-exp.c (GERMANIC_PLURAL): Test for __APPLE_CC > 1.
+	Needed because gcc-4.0 defines __APPLE_CC__.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

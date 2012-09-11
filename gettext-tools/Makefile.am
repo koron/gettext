@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools directory of GNU gettext
-## Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -23,12 +23,13 @@ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I .
 SUBDIRS = doc intl lib libgrep libuniname src po projects misc man m4 tests examples
 
 EXTRA_DIST = misc/DISCLAIM
+MOSTLYCLEANFILES = core *.stackdump
 
 
 # Files installed for use by gettextize.
 
 gettextsrcdir = $(datadir)/gettext
-gettextsrc_SCRIPTS = ../autoconf-lib-link/config.rpath ../build-aux/mkinstalldirs
+gettextsrc_SCRIPTS = ../autoconf-lib-link/config.rpath
 
 
 # Files copied from other directories.
@@ -54,6 +55,7 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_DLFCN_H$$/#define HAVE_DLFCN_H 1/' \
 	     -e 's/#undef HAVE_ERRNO_DECL$$/#define HAVE_ERRNO_DECL 1/' \
 	     -e 's/#undef HAVE_FCNTL_H$$/#define HAVE_FCNTL_H 1/' \
+	     -e 's/#undef HAVE_FWPRINTF$$/#define HAVE_FWPRINTF 1/' \
 	     -e 's/#undef HAVE_GETCWD$$/#define HAVE_GETCWD 1/' \
 	     -e 's/#undef HAVE_GETEGID$$/#define HAVE_GETEGID 1/' \
 	     -e 's/#undef HAVE_GETEUID$$/#define HAVE_GETEUID 1/' \
@@ -72,7 +74,6 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_LC_MESSAGES$$/#define HAVE_LC_MESSAGES 1/' \
 	     -e 's/#undef HAVE_LIBEXPAT$$/#define HAVE_LIBEXPAT 1/' \
 	     -e 's/#undef HAVE_LIMITS_H$$/#define HAVE_LIMITS_H 1/' \
-	     -e 's/#undef HAVE_LOCALE_H$$/#define HAVE_LOCALE_H 1/' \
 	     -e 's/#undef HAVE_LONG_FILE_NAMES$$/#define HAVE_LONG_FILE_NAMES 1/' \
 	     -e 's/#undef HAVE_MALLOC_H$$/#define HAVE_MALLOC_H 1/' \
 	     -e 's/#undef HAVE_MBRTOWC$$/#define HAVE_MBRTOWC 1/' \
@@ -121,7 +122,6 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_UTIMES$$/#define HAVE_UTIMES 1/' \
 	     -e 's/#undef HAVE_UTIME_H$$/#define HAVE_UTIME_H 1/' \
 	     -e 's/#undef HAVE_VFORK$$/#define HAVE_VFORK 1/' \
-	     -e 's/#undef HAVE_VPRINTF$$/#define HAVE_VPRINTF 1/' \
 	     -e 's/#undef HAVE_WAITPID$$/#define HAVE_WAITPID 1/' \
 	     -e 's/#undef HAVE_WCHAR_H$$/#define HAVE_WCHAR_H 1/' \
 	     -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
@@ -169,6 +169,7 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef HAVE_ENVIRON_DECL$$/#define HAVE_ENVIRON_DECL 1/' \
 	    -e 's/#undef HAVE_ERRNO_DECL$$/#define HAVE_ERRNO_DECL 1/' \
 	    -e 's/#undef HAVE_FCNTL_H$$/#define HAVE_FCNTL_H 1/' \
+	    -e 's/#undef HAVE_FWPRINTF$$/#define HAVE_FWPRINTF 1/' \
 	    -e 's/#undef HAVE_GETCWD$$/#define HAVE_GETCWD 1/' \
 	    -e 's/#undef HAVE_GETHOSTBYNAME$$/#define HAVE_GETHOSTBYNAME 1/' \
 	    -e 's/#undef HAVE_GETHOSTNAME$$/#define HAVE_GETHOSTNAME 1/' \
@@ -177,7 +178,6 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef HAVE_ISWCNTRL$$/#define HAVE_ISWCNTRL 1/' \
 	    -e 's/#undef HAVE_ISWPRINT$$/#define HAVE_ISWPRINT 1/' \
 	    -e 's/#undef HAVE_LIMITS_H$$/#define HAVE_LIMITS_H 1/' \
-	    -e 's/#undef HAVE_LOCALE_H$$/#define HAVE_LOCALE_H 1/' \
 	    -e 's/#undef HAVE_LONG_FILE_NAMES$$/#define HAVE_LONG_FILE_NAMES 1/' \
 	    -e 's/#undef HAVE_MEMCHR$$/#define HAVE_MEMCHR 1/' \
 	    -e 's/#undef HAVE_MEMMOVE$$/#define HAVE_MEMMOVE 1/' \
@@ -200,7 +200,6 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef HAVE_SYS_STAT_H$$/#define HAVE_SYS_STAT_H 1/' \
 	    -e 's/#undef HAVE_SYS_TYPES_H$$/#define HAVE_SYS_TYPES_H 1/' \
 	    -e 's/#undef HAVE_TIME_H$$/#define HAVE_TIME_H 1/' \
-	    -e 's/#undef HAVE_VPRINTF$$/#define HAVE_VPRINTF 1/' \
 	    -e 's/#undef HAVE_WCHAR_H$$/#define HAVE_WCHAR_H 1/' \
 	    -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
 	    -e 's/#undef HAVE_WINT_T$$/#define HAVE_WINT_T 1/' \
@@ -229,8 +228,14 @@ config.h.msvc: config.h.in ../version.sh
 	  < $(srcdir)/config.h.in > $@
 
 windows/stdbool.h: lib/stdbool_.h
+	test -d windows || mkdir windows
 	sed -e 's/@''HAVE__BOOL''@/0/' < $(srcdir)/lib/stdbool_.h > $@
 
 all-local : windows/stdbool.h
 
 EXTRA_DIST += README.woe32 Makefile.msvc config.h.msvc windows/alloca.h windows/fnmatch.h windows/getopt.h windows/stdbool.h windows/gettextlib.def windows/gettextsrc.def windows/gettextpo.def windows/gettextlib.rc windows/gettextsrc.rc windows/gettextpo.rc
+
+
+# Cygwin support.
+
+EXTRA_DIST += woe32dll/export.h

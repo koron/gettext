@@ -1,5 +1,5 @@
 ## Makefile for the toplevel directory of GNU gettext
-## Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 
 AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
 
-SUBDIRS = autoconf-lib-link gettext-runtime gettext-tools
+SUBDIRS = gettext-runtime gettext-tools autoconf-lib-link
 
 EXTRA_DIST = \
   version.sh PACKAGING ChangeLog.0 autogen.sh \
   build-aux/config.libpath build-aux/reloc-ldflags build-aux/install-reloc \
   build-aux/ac-help.sed \
-  m4/fixautomake.m4 \
+  m4/fixautomake.m4 m4/woe32-dll.m4 \
   m4/libtool.m4
 
 # Additional dependencies for configure, due to the use of autoconf --trace.
@@ -57,4 +57,3 @@ EXTRA_DIST += README.vms Makefile.vms \
 # Woe32 support.
 
 EXTRA_DIST += README.woe32 Makefile.msvc
-EXTRA_DIST += README.mingw

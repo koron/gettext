@@ -58,6 +58,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
+mkinstalldirs = $(SHELL) \
+	$(top_srcdir)/../../../build-aux/mkinstalldirs
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -197,7 +199,6 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = 1.5 foreign no-dependencies
-mkinstalldirs = $(SHELL) @global_top_auxdir@/mkinstalldirs
 lib_LTLIBRARIES = librpathy.la
 librpathy_la_SOURCES = rpathy.c
 librpathy_la_LDFLAGS = @LTLIBRPATHX@ -lc -no-undefined

@@ -1,3 +1,44 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-05-14  Bruno Haible  <bruno@clisp.org>
+
+	Fix --enable-relocatable on non-glibc platforms, broken on 2005-12-04.
+	* Makefile.am (DEFS): Define EXEEXT.
+
+2006-05-07  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (libgrt_a_SOURCES): Add c-ctype.h and c-ctype.c.
+	* Makefile.msvc (OBJECTS): Add c-ctype.obj.
+	(c-ctype.obj): New rule.
+	* Makefile.vms (OBJECTS): Add c-ctype.obj.
+	(c-ctype.obj): New rule.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (libgrt_a_SOURCES): Add c-strcase*, gettext.h,
+	iconvstring.*, localcharset.*, propername.*, strstr.h.
+	(DEFS): Also define LIBDIR.
+	* Makefile.msvc (libdir): New variable.
+	(OBJECTS): Add c-strcasecmp.obj, iconvstring.obj, localcharset.obj,
+	propername.obj.
+	(c-strcasecmp.obj, iconvstring.obj, localcharset.obj, propername.obj):
+	New rules.
+	* Makefile.vms (prefix, exec_prefix, libdir): New variables.
+	(DEFS): Also define LIBDIR.
+	(OBJECTS): Add c-strcasecmp.obj, iconvstring.obj, localcharset.obj,
+	propername.obj.
+	(c-strcasecmp.obj, iconvstring.obj, localcharset.obj, propername.obj):
+	New rules.
+
+2005-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am: Remove rules depending on @STDBOOL_H@, @ALLOCA_H@,
+	@GETOPT_H@.
+	(BUILT_SOURCES): Add $(STDBOOL_H), $(ALLOCA_H).
+	Reported by Alexandre Duret-Lutz <adl@src.lip6.fr>.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

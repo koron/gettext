@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2003 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2001-2003, 2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -46,9 +46,7 @@
 # include <inttypes.h>
 #endif
 
-#if HAVE_UNISTD_H || _LIBC
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #if HAVE_GETTIMEOFDAY || _LIBC
 # if HAVE_SYS_TIME_H || _LIBC
@@ -61,9 +59,6 @@
 #endif
 
 #include <sys/stat.h>
-#if STAT_MACROS_BROKEN
-# undef S_ISDIR
-#endif
 #if !defined S_ISDIR && defined S_IFDIR
 # define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
@@ -87,9 +82,10 @@
 #endif
 
 #ifdef __MINGW32__
-/* mingw's mkdir() function has 1 argument, but we pass 2 arguments.
+# include <io.h>
+/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
    Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) mkdir)
+# define mkdir ((int (*)()) _mkdir)
 #endif
 
 #if !_LIBC

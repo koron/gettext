@@ -1,5 +1,5 @@
 /* Reading NeXTstep/GNUstep .strings files.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,8 @@
 #include "error-progname.h"
 #include "read-po-abstract.h"
 #include "xalloc.h"
-#include "exit.h"
+#include "xvasprintf.h"
+#include "po-xerror.h"
 #include "utf8-ucs4.h"
 #include "ucs4-utf8.h"
 #include "gettext.h"
@@ -92,8 +93,14 @@ phase1_getc ()
   if (c == EOF)
     {
       if (ferror (fp))
-	error (EXIT_FAILURE, errno, _("error while reading \"%s\""),
-	       real_file_name);
+	{
+	  const char *errno_description = strerror (errno);
+	  po_xerror (PO_SEVERITY_FATAL_ERROR, NULL, NULL, 0, 0, false,
+		     xasprintf ("%s: %s",
+				xasprintf (_("error while reading \"%s\""),
+					   real_file_name),
+				errno_description));
+	}
       return EOF;
     }
 
@@ -229,52 +236,46 @@ phase2_getc ()
 	      return UEOF;
 	    buf[1] = c;
 	    count = 2;
-	  }
 
-	if (buf[0] >= 0xe0
-	    && ((buf[1] ^ 0x80) < 0x40))
-	  {
-	    c = phase1_getc ();
-	    if (c == EOF)
-	      return UEOF;
-	    buf[2] = c;
-	    count = 3;
-	  }
+	    if (buf[0] >= 0xe0
+		&& ((buf[1] ^ 0x80) < 0x40))
+	      {
+		c = phase1_getc ();
+		if (c == EOF)
+		  return UEOF;
+		buf[2] = c;
+		count = 3;
 
-	if (buf[0] >= 0xf0
-	    && ((buf[1] ^ 0x80) < 0x40)
-	    && ((buf[2] ^ 0x80) < 0x40))
-	  {
-	    c = phase1_getc ();
-	    if (c == EOF)
-	      return UEOF;
-	    buf[3] = c;
-	    count = 4;
-	  }
+		if (buf[0] >= 0xf0
+		    && ((buf[2] ^ 0x80) < 0x40))
+		  {
+		    c = phase1_getc ();
+		    if (c == EOF)
+		      return UEOF;
+		    buf[3] = c;
+		    count = 4;
 
-	if (buf[0] >= 0xf8
-	    && ((buf[1] ^ 0x80) < 0x40)
-	    && ((buf[2] ^ 0x80) < 0x40)
-	    && ((buf[3] ^ 0x80) < 0x40))
-	  {
-	    c = phase1_getc ();
-	    if (c == EOF)
-	      return UEOF;
-	    buf[4] = c;
-	    count = 5;
-	  }
+		    if (buf[0] >= 0xf8
+			&& ((buf[3] ^ 0x80) < 0x40))
+		      {
+			c = phase1_getc ();
+			if (c == EOF)
+			  return UEOF;
+			buf[4] = c;
+			count = 5;
 
-	if (buf[0] >= 0xfc
-	    && ((buf[1] ^ 0x80) < 0x40)
-	    && ((buf[2] ^ 0x80) < 0x40)
-	    && ((buf[3] ^ 0x80) < 0x40)
-	    && ((buf[4] ^ 0x80) < 0x40))
-	  {
-	    c = phase1_getc ();
-	    if (c == EOF)
-	      return UEOF;
-	    buf[5] = c;
-	    count = 6;
+			if (buf[0] >= 0xfc
+			    && ((buf[4] ^ 0x80) < 0x40))
+			  {
+			    c = phase1_getc ();
+			    if (c == EOF)
+			      return UEOF;
+			    buf[5] = c;
+			    count = 6;
+			  }
+		      }
+		  }
+	      }
 	  }
 
 	u8_mbtouc (&uc, buf, count);
@@ -798,23 +799,17 @@ read_string (lex_pos_ty *pos)
 	  buffer[buflen++] = c;
 	}
       if (c == UEOF)
-	{
-	  error_with_progname = false;
-	  error (0, 0, _("%s:%lu: warning: unterminated string"),
-		 real_file_name, (unsigned long) gram_pos.line_number);
-	  error_with_progname = true;
-	}
+	po_xerror (PO_SEVERITY_ERROR, NULL,
+		   real_file_name, gram_pos.line_number, (size_t)(-1), false,
+		   _("warning: unterminated string"));
     }
   else
     {
       /* Read a token outside quotes.  */
       if (is_quotable (c))
-	{
-	  error_with_progname = false;
-	  error (0, 0, _("%s:%lu: warning: syntax error"),
-		 real_file_name, (unsigned long) gram_pos.line_number);
-	  error_with_progname = true;
-	}
+	po_xerror (PO_SEVERITY_ERROR, NULL,
+		   real_file_name, gram_pos.line_number, (size_t)(-1), false,
+		   _("warning: syntax error"));
       for (; c != UEOF && !is_quotable (c); c = phase4_getc ())
 	{
 	  if (buflen >= bufmax)
@@ -873,10 +868,9 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
       /* Expect a '=' or ';'.  */
       if (c == UEOF)
 	{
-	  error_with_progname = false;
-	  error (0, 0, _("%s:%lu: warning: unterminated key/value pair"),
-		 real_file_name, (unsigned long) gram_pos.line_number);
-	  error_with_progname = true;
+	  po_xerror (PO_SEVERITY_ERROR, NULL,
+		     real_file_name, gram_pos.line_number, (size_t)(-1), false,
+		     _("warning: unterminated key/value pair"));
 	  break;
 	}
       if (c == ';')
@@ -885,7 +879,7 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
 	     necessarily designate an untranslated entry.  */
 	  msgstr = "";
 	  msgstr_pos = msgid_pos;
-	  po_callback_message (msgid, &msgid_pos, NULL,
+	  po_callback_message (NULL, msgid, &msgid_pos, NULL,
 			       msgstr, strlen (msgstr) + 1, &msgstr_pos,
 			       false, next_is_obsolete);
 	}
@@ -895,10 +889,9 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
 	  msgstr = read_string (&msgstr_pos);
 	  if (msgstr == NULL)
 	    {
-	      error_with_progname = false;
-	      error (0, 0, _("%s:%lu: warning: unterminated key/value pair"),
-		     real_file_name, (unsigned long) gram_pos.line_number);
-	      error_with_progname = true;
+	      po_xerror (PO_SEVERITY_ERROR, NULL,
+			 real_file_name, gram_pos.line_number, (size_t)(-1),
+			 false, _("warning: unterminated key/value pair"));
 	      break;
 	    }
 
@@ -935,27 +928,25 @@ stringtable_parse (abstract_po_reader_ty *pop, FILE *file,
 		msgstr = fuzzy_msgstr;
 
 	      /* A key/value pair.  */
-	      po_callback_message (msgid, &msgid_pos, NULL,
+	      po_callback_message (NULL, msgid, &msgid_pos, NULL,
 				   msgstr, strlen (msgstr) + 1, &msgstr_pos,
 				   false, next_is_obsolete);
 	    }
 	  else
 	    {
-	      error_with_progname = false;
-	      error (0, 0, _("\
-%s:%lu: warning: syntax error, expected ';' after string"),
-		     real_file_name, (unsigned long) gram_pos.line_number);
-	      error_with_progname = true;
+	      po_xerror (PO_SEVERITY_ERROR, NULL,
+			 real_file_name, gram_pos.line_number, (size_t)(-1),
+			 false, _("\
+warning: syntax error, expected ';' after string"));
 	      break;
 	    }
 	}
       else
 	{
-	  error_with_progname = false;
-	  error (0, 0, _("\
-%s:%lu: warning: syntax error, expected '=' or ';' after string"),
-		 real_file_name, (unsigned long) gram_pos.line_number);
-	  error_with_progname = true;
+	  po_xerror (PO_SEVERITY_ERROR, NULL,
+		     real_file_name, gram_pos.line_number, (size_t)(-1), false,
+		     _("\
+warning: syntax error, expected '=' or ';' after string"));
 	  break;
 	}
     }

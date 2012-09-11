@@ -1,3 +1,120 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* windows/intl.rc: Bump version number to 0.15.0.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Remove AC_ISC_POSIX invocation.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume vprintf function.
+	* configure.ac: Remove AC_FUNC_VPRINTF invocation.
+	* Makefile.am (config.h_vms, config.h.msvc): Remove unused HAVE_VPRINTF
+	substitution.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (config.h_vms, config.h.msvc): Drop unused HAVE_LOCALE_H
+	substitution.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* configure.ac (docdir): If --docdir value was given, use that.
+	(mandir): Remove customization.
+
+2006-05-15  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (DLL_VARIABLE): Define as empty on mingw, like on
+	Cygwin.
+
+2006-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Pass a source-version and a target-version to
+	gt_JAVACOMP.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Test for strstr().
+	* Makefile.am (config.h_vms, config.h.msvc): Also define HAVE_STRSTR.
+
+2005-11-23  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* configure.ac: Invoke gl_WOE32_DLL.
+
+2005-11-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (config.h_vms, config.h.msvc): Treat HAVE_FWPRINTF like
+	HAVE_WPRINTF. Needed since 2003-09-17.
+	Reported by Svante Seleborg <svante@axantum.com>.
+
+2005-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (config.h_vms): Remove setting of HAVE_MALLOC_H,
+	HAVE_NL_TYPES_H.
+
+2005-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (intl/libgnuintl.h_vms, intl/libgnuintl.h.msvc-static,
+	intl/libgnuintl.h.msvc-shared): Remove the IN_LIBGLOCALE conditional.
+
+2008-08-28  Bruno Haible  <bruno@clisp.org>
+
+	* glocale: Remove directory, moved to separate project.
+	* configure.ac (--disable-libglocale): Remove option.
+	(SUBDIR_glocale): Remove variable.
+	(ENABLE_GLOCALE): Remove conditional.
+	(AC_CONFIG_SUBDIRS): Remove glocale.
+	* Makefile.am (SUBDIR_glocale): Remove variable.
+	(SUBDIRS): Remove $(SUBDIR_glocale).
+
+2005-08-13  Bruno Haible  <bruno@clisp.org>
+
+	New configure options --disable-java, --disable-native-java.
+	* configure.ac: Invoke gt_JAVA_CHOICE.
+	(BUILDJAVA): Use it.
+
+2005-08-10  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (SUBDIR_libasprintf, SUBDIR_glocale): Remove AC_SUBSTs.
+	(ENABLE_LIBASPRINTF, ENABLE_GLOCALE): New automake conditionals.
+	* Makefile.am (SUBDIR_libasprintf, SUBDIR_glocale): New variables.
+	(SUBDIRS): Use them.
+	(DIST_SUBDIRS): Remove variable. Automake computes it correctly through
+	the conditionals.
+	Suggested by Stepan Kasal <kasal@ucw.cz>.
+
+2005-07-31  Bruno Haible  <bruno@clisp.org>
+
+	* glocale: New directory.
+	* configure.ac (SUBDIR_glocale): New variable.
+	* Makefile.am (SUBDIRS): Add SUBDIR_glocale.
+	(DIST_SUBDIRS): Add glocale.
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Move the AM_GNU_GETTEXT invocation early, since it
+	modifies CPPFLAGS.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* tests: New directory.
+	* configure.ac (LIBSCHED): New variable.
+	Add AC_CONFIG of tests/Makefile.
+	* Makefile.am (SUBDIRS, DIST_SUBDIRS): Add tests.
+	(config.h.msvc): Define USE_WIN32_THREADS.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (DLL_VARIABLE): Define also as nonempty when building
+	shared libraries with mingw.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

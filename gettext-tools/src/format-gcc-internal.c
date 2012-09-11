@@ -26,7 +26,7 @@
 #include "format.h"
 #include "c-ctype.h"
 #include "xalloc.h"
-#include "xerror.h"
+#include "xvasprintf.h"
 #include "format-invalid.h"
 #include "gettext.h"
 
@@ -645,6 +645,7 @@ struct formatstring_parser formatstring_gcc_internal =
   format_parse,
   format_free,
   format_get_number_of_directives,
+  NULL,
   format_check
 };
 

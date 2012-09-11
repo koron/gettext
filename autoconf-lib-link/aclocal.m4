@@ -850,3 +850,5 @@ AC_SUBST([am__untar])
 
 m4_include([../m4/fixautomake.m4])
 m4_include([../m4/libtool.m4])
+m4_include([../m4/woe32-dll.m4])
+m4_include([m4/lib-prefix.m4])

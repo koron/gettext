@@ -1,5 +1,5 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
    This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@
 #include "msgl-iconv.h"
 #include "strstr.h"
 #include "c-strcase.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -89,6 +90,7 @@ main (int argc, char *argv[])
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -141,8 +143,8 @@ main (int argc, char *argv[])
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "1995-1998, 2000-2005");
-      printf (_("Written by %s.\n"), "Peter Miller");
+	      "1995-1998, 2000-2006");
+      printf (_("Written by %s.\n"), proper_name ("Peter Miller"));
       exit (EXIT_SUCCESS);
     }
 
@@ -235,7 +237,7 @@ static bool
 is_message_selected (const message_ty *mp)
 {
   /* Always keep the header entry.  */
-  if (mp->msgid[0] == '\0')
+  if (is_header (mp))
     return true;
 
   return !mp->obsolete;
@@ -270,7 +272,7 @@ match_domain (const char *fn1, const char *fn2,
       refmsg = refmlp->item[j];
 
       /* See if it is in the other file.  */
-      defmsg = message_list_search (defmlp, refmsg->msgid);
+      defmsg = message_list_search (defmlp, refmsg->msgctxt, refmsg->msgid);
       if (defmsg)
 	defmsg->used = 1;
       else
@@ -279,11 +281,13 @@ match_domain (const char *fn1, const char *fn2,
 	     similar message, it could be a typo, or the suggestion may
 	     help.  */
 	  (*nerrors)++;
-	  defmsg = message_list_search_fuzzy (defmlp, refmsg->msgid);
+	  defmsg =
+	    message_list_search_fuzzy (defmlp, refmsg->msgctxt, refmsg->msgid);
 	  if (defmsg)
 	    {
 	      po_gram_error_at_line (&refmsg->pos, _("\
 this message is used but not defined..."));
+	      error_message_count--;
 	      po_gram_error_at_line (&defmsg->pos, _("\
 ...but this definition is similar"));
 	      defmsg->used = 1;
@@ -321,7 +325,7 @@ compare (const char *fn1, const char *fn2)
 	message_list_ty *mlp = ref->item[k]->messages;
 
 	for (j = 0; j < mlp->nitems; j++)
-	  if (mlp->item[j]->msgid[0] == '\0' /* && !mlp->item[j]->obsolete */)
+	  if (is_header (mlp->item[j]) /* && !mlp->item[j]->obsolete */)
 	    {
 	      const char *header = mlp->item[j]->msgstr;
 

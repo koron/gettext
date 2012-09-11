@@ -1,5 +1,5 @@
 /* xgettext awk backend.
-   Copyright (C) 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2005-2006 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2002.
 
@@ -67,25 +67,19 @@ x_awk_keyword (const char *name)
   else
     {
       const char *end;
-      int argnum1;
-      int argnum2;
+      struct callshape shape;
       const char *colon;
 
       if (keywords.table == NULL)
-	init_hash (&keywords, 100);
+	hash_init (&keywords, 100);
 
-      split_keywordspec (name, &end, &argnum1, &argnum2);
+      split_keywordspec (name, &end, &shape);
 
       /* The characters between name and end should form a valid C identifier.
 	 A colon means an invalid parse in split_keywordspec().  */
       colon = strchr (name, ':');
       if (colon == NULL || colon >= end)
-	{
-	  if (argnum1 == 0)
-	    argnum1 = 1;
-	  insert_entry (&keywords, name, end - name,
-			(void *) (long) (argnum1 + (argnum2 << 10)));
-	}
+	insert_keyword_callshape (&keywords, name, end - name, &shape);
     }
 }
 
@@ -96,6 +90,8 @@ init_keywords ()
 {
   if (default_keywords)
     {
+      /* When adding new keywords here, also update the documentation in
+	 xgettext.texi!  */
       x_awk_keyword ("dcgettext");
       x_awk_keyword ("dcngettext:1,2");
       default_keywords = false;
@@ -205,7 +201,7 @@ phase2_getc ()
 	  buffer = xrealloc (buffer, bufmax);
 	}
       buffer[buflen] = '\0';
-      xgettext_comment_add (buffer);
+      savable_comment_add (buffer);
       last_comment_line = lineno;
     }
   return c;
@@ -400,7 +396,7 @@ x_awk_lex (token_ty *tp)
 
 	case '\n':
 	  if (last_non_comment_line > last_comment_line)
-	    xgettext_comment_reset ();
+	    savable_comment_reset ();
 	  /* Newline is not allowed inside expressions.  It usually
 	     introduces a fresh statement.
 	     FIXME: Newlines after any of ',' '{' '?' ':' '||' '&&' 'do' 'else'
@@ -688,25 +684,19 @@ static flag_context_list_table_ty *flag_context_list_table;
 
 /* Extract messages until the next balanced closing parenthesis.
    Extracted messages are added to MLP.
-   When a specific argument shall be extracted, COMMAS_TO_SKIP >= 0 and,
-   if also a plural argument shall be extracted, PLURAL_COMMAS > 0,
-   otherwise PLURAL_COMMAS = 0.
-   When no specific argument shall be extracted, COMMAS_TO_SKIP < 0.
    Return true upon eof, false upon closing parenthesis.  */
 static bool
 extract_parenthesized (message_list_ty *mlp,
 		       flag_context_ty outer_context,
 		       flag_context_list_iterator_ty context_iter,
-		       int commas_to_skip, int plural_commas)
+		       struct arglist_parser *argparser)
 {
-  /* Remember the message containing the msgid, for msgid_plural.  */
-  message_ty *plural_mp = NULL;
-
+  /* Current argument number.  */
+  int arg = 1;
   /* 0 when no keyword has been seen.  1 right after a keyword is seen.  */
   int state;
   /* Parameters of the keyword just seen.  Defined only in state 1.  */
-  int next_commas_to_skip = -1;
-  int next_plural_commas = 0;
+  const struct callshapes *next_shapes = NULL;
   /* Whether to implicitly assume the next tokens are arguments even without
      a '('.  */
   bool next_is_argument = false;
@@ -744,15 +734,11 @@ extract_parenthesized (message_list_ty *mlp,
 	  {
 	    void *keyword_value;
 
-	    if (find_entry (&keywords, token.string, strlen (token.string),
-			    &keyword_value)
+	    if (hash_find_entry (&keywords, token.string, strlen (token.string),
+				 &keyword_value)
 		== 0)
 	      {
-		int argnum1 = (int) (long) keyword_value & ((1 << 10) - 1);
-		int argnum2 = (int) (long) keyword_value >> 10;
-
-		next_commas_to_skip = argnum1 - 1;
-		next_plural_commas = (argnum2 > argnum1 ? argnum2 - argnum1 : 0);
+		next_shapes = (const struct callshapes *) keyword_value;
 		state = 1;
 	      }
 	    else
@@ -771,31 +757,23 @@ extract_parenthesized (message_list_ty *mlp,
 
 	case token_type_lparen:
 	  if (extract_parenthesized (mlp, inner_context, next_context_iter,
-				     state ? next_commas_to_skip : -1,
-				     state ? next_plural_commas : 0))
-	    return true;
+				     arglist_parser_alloc (mlp,
+							   state ? next_shapes : NULL)))
+	    {
+	      arglist_parser_done (argparser, arg);
+	      return true;
+	    }
 	  next_is_argument = false;
 	  next_context_iter = null_context_list_iterator;
 	  state = 0;
 	  continue;
 
 	case token_type_rparen:
+	  arglist_parser_done (argparser, arg);
 	  return false;
 
 	case token_type_comma:
-	  if (commas_to_skip >= 0)
-	    {
-	      if (commas_to_skip > 0)
-		commas_to_skip--;
-	      else
-		if (plural_mp != NULL && plural_commas > 0)
-		  {
-		    commas_to_skip = plural_commas - 1;
-		    plural_commas = 0;
-		  }
-		else
-		  commas_to_skip = -1;
-	    }
+	  arg++;
 	  inner_context =
 	    inherited_context (outer_context,
 			       flag_context_list_iterator_advance (
@@ -812,31 +790,13 @@ extract_parenthesized (message_list_ty *mlp,
 	    pos.line_number = token.line_number;
 
 	    if (extract_all)
-	      remember_a_message (mlp, token.string, inner_context, &pos);
+	      remember_a_message (mlp, NULL, token.string, inner_context, &pos,
+				  savable_comment);
 	    else
-	      {
-		if (commas_to_skip == 0)
-		  {
-		    if (plural_mp == NULL)
-		      {
-			/* Seen an msgid.  */
-			message_ty *mp =
-			  remember_a_message (mlp, token.string,
-					      inner_context, &pos);
-			if (plural_commas > 0)
-			  plural_mp = mp;
-		      }
-		    else
-		      {
-			/* Seen an msgid_plural.  */
-			remember_a_message_plural (plural_mp, token.string,
-						   inner_context, &pos);
-			plural_mp = NULL;
-		      }
-		  }
-		else
-		  free (token.string);
-	      }
+	      arglist_parser_remember (argparser, arg, token.string,
+				       inner_context,
+				       pos.file_name, pos.line_number,
+				       savable_comment);
 	  }
 	  next_is_argument = false;
 	  next_context_iter = null_context_list_iterator;
@@ -849,7 +809,8 @@ extract_parenthesized (message_list_ty *mlp,
 	    pos.file_name = logical_file_name;
 	    pos.line_number = token.line_number;
 
-	    remember_a_message (mlp, token.string, inner_context, &pos);
+	    remember_a_message (mlp, NULL, token.string, inner_context, &pos,
+				savable_comment);
 	  }
 	  next_is_argument = false;
 	  next_context_iter = null_context_list_iterator;
@@ -875,6 +836,7 @@ extract_parenthesized (message_list_ty *mlp,
 	  continue;
 
 	case token_type_eof:
+	  arglist_parser_done (argparser, arg);
 	  return true;
 
 	case token_type_other:
@@ -915,7 +877,7 @@ extract_awk (FILE *f,
   /* Eat tokens until eof is seen.  When extract_parenthesized returns
      due to an unbalanced closing parenthesis, just restart it.  */
   while (!extract_parenthesized (mlp, null_context, null_context_list_iterator,
-				 -1, 0))
+				 arglist_parser_alloc (mlp, NULL)))
     ;
 
   fp = NULL;

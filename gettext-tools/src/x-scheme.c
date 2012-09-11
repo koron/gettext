@@ -1,5 +1,5 @@
 /* xgettext Scheme backend.
-   Copyright (C) 2004-2005 Free Software Foundation, Inc.
+   Copyright (C) 2004-2006 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <bruno@clisp.org>, 2004-2005.
 
@@ -94,14 +94,13 @@ x_scheme_keyword (const char *name)
   else
     {
       const char *end;
-      int argnum1;
-      int argnum2;
+      struct callshape shape;
       const char *colon;
 
       if (keywords.table == NULL)
-	init_hash (&keywords, 100);
+	hash_init (&keywords, 100);
 
-      split_keywordspec (name, &end, &argnum1, &argnum2);
+      split_keywordspec (name, &end, &shape);
 
       /* The characters between name and end should form a valid Lisp symbol.
 	 Extract the symbol name part.  */
@@ -116,10 +115,7 @@ x_scheme_keyword (const char *name)
 	    return;
 	}
 
-      if (argnum1 == 0)
-	argnum1 = 1;
-      insert_entry (&keywords, name, end - name,
-		    (void *) (long) (argnum1 + (argnum2 << 10)));
+      insert_keyword_callshape (&keywords, name, end - name, &shape);
     }
 }
 
@@ -130,6 +126,8 @@ init_keywords ()
 {
   if (default_keywords)
     {
+      /* When adding new keywords here, also update the documentation in
+	 xgettext.texi!  */
       x_scheme_keyword ("gettext");		/* libguile/i18n.c */
       x_scheme_keyword ("ngettext:1,2");	/* libguile/i18n.c */
       x_scheme_keyword ("gettext-noop");
@@ -609,7 +607,7 @@ comment_line_end (size_t chars_to_remove)
       buffer = xrealloc (buffer, bufmax);
     }
   buffer[buflen] = '\0';
-  xgettext_comment_add (buffer);
+  savable_comment_add (buffer);
 }
 
 
@@ -699,7 +697,7 @@ read_object (struct object *op, flag_context_ty outer_context)
 	     precede it, with no non-whitespace token on a line between
 	     both.  */
 	  if (last_non_comment_line > last_comment_line)
-	    xgettext_comment_reset ();
+	    savable_comment_reset ();
 	  continue;
 
 	case ';':
@@ -730,9 +728,8 @@ read_object (struct object *op, flag_context_ty outer_context)
 	  {
 	     int arg = 0;		/* Current argument number.  */
 	     flag_context_list_iterator_ty context_iter;
-	     int argnum1 = 0;	/* First string position.  */
-	     int argnum2 = 0;	/* Plural string position.  */
-	     message_ty *plural_mp = NULL;	/* Remember the msgid.  */
+	    const struct callshapes *shapes = NULL;
+	    struct arglist_parser *argparser = NULL;
 
 	     for (;; arg++)
 	       {
@@ -754,6 +751,8 @@ read_object (struct object *op, flag_context_ty outer_context)
 		  {
 		    op->type = t_other;
 		    last_non_comment_line = line_number;
+		    if (argparser != NULL)
+		      arglist_parser_done (argparser, arg);
 		    return;
 		  }
 
@@ -773,14 +772,13 @@ read_object (struct object *op, flag_context_ty outer_context)
 			char *symbol_name = string_of_object (&inner);
 			void *keyword_value;
 
-			if (find_entry (&keywords,
-					symbol_name, strlen (symbol_name),
-					&keyword_value)
+			if (hash_find_entry (&keywords,
+					     symbol_name, strlen (symbol_name),
+					     &keyword_value)
 			    == 0)
-			  {
-			    argnum1 = (int) (long) keyword_value & ((1 << 10) - 1);
-			    argnum2 = (int) (long) keyword_value >> 10;
-			  }
+			  shapes = (const struct callshapes *) keyword_value;
+
+			argparser = arglist_parser_alloc (mlp, shapes);
 
 			context_iter =
 			  flag_context_list_iterator (
@@ -795,40 +793,20 @@ read_object (struct object *op, flag_context_ty outer_context)
 		  }
 		else
 		  {
-		    /* These are the argument positions.
-		       Extract a string if we have reached the right
-		       argument position.  */
-		    if (arg == argnum1)
-		      {
-			if (inner.type == t_string)
-			  {
-			    lex_pos_ty pos;
-			    message_ty *mp;
-
-			    pos.file_name = logical_file_name;
-			    pos.line_number = inner.line_number_at_start;
-			    mp = remember_a_message (mlp, string_of_object (&inner),
-						     inner_context, &pos);
-			    if (argnum2 > 0)
-			      plural_mp = mp;
-			  }
-		      }
-		    else if (arg == argnum2)
-		      {
-			if (inner.type == t_string && plural_mp != NULL)
-			  {
-			    lex_pos_ty pos;
-
-			    pos.file_name = logical_file_name;
-			    pos.line_number = inner.line_number_at_start;
-			    remember_a_message_plural (plural_mp, string_of_object (&inner),
-						       inner_context, &pos);
-			  }
-		      }
+		    /* These are the argument positions.  */
+		    if (inner.type == t_string)
+		      arglist_parser_remember (argparser, arg,
+					       string_of_object (&inner),
+					       inner_context,
+					       logical_file_name,
+					       inner.line_number_at_start,
+					       savable_comment);
 		  }
 
 		free_object (&inner);
 	      }
+	    if (argparser != NULL)
+	      arglist_parser_done (argparser, arg);
 	  }
 	  op->type = t_other;
 	  last_non_comment_line = line_number;
@@ -1154,8 +1132,8 @@ read_object (struct object *op, flag_context_ty outer_context)
 
 		pos.file_name = logical_file_name;
 		pos.line_number = op->line_number_at_start;
-		remember_a_message (mlp, string_of_object (op),
-				    null_context, &pos);
+		remember_a_message (mlp, NULL, string_of_object (op),
+				    null_context, &pos, savable_comment);
 	      }
 	    last_non_comment_line = line_number;
 	    return;

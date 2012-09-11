@@ -1,3 +1,63 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-06-23  Bruno Haible  <bruno@clisp.org>
+
+	Biarch support.
+	* configure.ac: Invoke AC_LIB_PREPARE_MULTILIB. Set LIBDIRSTEM.
+	* tests/Makefile.am (TESTS_ENVIRONMENT): Set LIBDIRSTEM.
+	* tests/rpath-1: Pass --libdir to all configure invocations.
+	* tests/rpath-2_a: Likewise.
+	* tests/rpath-2_b: Likewise.
+	* tests/rpath-3_a: Likewise.
+	* tests/rpath-3_b: Likewise.
+	* tests/rpathcfg.sh: Likewise.
+
+2006-05-15  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Improve support for Sun C 5.9 on Linux, based on
+	libtool patch by Ralf Wildenhues.
+
+2006-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Add support for Sun C 5.9 on Linux.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (all-local): Remove dependency on build-aux/mkinstalldirs.
+	(build-aux/mkinstalldirs): Remove rule.
+	(DISTCLEANFILES): Remove build-aux/mkinstalldirs.
+	* tests/rpathlx/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathly/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathlyx/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathlz/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathlzyx/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathx/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathy/Makefile.am (mkinstalldirs): Remove variable.
+	* tests/rpathz/Makefile.am (mkinstalldirs): Remove variable.
+
+2005-12-27  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Upgrade to libtool-1.5.22.
+
+2005-11-23  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* configure.ac: Invoke gl_WOE32_DLL.
+
+2005-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Upgrade to libtool-1.5.20.
+
+2005-09-18  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Complete upgrade to libtool-1.5.16.
+
+2005-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* config.rpath: Upgrade to libtool-1.5.16.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

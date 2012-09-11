@@ -1,5 +1,5 @@
 /* Format strings.
-   Copyright (C) 2001-2004 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -58,6 +58,11 @@ struct formatstring_parser
      A string that can be output literally has 0 format directives.  */
   int (*get_number_of_directives) (void *descr);
 
+  /* Return true if the format string, although valid, contains directives that
+     make it appear unlikely that the string was meant as a format string.
+     A NULL function is equivalent to a function that always returns false.  */
+  bool (*is_unlikely_intentional) (void *descr);
+
   /* Verify that the argument types/names in msgid_descr and those in
      msgstr_descr are the same (if equality=true), or (if equality=false)
      that those of msgid_descr extend those of msgstr_descr (i.e.
@@ -88,6 +93,7 @@ extern DLL_VARIABLE struct formatstring_parser formatstring_perl_brace;
 extern DLL_VARIABLE struct formatstring_parser formatstring_php;
 extern DLL_VARIABLE struct formatstring_parser formatstring_gcc_internal;
 extern DLL_VARIABLE struct formatstring_parser formatstring_qt;
+extern DLL_VARIABLE struct formatstring_parser formatstring_boost;
 
 /* Table of all format string parsers.  */
 extern DLL_VARIABLE struct formatstring_parser *formatstring_parsers[NFORMATS];
@@ -106,12 +112,21 @@ extern void
        get_sysdep_c_format_directives (const char *string, bool translated,
 				 struct interval **intervalsp, size_t *lengthp);
 
+/* Returns the number of unnamed arguments consumed by a Python format
+   string.  */
+extern unsigned int get_python_format_unnamed_arg_count (const char *string);
+
 /* Check whether both formats strings contain compatible format
-   specifications.  Return true if there is an error.  */
-extern bool
+   specifications.
+   PLURAL_DISTRIBUTION is either NULL or an array of nplurals elements,
+   PLURAL_DISTRIBUTION[j] being true if the value j appears to be assumed
+   infinitely often by the plural formula.
+   Return the number of errors that were seen.  */
+extern int
        check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 				  const char *msgstr, size_t msgstr_len,
-				  enum is_format is_format[NFORMATS],
+				  const enum is_format is_format[NFORMATS],
+				  const unsigned char *plural_distribution,
 				  formatstring_error_logger_t error_logger);
 
 

@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+# Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ version=@VERSION@
 # Set variables
 # - gettext_dir     directory where the sources are stored.
 prefix="@prefix@"
+datarootdir="@datarootdir@"
 gettext_dir="@datadir@/gettext"
 
 # func_tmpdir
@@ -43,7 +44,7 @@ func_tmpdir ()
   {
     # Use the mktemp program if available. If not available, hide the error
     # message.
-    tmp=`(umask 077 && mktemp -d -q "$TMPDIR/gtXXXXXX") 2>/dev/null` &&
+    tmp=`(umask 077 && mktemp -d "$TMPDIR/gtXXXXXX") 2>/dev/null` &&
     test -n "$tmp" && test -d "$tmp"
   } ||
   {
@@ -78,7 +79,7 @@ func_find_curr_installdir ()
         else
           PATH_SEPARATOR=:
         fi
-        rm -f "$tmp"
+        rm -rf "$tmp"
       fi
       save_IFS="$IFS"; IFS="$PATH_SEPARATOR"
       for dir in $PATH; do
@@ -100,11 +101,17 @@ func_find_curr_installdir ()
     *) curr_executable=`pwd`/"$curr_executable" ;;
   esac
   # Resolve symlinks.
+  sed_dirname='s,/[^/]*$,,'
+  sed_linkdest='s,^.* -> \(.*\),\1,p'
   while : ; do
     lsline=`LC_ALL=C ls -l "$curr_executable"`
     case "$lsline" in
       *" -> "*)
-        curr_executable=`echo "$curr_executable" | sed -e 's,/[^/]*$,,'`/`echo "$lsline" | sed -n -e 's,^.* -> \(.*\),\1,p'` ;;
+        linkdest=`echo "$lsline" | sed -n -e "$sed_linkdest"`
+        case "$linkdest" in
+          /* | ?:/* | ?:\\*) curr_executable="$linkdest" ;;
+          *) curr_executable=`echo "$curr_executable" | sed -e "$sed_dirname"`/"$linkdest" ;;
+        esac ;;
       *) break ;;
     esac
   done
@@ -167,7 +174,7 @@ Report bugs to <bug-gnu-gettext@gnu.org>."
 func_version ()
 {
   echo "$progname (GNU $package) $version"
-  echo "Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+  echo "Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
   echo "Written by" "Ulrich Drepper"
@@ -284,7 +291,7 @@ if test $force -eq 0; then
   fi
 fi
 
-# Check in which directory config.rpath, mkinstalldirs etc. belong.
+# Check in which directory config.rpath etc. belong.
 auxdir=`cat "$configure_in" | grep '^AC_CONFIG_AUX_DIR' | sed -n -e 's/AC_CONFIG_AUX_DIR(\([^()]*\))/\1/p' | sed -e 's/^\[\(.*\)\]$/\1/' | sed -e 1q`
 if test -n "$auxdir"; then
   auxdir="$auxdir/"
@@ -569,7 +576,7 @@ test -d "$srcdir/po" || {
   added_directories="$added_directories po"
 }
 
-# Create the directory for config.rpath, mkinstalldirs, if needed.
+# Create the directory for config.rpath, if needed.
 # This is for consistency with autoreconf and automake.
 # Note that $auxdir is either empty or ends in a slash.
 test -d "$srcdir/$auxdir" || {
@@ -587,7 +594,7 @@ for file in *; do
     ABOUT-NLS)
       func_linkorcopy $file "$gettext_dir/$file" $file
       ;;
-    config.rpath | mkinstalldirs)
+    config.rpath)
       if test -f "$srcdir/$auxdir$file"; then
         :
       else
@@ -718,15 +725,15 @@ fi
 $do_changelog && func_poChangeLog_finish
 
 m4filelist='  codeset.m4 gettext.m4 glibc2.m4 glibc21.m4 iconv.m4 intdiv0.m4
-  intmax.m4 inttypes.m4 inttypes_h.m4 inttypes-pri.m4 isc-posix.m4 lcmessage.m4
-  lib-ld.m4 lib-link.m4 lib-prefix.m4 longdouble.m4 longlong.m4 nls.m4 po.m4
-  printf-posix.m4 progtest.m4 signed.m4 size_max.m4 stdint_h.m4 uintmax_t.m4
-  ulonglong.m4 wchar_t.m4 wint_t.m4 xsize.m4'
+  intmax.m4 inttypes_h.m4 inttypes-h.m4 inttypes-pri.m4 lcmessage.m4
+  lib-ld.m4 lib-link.m4 lib-prefix.m4 lock.m4 longdouble.m4 longlong.m4
+  nls.m4 po.m4 printf-posix.m4 progtest.m4 signed.m4 size_max.m4 stdint_h.m4
+  uintmax_t.m4 ulonglong.m4 visibility.m4 wchar_t.m4 wint_t.m4 xsize.m4'
 # We cannot omit codeset.m4, glibc2.m4, glibc21.m4, intdiv0.m4, intmax.m4,
-# inttypes.m4, inttypes_h.m4, inttypes-pri.m4, isc-posix.m4, lcmessage.m4,
+# inttypes_h.m4, inttypes-h.m4, inttypes-pri.m4, lcmessage.m4, lock.m4,
 # longdouble.m4, longlong.m4, nls.m4, po.m4, printf-posix.m4, signed.m4,
-# size_max.m4, stdint_h.m4, uintmax_t.m4, ulonglong.m4, wchar_t.m4, wint_t.m4,
-# xsize.m4
+# size_max.m4, stdint_h.m4, uintmax_t.m4, ulonglong.m4, visibility.m4,
+# wchar_t.m4, wint_t.m4, xsize.m4
 # if test -z "$intldir", otherwise "aclocal -I m4" might give an error.
 # (aclocal doesn't know which macros are really needed, it looks which macros
 # are potentially needed.)

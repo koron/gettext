@@ -65,11 +65,18 @@ test -d fr/LC_MESSAGES || mkdir fr/LC_MESSAGES
 : ${MSGFMT=msgfmt}
 ${MSGFMT} -o fr/LC_MESSAGES/prog.mo fr.po
 
-# Test for presence of php version 4.0 or newer.
-case `(php -v) 2>/dev/null` in
+# Test for presence of php version 4.0 or newer with gettext support.
+(php -v) >/dev/null 2>/dev/null
+test $? -le 1 \
+  || { echo "Skipping test: php not found"; rm -fr $tmpfiles; exit 77; }
+case `php -v | sed -n -e 1p | sed -e 's/^[^0-9]*//'` in
   [4-9].*) ;;
-  *) rm -fr $tmpfiles; exit 77;;
+  *) echo "Skipping test: php version too old"; rm -fr $tmpfiles; exit 77;;
 esac
+{ php -m | grep '^gettext$' >/dev/null; } \
+  || { echo "Skipping test: php was built without gettext support"
+       rm -fr $tmpfiles; exit 77
+     }
 
 # Test which of the fr_FR locales are installed.
 : ${LOCALE_FR=fr_FR}
@@ -91,6 +98,11 @@ if test $LOCALE_FR_UTF8 != none; then
   esac
 fi
 if test $LOCALE_FR = none && test $LOCALE_FR_UTF8 = none; then
+  if test -f /usr/bin/localedef; then
+    echo "Skipping test: no french locale is installed"
+  else
+    echo "Skipping test: no french locale is supported"
+  fi
   rm -fr $tmpfiles; exit 77
 fi
 

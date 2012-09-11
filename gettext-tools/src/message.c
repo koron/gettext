@@ -1,5 +1,5 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2004 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
@@ -30,6 +30,7 @@
 #include "fstrcmp.h"
 #include "hash.h"
 #include "xalloc.h"
+#include "xallocsa.h"
 
 
 const char *const format_language[NFORMATS] =
@@ -53,7 +54,8 @@ const char *const format_language[NFORMATS] =
   /* format_perl_brace */	"perl-brace",
   /* format_php */		"php",
   /* format_gcc_internal */	"gcc-internal",
-  /* format_qt */		"qt"
+  /* format_qt */		"qt",
+  /* format_boost */		"boost"
 };
 
 const char *const format_language_pretty[NFORMATS] =
@@ -77,7 +79,8 @@ const char *const format_language_pretty[NFORMATS] =
   /* format_perl_brace */	"Perl brace",
   /* format_php */		"PHP",
   /* format_gcc_internal */	"GCC internal",
-  /* format_qt */		"Qt"
+  /* format_qt */		"Qt",
+  /* format_boost */		"Boost"
 };
 
 
@@ -91,7 +94,8 @@ possible_format_p (enum is_format is_format)
 
 
 message_ty *
-message_alloc (const char *msgid, const char *msgid_plural,
+message_alloc (const char *msgctxt,
+	       const char *msgid, const char *msgid_plural,
 	       const char *msgstr, size_t msgstr_len,
 	       const lex_pos_ty *pp)
 {
@@ -99,6 +103,7 @@ message_alloc (const char *msgid, const char *msgid_plural,
   size_t i;
 
   mp = (message_ty *) xmalloc (sizeof (message_ty));
+  mp->msgctxt = msgctxt;
   mp->msgid = msgid;
   mp->msgid_plural = (msgid_plural != NULL ? xstrdup (msgid_plural) : NULL);
   mp->msgstr = msgstr;
@@ -189,7 +194,8 @@ message_copy (message_ty *mp)
   message_ty *result;
   size_t j, i;
 
-  result = message_alloc (xstrdup (mp->msgid), mp->msgid_plural,
+  result = message_alloc (mp->msgctxt != NULL ? xstrdup (mp->msgctxt) : NULL,
+			  xstrdup (mp->msgid), mp->msgid_plural,
 			  mp->msgstr, mp->msgstr_len, &mp->pos);
 
   if (mp->comment)
@@ -225,23 +231,60 @@ message_list_alloc (bool use_hashtable)
   mlp->nitems_max = 0;
   mlp->item = NULL;
   if ((mlp->use_hashtable = use_hashtable))
-    init_hash (&mlp->htable, 10);
+    hash_init (&mlp->htable, 10);
   return mlp;
 }
 
 
 void
-message_list_free (message_list_ty *mlp)
+message_list_free (message_list_ty *mlp, int keep_messages)
 {
   size_t j;
 
-  for (j = 0; j < mlp->nitems; ++j)
-    message_free (mlp->item[j]);
+  if (keep_messages == 0)
+    for (j = 0; j < mlp->nitems; ++j)
+      message_free (mlp->item[j]);
   if (mlp->item)
     free (mlp->item);
   if (mlp->use_hashtable)
-    delete_hash (&mlp->htable);
+    hash_destroy (&mlp->htable);
   free (mlp);
+}
+
+
+static int
+message_list_hash_insert_entry (hash_table *htable, message_ty *mp)
+{
+  char *alloced_key;
+  const char *key;
+  size_t keylen;
+  int found;
+
+  if (mp->msgctxt != NULL)
+    {
+      /* Concatenate mp->msgctxt and mp->msgid, to form the hash table key.  */
+      size_t msgctxt_len = strlen (mp->msgctxt);
+      size_t msgid_len = strlen (mp->msgid);
+      keylen = msgctxt_len + 1 + msgid_len + 1;
+      alloced_key = (char *) xallocsa (keylen);
+      memcpy (alloced_key, mp->msgctxt, msgctxt_len);
+      alloced_key[msgctxt_len] = MSGCTXT_SEPARATOR;
+      memcpy (alloced_key + msgctxt_len + 1, mp->msgid, msgid_len + 1);
+      key = alloced_key;
+    }
+  else
+    {
+      alloced_key = NULL;
+      key = mp->msgid;
+      keylen = strlen (mp->msgid) + 1;
+    }
+
+  found = (hash_insert_entry (htable, key, keylen, mp) == NULL);
+
+  if (mp->msgctxt != NULL)
+    freesa (alloced_key);
+
+  return found;
 }
 
 
@@ -259,7 +302,7 @@ message_list_append (message_list_ty *mlp, message_ty *mp)
   mlp->item[mlp->nitems++] = mp;
 
   if (mlp->use_hashtable)
-    if (insert_entry (&mlp->htable, mp->msgid, strlen (mp->msgid) + 1, mp))
+    if (message_list_hash_insert_entry (&mlp->htable, mp))
       /* A message list has duplicates, although it was allocated with the
 	 assertion that it wouldn't have duplicates.  It is a bug.  */
       abort ();
@@ -285,7 +328,7 @@ message_list_prepend (message_list_ty *mlp, message_ty *mp)
   mlp->nitems++;
 
   if (mlp->use_hashtable)
-    if (insert_entry (&mlp->htable, mp->msgid, strlen (mp->msgid) + 1, mp))
+    if (message_list_hash_insert_entry (&mlp->htable, mp))
       /* A message list has duplicates, although it was allocated with the
 	 assertion that it wouldn't have duplicates.  It is a bug.  */
       abort ();
@@ -311,7 +354,7 @@ message_list_insert_at (message_list_ty *mlp, size_t n, message_ty *mp)
   mlp->nitems++;
 
   if (mlp->use_hashtable)
-    if (insert_entry (&mlp->htable, mp->msgid, strlen (mp->msgid) + 1, mp))
+    if (message_list_hash_insert_entry (&mlp->htable, mp))
       /* A message list has duplicates, although it was allocated with the
 	 assertion that it wouldn't have duplicates.  It is a bug.  */
       abort ();
@@ -334,7 +377,7 @@ message_list_delete_nth (message_list_ty *mlp, size_t n)
   if (mlp->use_hashtable)
     {
       /* Our simple-minded hash tables don't support removal.  */
-      delete_hash (&mlp->htable);
+      hash_destroy (&mlp->htable);
       mlp->use_hashtable = false;
     }
 }
@@ -353,7 +396,7 @@ message_list_remove_if_not (message_list_ty *mlp,
   if (mlp->use_hashtable && i < mlp->nitems)
     {
       /* Our simple-minded hash tables don't support removal.  */
-      delete_hash (&mlp->htable);
+      hash_destroy (&mlp->htable);
       mlp->use_hashtable = false;
     }
   mlp->nitems = i;
@@ -368,20 +411,19 @@ message_list_msgids_changed (message_list_ty *mlp)
       unsigned long int size = mlp->htable.size;
       size_t j;
 
-      delete_hash (&mlp->htable);
-      init_hash (&mlp->htable, size);
+      hash_destroy (&mlp->htable);
+      hash_init (&mlp->htable, size);
 
       for (j = 0; j < mlp->nitems; j++)
 	{
 	  message_ty *mp = mlp->item[j];
 
-	  if (insert_entry (&mlp->htable, mp->msgid, strlen (mp->msgid) + 1,
-			    mp))
+	  if (message_list_hash_insert_entry (&mlp->htable, mp))
 	    /* A message list has duplicates, although it was allocated with
 	       the assertion that it wouldn't have duplicates, and before the
 	       msgids changed it indeed didn't have duplicates.  */
 	    {
-	      delete_hash (&mlp->htable);
+	      hash_destroy (&mlp->htable);
 	      mlp->use_hashtable = false;
 	      return true;
 	    }
@@ -392,16 +434,46 @@ message_list_msgids_changed (message_list_ty *mlp)
 
 
 message_ty *
-message_list_search (message_list_ty *mlp, const char *msgid)
+message_list_search (message_list_ty *mlp,
+		     const char *msgctxt, const char *msgid)
 {
   if (mlp->use_hashtable)
     {
-      void *htable_value;
+      char *alloced_key;
+      const char *key;
+      size_t keylen;
 
-      if (find_entry (&mlp->htable, msgid, strlen (msgid) + 1, &htable_value))
-	return NULL;
+      if (msgctxt != NULL)
+	{
+	  /* Concatenate the msgctxt and msgid, to form the hash table key.  */
+	  size_t msgctxt_len = strlen (msgctxt);
+	  size_t msgid_len = strlen (msgid);
+	  keylen = msgctxt_len + 1 + msgid_len + 1;
+	  alloced_key = (char *) xallocsa (keylen);
+	  memcpy (alloced_key, msgctxt, msgctxt_len);
+	  alloced_key[msgctxt_len] = MSGCTXT_SEPARATOR;
+	  memcpy (alloced_key + msgctxt_len + 1, msgid, msgid_len + 1);
+	  key = alloced_key;
+	}
       else
-	return (message_ty *) htable_value;
+	{
+	  alloced_key = NULL;
+	  key = msgid;
+	  keylen = strlen (msgid) + 1;
+	}
+
+      {
+	void *htable_value;
+	int found = !hash_find_entry (&mlp->htable, key, keylen, &htable_value);
+
+	if (msgctxt != NULL)
+	  freesa (alloced_key);
+
+	if (found)
+	  return (message_ty *) htable_value;
+	else
+	  return NULL;
+      }
     }
   else
     {
@@ -412,7 +484,10 @@ message_list_search (message_list_ty *mlp, const char *msgid)
 	  message_ty *mp;
 
 	  mp = mlp->item[j];
-	  if (strcmp (msgid, mp->msgid) == 0)
+	  if ((msgctxt != NULL
+	       ? mp->msgctxt != NULL && strcmp (msgctxt, mp->msgctxt) == 0
+	       : mp->msgctxt == NULL)
+	      && strcmp (msgid, mp->msgid) == 0)
 	    return mp;
 	}
       return NULL;
@@ -420,8 +495,30 @@ message_list_search (message_list_ty *mlp, const char *msgid)
 }
 
 
+double
+fuzzy_search_goal_function (const message_ty *mp,
+			    const char *msgctxt, const char *msgid)
+{
+  /* The use of 'volatile' guarantees that excess precision bits are dropped
+     before the addition and before the following comparison at the caller's
+     site.  It is necessary on x86 systems where double-floats are not IEEE
+     compliant by default, to avoid that msgmerge results become platform and
+     compiler option dependent.  'volatile' is a portable alternative to gcc's
+     -ffloat-store option.  */
+  volatile double weight = fstrcmp (msgid, mp->msgid);
+  /* A translation for a context is a good proposal also for another.  But
+     give mp a small advantage if mp is valid regardless of any context or
+     has the same context as the one being looked up.  */
+  if (mp->msgctxt == NULL
+      || (msgctxt != NULL && strcmp (msgctxt, mp->msgctxt) == 0))
+    weight += 0.00001;
+  return weight;
+}
+
+
 static message_ty *
-message_list_search_fuzzy_inner (message_list_ty *mlp, const char *msgid,
+message_list_search_fuzzy_inner (message_list_ty *mlp,
+				 const char *msgctxt, const char *msgid,
 				 double *best_weight_p)
 {
   size_t j;
@@ -436,7 +533,7 @@ message_list_search_fuzzy_inner (message_list_ty *mlp, const char *msgid,
 
       if (mp->msgstr != NULL && mp->msgstr[0] != '\0')
 	{
-	  double weight = fstrcmp (msgid, mp->msgid);
+	  double weight = fuzzy_search_goal_function (mp, msgctxt, msgid);
 	  if (weight > *best_weight_p)
 	    {
 	      *best_weight_p = weight;
@@ -449,12 +546,13 @@ message_list_search_fuzzy_inner (message_list_ty *mlp, const char *msgid,
 
 
 message_ty *
-message_list_search_fuzzy (message_list_ty *mlp, const char *msgid)
+message_list_search_fuzzy (message_list_ty *mlp,
+			   const char *msgctxt, const char *msgid)
 {
   double best_weight;
 
-  best_weight = 0.6;
-  return message_list_search_fuzzy_inner (mlp, msgid, &best_weight);
+  best_weight = FUZZY_THRESHOLD;
+  return message_list_search_fuzzy_inner (mlp, msgctxt, msgid, &best_weight);
 }
 
 
@@ -471,19 +569,18 @@ message_list_list_alloc ()
 }
 
 
-#if 0 /* unused */
 void
-message_list_list_free (message_list_list_ty *mllp)
+message_list_list_free (message_list_list_ty *mllp, int keep_level)
 {
   size_t j;
 
-  for (j = 0; j < mllp->nitems; ++j)
-    message_list_free (mllp->item[j]);
+  if (keep_level < 2)
+    for (j = 0; j < mllp->nitems; ++j)
+      message_list_free (mllp->item[j], keep_level);
   if (mllp->item)
     free (mllp->item);
   free (mllp);
 }
-#endif
 
 
 void
@@ -513,7 +610,8 @@ message_list_list_append_list (message_list_list_ty *mllp,
 
 
 message_ty *
-message_list_list_search (message_list_list_ty *mllp, const char *msgid)
+message_list_list_search (message_list_list_ty *mllp,
+			  const char *msgctxt, const char *msgid)
 {
   message_ty *best_mp;
   int best_weight; /* 0: not found, 1: found without msgstr, 2: translated */
@@ -527,7 +625,7 @@ message_list_list_search (message_list_list_ty *mllp, const char *msgid)
       message_ty *mp;
 
       mlp = mllp->item[j];
-      mp = message_list_search (mlp, msgid);
+      mp = message_list_search (mlp, msgctxt, msgid);
       if (mp)
 	{
 	  int weight = (mp->msgstr_len == 1 && mp->msgstr[0] == '\0' ? 1 : 2);
@@ -542,14 +640,16 @@ message_list_list_search (message_list_list_ty *mllp, const char *msgid)
 }
 
 
+#if 0 /* unused */
 message_ty *
-message_list_list_search_fuzzy (message_list_list_ty *mllp, const char *msgid)
+message_list_list_search_fuzzy (message_list_list_ty *mllp,
+				const char *msgctxt, const char *msgid)
 {
   size_t j;
   double best_weight;
   message_ty *best_mp;
 
-  best_weight = 0.6;
+  best_weight = FUZZY_THRESHOLD;
   best_mp = NULL;
   for (j = 0; j < mllp->nitems; ++j)
     {
@@ -557,12 +657,13 @@ message_list_list_search_fuzzy (message_list_list_ty *mllp, const char *msgid)
       message_ty *mp;
 
       mlp = mllp->item[j];
-      mp = message_list_search_fuzzy_inner (mlp, msgid, &best_weight);
+      mp = message_list_search_fuzzy_inner (mlp, msgctxt, msgid, &best_weight);
       if (mp)
 	best_mp = mp;
     }
   return best_mp;
 }
+#endif
 
 
 msgdomain_ty*
@@ -580,7 +681,7 @@ msgdomain_alloc (const char *domain, bool use_hashtable)
 void
 msgdomain_free (msgdomain_ty *mdp)
 {
-  message_list_free (mdp->messages);
+  message_list_free (mdp->messages, 0);
   free (mdp);
 }
 
@@ -667,7 +768,8 @@ msgdomain_list_sublist (msgdomain_list_ty *mdlp, const char *domain,
 
 #if 0 /* unused */
 message_ty *
-msgdomain_list_search (msgdomain_list_ty *mdlp, const char *msgid)
+msgdomain_list_search (msgdomain_list_ty *mdlp,
+		       const char *msgctxt, const char *msgid)
 {
   size_t j;
 
@@ -677,7 +779,7 @@ msgdomain_list_search (msgdomain_list_ty *mdlp, const char *msgid)
       message_ty *mp;
 
       mdp = mdlp->item[j];
-      mp = message_list_search (mdp->messages, msgid);
+      mp = message_list_search (mdp->messages, msgctxt, msgid);
       if (mp)
 	return mp;
     }
@@ -688,13 +790,14 @@ msgdomain_list_search (msgdomain_list_ty *mdlp, const char *msgid)
 
 #if 0 /* unused */
 message_ty *
-msgdomain_list_search_fuzzy (msgdomain_list_ty *mdlp, const char *msgid)
+msgdomain_list_search_fuzzy (msgdomain_list_ty *mdlp,
+			     const char *msgctxt, const char *msgid)
 {
   size_t j;
   double best_weight;
   message_ty *best_mp;
 
-  best_weight = 0.6;
+  best_weight = FUZZY_THRESHOLD;
   best_mp = NULL;
   for (j = 0; j < mdlp->nitems; ++j)
     {
@@ -702,7 +805,8 @@ msgdomain_list_search_fuzzy (msgdomain_list_ty *mdlp, const char *msgid)
       message_ty *mp;
 
       mdp = mdlp->item[j];
-      mp = message_list_search_fuzzy_inner (mdp->messages, msgid, &best_weight);
+      mp = message_list_search_fuzzy_inner (mdp->messages, msgctxt, msgid,
+					    &best_weight);
       if (mp)
 	best_mp = mp;
     }

@@ -1,3 +1,81 @@
+Version 0.15 - July 2006
+
+* GUI program support:
+  - PO files can now contain messages constrained to a certain context.
+    Most often such a context is a menu, dialog or panel identification.
+    The syntax in the PO file is
+      msgctxt "context"
+      msgid "original"
+      msgstr "translation"
+  - The xgettext program can be told through the --keyword flag which
+    function/macro argument has the role of a context.  It also supports
+    the GNOME glib convention to specify the context and original string
+    in the same string literal: "context|original".
+  - The (non-public) include file gettext.h defines macros pgettext, dpgettext
+    etc. that take a context argument.
+  For more information, see the node "Contexts" in the manual.
+
+* msgfmt's format string checking is now stricter in the presence of plural
+  forms.  For example, in German, with  nplurals=2  and  plural=(n != 1),
+  the translation
+
+     #, c-format
+     msgid "%d fatal error"
+     msgid_plural "%d fatal errors"
+     msgstr[0] "ein fataler Fehler"
+     msgstr[1] "fatale Fehler"
+
+  was earlier considered valid and now gives an error when "msgfmt --check"
+  is used:
+    "number of format specifications in 'msgid' and 'msgstr[1]' does not match"
+
+* msggrep has a new option -v/--invert-match that acts like grep's -v option.
+
+* msggrep has a new option -X/--extracted-comment that allows to search for a
+  pattern in the extracted comments.
+
+* xgettext's --keyword option now allows to specify an extracted comment on the
+  command line, rather than in program's source code.
+
+* msgmerge is much faster now, when using a large compendium.
+
+* A new program recode-sr-latin is provided, that converts Serbian text from
+  the Cyrillic script to the Latin script.
+  The command "msgfilter recode-sr-latin" can be used to convert a Serbian
+  Cyrillic PO file (sr.po) to a Serbian Latin PO file (sr@latin.po).
+
+* Programming languages support:
+
+  - C++ with Boost:
+    xgettext has a new option --boost that triggers the recognition and marking
+    of boost::format strings.
+
+  - Python:
+    xgettext now recognizes the source encoding from a "coding:" comment
+    among the first two lines.  The default encoding is now ASCII, no longer
+    ISO-8859-1.
+
+* libgettextpo library:
+  - The error handler type passed to po_file_read(), po_file_write(),
+    po_message_check_format() has changed.
+    This is an incompatible change: Programs using the library *must* update
+    their code.
+    Binary compatibility is guaranteed, however.
+
+* The 'mkinstalldirs' shell script is no longer needed and no longer installed
+  by gettextize.
+
+* Portability:
+  - Building on mingw is now supported.
+  - Building shared libraries (--enable-shared) on Cygwin and mingw is now
+    supported.
+
+* Interoperability with expat version 2.0.0.
+
+* Documentation:
+  A complete example showing the use of GNU gettext with the wxWidgets GUI
+  toolkit has been added.
+
 Version 0.14.6 - June 2006
 
 * Updated the meaning of 'gcc-internal-format' to match GCC 4.1.

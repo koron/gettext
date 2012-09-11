@@ -38,6 +38,7 @@ AC_OBJEXT
 AC_EXEEXT
 
 dnl Check for build configuration.
+gl_WOE32_DLL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
@@ -56,6 +57,10 @@ AC_SUBST(with_gnu_ld)
 
 aclocaldir='${datadir}/aclocal'
 AC_SUBST(aclocaldir)
+
+AC_LIB_PREPARE_MULTILIB
+LIBDIRSTEM=$acl_libdirstem
+AC_SUBST(LIBDIRSTEM)
 
 AC_CONFIG_FILES([Makefile],
                 [FIX_MAKEFILE_DISTRIB])

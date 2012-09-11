@@ -19,6 +19,7 @@
 
 AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 EXTRA_DIST =
+MOSTLYCLEANFILES = core *.stackdump
 CLEANFILES =
 DISTCLEANFILES =
 
@@ -26,7 +27,8 @@ RM = rm -f
 
 bin_PROGRAMS = \
 msgcmp msgfmt msgmerge msgunfmt xgettext \
-msgattrib msgcat msgcomm msgconv msgen msgexec msgfilter msggrep msginit msguniq
+msgattrib msgcat msgcomm msgconv msgen msgexec msgfilter msggrep msginit msguniq \
+recode-sr-latin
 
 noinst_PROGRAMS = hostname urlget
 
@@ -34,28 +36,28 @@ lib_LTLIBRARIES = libgettextsrc.la libgettextpo.la
 
 include_HEADERS = gettext-po.h
 
-noinst_HEADERS = pos.h message.h po-error.h po-gram.h po-charset.h \
+noinst_HEADERS = pos.h message.h po-error.h po-xerror.h po-gram.h po-charset.h \
 po-lex.h open-po.h \
 read-po-abstract.h read-po.h read-properties.h read-stringtable.h \
 str-list.h \
 write-po.h write-properties.h write-stringtable.h \
 dir-list.h file-list.h po-gram-gen.h po-gram-gen2.h \
 msgl-charset.h msgl-equal.h msgl-iconv.h msgl-ascii.h msgl-cat.h \
-msgl-english.h msgfmt.h msgunfmt.h plural-count.h \
+msgl-english.h msgl-check.h msgl-fsearch.h msgfmt.h msgunfmt.h \
+plural-count.h plural-eval.h \
 read-mo.h write-mo.h \
 read-java.h write-java.h \
 read-csharp.h write-csharp.h \
 read-resources.h write-resources.h \
 read-tcl.h write-tcl.h \
 write-qt.h \
-po-time.h plural-table.h format.h \
+po-time.h plural-table.h lang-table.h format.h filters.h \
 xgettext.h x-c.h x-po.h x-sh.h x-python.h x-lisp.h x-elisp.h x-librep.h \
 x-scheme.h x-smalltalk.h x-java.h x-properties.h x-csharp.h x-awk.h x-ycp.h \
 x-tcl.h x-perl.h x-php.h x-stringtable.h x-rst.h x-glade.h
 
 EXTRA_DIST += FILES project-id ChangeLog.0
 
-localedir = $(datadir)/locale
 aliaspath = $(localedir)
 jardir = $(datadir)/gettext
 pkgdatadir = $(datadir)/gettext
@@ -70,7 +72,7 @@ AM_CPPFLAGS = \
   -I../lib -I$(top_srcdir)/lib \
   -I../intl -I$(top_srcdir)/../gettext-runtime/intl
 DEFS = \
-  -DLOCALEDIR=\"$(localedir)\" \
+  -DLOCALEDIR=\"$(localedir)\" -DBISON_LOCALEDIR=\"$(BISON_LOCALEDIR)\" \
   -DLOCALE_ALIAS_PATH=\"$(aliaspath)\" \
   -DUSEJEXE=$(USEJEXE) \
   -DGETTEXTJEXEDIR=\"$(pkglibdir)\" \
@@ -87,7 +89,12 @@ GCJFLAGS = @GCJFLAGS@
 JAR = @JAR@
 JAVACOMP = $(SHELL) ../lib/javacomp.sh
 CSHARPCOMP = $(SHELL) ../lib/csharpcomp.sh
-CSHARPCOMPFLAGS = -O -g
+CSHARPCOMPFLAGS = @CSHARPCOMPFLAGS@
+
+# Linking with C++ libraries is needed _only_ on mingw and Cygwin.
+if !WOE32DLL
+@WOE32DLL_FALSE@CXXLINK = $(LINK)
+endif
 
 
 # All programs deal with message lists.
@@ -98,30 +105,36 @@ CSHARPCOMPFLAGS = -O -g
 # (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> open-po.c -> dir-list.c -> str-list.c.
 # (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> po-charset.c.
 # (read-po-abstract.c <--> po-gram-gen.y <--> po-lex.c) -> message.c -> str-list.c.
-COMMON_SOURCE = message.c po-error.c \
+COMMON_SOURCE = message.c po-error.c po-xerror.c \
 read-po-abstract.c po-lex.c po-gram-gen.y po-charset.c \
 read-properties.c read-stringtable.c open-po.c dir-list.c str-list.c
 
 # xgettext and msgfmt deal with format strings.
-FORMAT_SOURCE = format.c format-invalid.h \
+if !WOE32DLL
+FORMAT_SOURCE = format.c
+else
+FORMAT_SOURCE = ../woe32dll/c++format.cc
+endif
+FORMAT_SOURCE += format-invalid.h \
 format-c.c format-sh.c format-python.c format-lisp.c format-elisp.c \
 format-librep.c format-scheme.c format-java.c format-csharp.c format-awk.c \
 format-pascal.c format-ycp.c format-tcl.c format-perl.c format-perl-brace.c \
-format-php.c format-gcc-internal.c format-qt.c
+format-php.c format-gcc-internal.c format-qt.c format-boost.c
 
 # libgettextsrc contains all code that is needed by at least two programs.
 libgettextsrc_la_SOURCES = \
 $(COMMON_SOURCE) read-po.c write-properties.c write-stringtable.c write-po.c \
-msgl-ascii.c msgl-iconv.c msgl-equal.c msgl-cat.c msgl-english.c file-list.c \
-msgl-charset.c po-time.c plural.c plural-table.c $(FORMAT_SOURCE)
+msgl-ascii.c msgl-iconv.c msgl-equal.c msgl-cat.c msgl-english.c msgl-check.c \
+file-list.c msgl-charset.c po-time.c plural-exp.c plural-eval.c plural-table.c \
+$(FORMAT_SOURCE)
 
 # libgettextpo contains the public API for PO files.
 libgettextpo_la_SOURCES = gettext-po.c
 # Libtool's library version information for libgettextpo.
 # See the libtool documentation, section "Library interface versions".
-LTV_CURRENT=1
+LTV_CURRENT=2
 LTV_REVISION=0
-LTV_AGE=1
+LTV_AGE=2
 
 # msggrep needs pattern matching.
 LIBGREP = ../libgrep/libgrep.a
@@ -131,26 +144,73 @@ LIBUNINAME = ../libuniname/libuniname.a
 
 # Source dependencies.
 msgcmp_SOURCES = msgcmp.c
-msgfmt_SOURCES = msgfmt.c \
+msgfmt_SOURCES = msgfmt.c
+msgfmt_SOURCES += \
   write-mo.c write-java.c write-csharp.c write-resources.c write-tcl.c \
-  write-qt.c plural-eval.c
-msgmerge_SOURCES = msgmerge.c plural-count.c
-msgunfmt_SOURCES = msgunfmt.c \
+  write-qt.c ../../gettext-runtime/intl/hash-string.c
+if !WOE32DLL
+msgmerge_SOURCES = msgmerge.c
+else
+msgmerge_SOURCES = ../woe32dll/c++msgmerge.cc
+endif
+msgmerge_SOURCES += msgl-fsearch.c plural-count.c
+msgunfmt_SOURCES = msgunfmt.c
+msgunfmt_SOURCES += \
   read-mo.c read-java.c read-csharp.c read-resources.c read-tcl.c
-xgettext_SOURCES = xgettext.c \
+if !WOE32DLL
+xgettext_SOURCES = xgettext.c
+else
+xgettext_SOURCES = ../woe32dll/c++xgettext.cc
+endif
+xgettext_SOURCES += \
   x-c.c x-po.c x-sh.c x-python.c x-lisp.c x-elisp.c x-librep.c x-scheme.c \
   x-smalltalk.c x-java.c x-csharp.c x-awk.c x-ycp.c x-tcl.c x-perl.c x-php.c \
   x-rst.c x-glade.c
+if !WOE32DLL
 msgattrib_SOURCES = msgattrib.c
+else
+msgattrib_SOURCES = ../woe32dll/c++msgattrib.cc
+endif
+if !WOE32DLL
 msgcat_SOURCES = msgcat.c
+else
+msgcat_SOURCES = ../woe32dll/c++msgcat.cc
+endif
+if !WOE32DLL
 msgcomm_SOURCES = msgcomm.c
+else
+msgcomm_SOURCES = ../woe32dll/c++msgcomm.cc
+endif
+if !WOE32DLL
 msgconv_SOURCES = msgconv.c
+else
+msgconv_SOURCES = ../woe32dll/c++msgconv.cc
+endif
+if !WOE32DLL
 msgen_SOURCES = msgen.c
+else
+msgen_SOURCES = ../woe32dll/c++msgen.cc
+endif
 msgexec_SOURCES = msgexec.c
+if !WOE32DLL
 msgfilter_SOURCES = msgfilter.c
+else
+msgfilter_SOURCES = ../woe32dll/c++msgfilter.cc
+endif
+msgfilter_SOURCES += filter-sr-latin.c
+if !WOE32DLL
 msggrep_SOURCES = msggrep.c
-msginit_SOURCES = msginit.c plural-count.c ../../gettext-runtime/intl/localealias.c
+else
+msggrep_SOURCES = ../woe32dll/c++msggrep.cc
+endif
+msginit_SOURCES = msginit.c
+msginit_SOURCES += lang-table.c plural-count.c ../../gettext-runtime/intl/localealias.c
+if !WOE32DLL
 msguniq_SOURCES = msguniq.c
+else
+msguniq_SOURCES = ../woe32dll/c++msguniq.cc
+endif
+recode_sr_latin_SOURCES = recode-sr-latin.c filter-sr-latin.c
 hostname_SOURCES = hostname.c
 urlget_SOURCES = urlget.c
 
@@ -161,7 +221,13 @@ urlget_SOURCES = urlget.c
 # use iconv().
 libgettextsrc_la_LDFLAGS = \
   -release @VERSION@ \
-  ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc -no-undefined
+  ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
+
+# Tell the mingw or Cygwin linker which symbols to export.
+if WOE32DLL
+libgettextsrc_la_SOURCES += ../woe32dll/gettextsrc-exports.c
+libgettextsrc_la_LDFLAGS += -Wl,--export-all-symbols
+endif
 
 # No need to install libgettextsrc.a, except on AIX.
 install-exec-local: install-libLTLIBRARIES install-exec-clean
@@ -177,9 +243,15 @@ install-exec-clean:
 libgettextpo_la_LDFLAGS = \
   -version-info $(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) \
   -rpath $(libdir) \
-  libgettextsrc.la ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc -no-undefined
+  libgettextsrc.la ../lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
 # Build order. Only needed for "make -j[N]".
 libgettextpo_la_DEPENDENCIES = libgettextsrc.la
+
+# Tell the mingw or Cygwin linker which symbols to export.
+if WOE32DLL
+libgettextpo_la_SOURCES += ../woe32dll/gettextpo-exports.c
+libgettextpo_la_LDFLAGS += -Wl,--export-all-symbols
+endif
 
 # Link dependencies.
 # INTL_MACOSX_LIBS is needed because the programs depend on libintl.la
@@ -187,7 +259,7 @@ libgettextpo_la_DEPENDENCIES = libgettextsrc.la
 # For msginit, it is also needed because of localename.c.
 msgcmp_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
 msgfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
+msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @MSGMERGE_LIBM@
 msgunfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
 xgettext_LDADD = $(LIBUNINAME) libgettextsrc.la @INTL_MACOSX_LIBS@ @LTLIBEXPAT@
 msgattrib_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
@@ -201,25 +273,27 @@ msggrep_LDADD = $(LIBGREP) libgettextsrc.la @INTL_MACOSX_LIBS@
 msginit_LDADD = ../intl/localename.@INTL_LIBTOOL_SUFFIX_PREFIX@o \
                 libgettextsrc.la @INTL_MACOSX_LIBS@
 msguniq_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
+recode_sr_latin_LDADD = ../lib/libgettextlib.la @INTL_MACOSX_LIBS@
 
 # Specify installation directory, for --enable-relocatable.
-msgcmp_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgfmt_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgmerge_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgunfmt_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-xgettext_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgattrib_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgcat_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgcomm_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgconv_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgen_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgexec_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msgfilter_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msggrep_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msginit_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-msguniq_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
-hostname_CFLAGS = -DINSTALLDIR=\"$(pkglibdir)\"
-urlget_CFLAGS = -DINSTALLDIR=\"$(pkglibdir)\"
+msgcmp_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgfmt_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgmerge_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgunfmt_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+xgettext_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgattrib_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgcat_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgcomm_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgconv_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgen_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgexec_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msgfilter_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msggrep_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msginit_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+msguniq_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+recode_sr_latin_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
+hostname_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(pkglibdir)\"
+urlget_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(pkglibdir)\"
 if RELOCATABLE_VIA_LD
 msgcmp_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
 msgfmt_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
@@ -236,6 +310,7 @@ msgfilter_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
 msggrep_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
 msginit_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
 msguniq_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
+recode_sr_latin_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(bindir)`
 hostname_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(pkglibdir)`
 urlget_LDFLAGS = `$(RELOCATABLE_LDFLAGS) $(pkglibdir)`
 endif
@@ -250,18 +325,31 @@ po-gram-gen2.h: po-gram-gen.h
 	$(SED) -e 's/yy/po_gram_/g' -e 's/extern /extern DLL_VARIABLE /' $(srcdir)/po-gram-gen.h > $@-tmp
 	mv $@-tmp $@
 
+# Special rules for installable include files that export variables.
+
+EXTRA_DIST += gettext-po.h.in
+BUILT_SOURCES += gettext-po.h
+CLEANFILES += gettext-po.h
+gettext-po.h: gettext-po.h.in
+if WOE32DLL
+	sed -e 's/extern \([^()]*\);/extern __declspec (dllimport) \1;/' $(srcdir)/gettext-po.h.in > gettext-po.h-tmp
+else
+	cp $(srcdir)/gettext-po.h.in gettext-po.h-tmp
+endif
+	mv gettext-po.h-tmp gettext-po.h
+
 
 # Special rules for installation of auxiliary programs.
 
 install-exec-local:
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(INSTALL_PROGRAM) hostname$(EXEEXT) $(DESTDIR)$(pkglibdir)/hostname$(EXEEXT)
 	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(INSTALL_PROGRAM) urlget$(EXEEXT) $(DESTDIR)$(pkglibdir)/urlget$(EXEEXT)
 	$(INSTALL_SCRIPT) user-email $(DESTDIR)$(pkglibdir)/user-email
 	$(INSTALL_SCRIPT) $(srcdir)/project-id $(DESTDIR)$(pkglibdir)/project-id
 
 installdirs-local:
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 
 uninstall-local:
 	$(RM) $(DESTDIR)$(pkglibdir)/hostname$(EXEEXT)
@@ -306,7 +394,7 @@ CLEANFILES += gnu.gettext.DumpResource$(EXEEXT) gnu.gettext.GetURL$(EXEEXT) \
 
 install-exec-local: install-exec-java-@BUILDJAVAEXE@
 install-exec-java-yes: all-java-yes
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 	$(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) gnu.gettext.DumpResource$(EXEEXT) $(DESTDIR)$(pkglibdir)/gnu.gettext.DumpResource$(EXEEXT)
 	$(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) gnu.gettext.GetURL$(EXEEXT) $(DESTDIR)$(pkglibdir)/gnu.gettext.GetURL$(EXEEXT)
 install-exec-java-no:
@@ -320,10 +408,10 @@ install-data-java-no-no:
 
 installdirs-local: installdirs-java-@BUILDJAVAEXE@
 installdirs-java-yes:
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 installdirs-java-no: installdirs-java-no-@BUILDJAVA@
 installdirs-java-no-yes:
-	$(mkinstalldirs) $(DESTDIR)$(jardir)
+	$(mkdir_p) $(DESTDIR)$(jardir)
 installdirs-java-no-no:
 
 uninstall-local: uninstall-java-@BUILDJAVAEXE@
@@ -356,15 +444,15 @@ msgunfmt.net.exe: msgunfmt.cs
 
 install-exec-local: install-exec-csharp-@BUILDCSHARP@
 install-exec-csharp-yes: all-csharp-yes
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 	$(INSTALL_DATA) msgfmt.net.exe $(DESTDIR)$(pkglibdir)/msgfmt.net.exe
 	$(INSTALL_DATA) msgunfmt.net.exe $(DESTDIR)$(pkglibdir)/msgunfmt.net.exe
 install-exec-csharp-no:
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 
 installdirs-local: install-csharp
 installdirs-csharp:
-	$(mkinstalldirs) $(DESTDIR)$(pkglibdir)
+	$(mkdir_p) $(DESTDIR)$(pkglibdir)
 
 uninstall-local: uninstall-csharp-@BUILDCSHARP@
 uninstall-csharp-yes: all-csharp-yes
@@ -379,12 +467,12 @@ EXTRA_DIST += msgunfmt.tcl
 
 install-data-local: install-tcl
 install-tcl:
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(mkdir_p) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/msgunfmt.tcl $(DESTDIR)$(pkgdatadir)/msgunfmt.tcl
 
 installdirs-local: installdirs-tcl
 installdirs-tcl:
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(mkdir_p) $(DESTDIR)$(pkgdatadir)
 
 uninstall-local: uninstall-tcl
 uninstall-tcl:

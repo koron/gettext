@@ -1,3 +1,66 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume working 'const'.
+	* configure.ac: Remove AC_C_CONST invocation.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* Makefile.am (docdir, dvidir, psdir, pdfdir, htmldir): Remove
+	variables.
+
+2006-05-24  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.c (printf_fetchargs): Turn NULL pointers for
+	TYPE_STRING and TYPE_WIDE_STRING into a non-NULL replacement.
+	Reported by Thorsten Maerz <torte@netztorte.de> via
+	Aaron Stone <aaron@serendipity.cx>.
+
+2006-05-02  Charles Wilson  <cygwin@cwilson.fastmail.fm>
+
+	* configure.ac (LTNOUNDEF): Set to -no-undefined also on mingw and
+	Cygwin.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am: Use $(mkdir_p) instead of $(mkinstalldirs).
+
+2006-04-11  Bruno Haible  <bruno@clisp.org>
+
+	* autosprintf.texi: Change license terms to FDL | GPL.
+
+2006-04-01  Bruno Haible  <bruno@clisp.org>
+
+	* texi2html: Add option -expandtex. Expand @ifhtml by default, not
+	@ifinfo. Use Unicode quotation marks instead of grave and acute
+	accents. Emit charset=UTF-8 declaration. Bump version number to 1.52b.
+
+2006-01-22  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): In the computation of the size of the
+	temporary buffer for sprintf, take into account the precision also
+	for 'd', 'i', 'u', 'o', 'x', 'X'.
+
+2005-11-23  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* configure.ac: Invoke gl_WOE32_DLL.
+
+2005-07-07  Bruno Haible  <bruno@clisp.org>
+
+	Add ability to create shared library on BeOS.
+	* configure.ac (LTNOUNDEF): New macro.
+	* Makefile.am (libasprintf_la_LDFLAGS): New variable.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.c (printf_fetchargs): Work around broken definition of
+	wint_t on mingw.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

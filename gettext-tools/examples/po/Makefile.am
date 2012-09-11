@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools/examples/po subdirectory of GNU gettext
-## Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -21,40 +21,41 @@ AUTOMAKE_OPTIONS = 1.5 gnits
 
 # List of files which contain translatable strings.
 POTFILES = \
-  examples/hello-c/hello.c \
-  examples/hello-c-gnome/hello.c \
-  examples/hello-c++/hello.cc \
-  examples/hello-c++-qt/hello.cc \
-  examples/hello-c++-kde/hello.cc \
-  examples/hello-c++-kde/hellowindow.h \
-  examples/hello-c++-kde/hellowindow.cc \
-  examples/hello-c++-gnome/hello.cc \
-  examples/hello-objc/hello.m \
-  examples/hello-objc-gnustep/main.m \
-  examples/hello-objc-gnustep/AppController.h \
-  examples/hello-objc-gnustep/AppController.m \
-  examples/hello-objc-gnustep/Hello.h \
-  examples/hello-objc-gnustep/Hello.m \
-  examples/hello-objc-gnome/hello.m \
-  examples/hello-sh/hello.sh \
-  examples/hello-python/hello.py.in \
-  examples/hello-clisp/hello.lisp.in \
-  examples/hello-librep/hello.jl.in \
-  examples/hello-guile/hello.scm \
-  examples/hello-smalltalk/hello.st.in \
-  examples/hello-java/Hello.java \
-  examples/hello-java-awt/Hello.java \
-  examples/hello-java-swing/Hello.java \
-  examples/hello-csharp/hello.cs \
-  examples/hello-csharp-forms/hello.cs \
-  examples/hello-gawk/hello.awk \
-  examples/hello-pascal/hello.pas \
-  examples/hello-ycp/hello.ycp \
-  examples/hello-tcl/hello.tcl \
-  examples/hello-tcl-tk/hello.tcl \
-  examples/hello-perl/hello-1.pl.in \
-  examples/hello-perl/hello-2.pl.in \
-  examples/hello-php/hello.php
+  hello-c/hello.c \
+  hello-c-gnome/hello.c \
+  hello-c++/hello.cc \
+  hello-c++-qt/hello.cc \
+  hello-c++-kde/hello.cc \
+  hello-c++-kde/hellowindow.h \
+  hello-c++-kde/hellowindow.cc \
+  hello-c++-gnome/hello.cc \
+  hello-c++-wxwidgets/hello.cc \
+  hello-objc/hello.m \
+  hello-objc-gnustep/main.m \
+  hello-objc-gnustep/AppController.h \
+  hello-objc-gnustep/AppController.m \
+  hello-objc-gnustep/Hello.h \
+  hello-objc-gnustep/Hello.m \
+  hello-objc-gnome/hello.m \
+  hello-sh/hello.sh \
+  hello-python/hello.py.in \
+  hello-clisp/hello.lisp.in \
+  hello-librep/hello.jl.in \
+  hello-guile/hello.scm \
+  hello-smalltalk/hello.st.in \
+  hello-java/Hello.java \
+  hello-java-awt/Hello.java \
+  hello-java-swing/Hello.java \
+  hello-csharp/hello.cs \
+  hello-csharp-forms/hello.cs \
+  hello-gawk/hello.awk \
+  hello-pascal/hello.pas \
+  hello-ycp/hello.ycp \
+  hello-tcl/hello.tcl \
+  hello-tcl-tk/hello.tcl \
+  hello-perl/hello-1.pl.in \
+  hello-perl/hello-2.pl.in \
+  hello-php/hello.php
 
 # List of small POT files.
 SMALLPOTS = \
@@ -64,6 +65,7 @@ SMALLPOTS = \
   hello-c++-qt.pot \
   hello-c++-kde.pot \
   hello-c++-gnome.pot \
+  hello-c++-wxwidgets.pot \
   hello-objc.pot \
   hello-objc-gnustep.pot \
   hello-objc-gnome.pot \
@@ -118,8 +120,6 @@ MSGID_BUGS_ADDRESS = bug-gnu-gettext@gnu.org
 # This is the list of locale categories, beyond LC_MESSAGES, for which the
 # message catalogs shall be used.  It is usually empty.
 EXTRA_LOCALE_CATEGORIES =
-
-localedir = $(datadir)/locale
 
 MSGMERGE = msgmerge
 MSGMERGE_UPDATE = @MSGMERGE@ --update
@@ -221,6 +221,9 @@ hello-c++-kde.pot : $(POTFILES_DEPS)
 hello-c++-gnome.pot : $(POTFILES_DEPS)
 	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-c++-gnome
 
+hello-c++-wxwidgets.pot : $(POTFILES_DEPS)
+	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-c++-wxwidgets
+
 hello-objc.pot : $(POTFILES_DEPS)
 	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-objc
 
@@ -305,7 +308,7 @@ html ID:
 MOSTLYCLEANFILES =
 MOSTLYCLEANFILES += remove-potcdate.sed
 MOSTLYCLEANFILES += stamp-poT
-MOSTLYCLEANFILES += core core.* $(DOMAIN).po $(DOMAIN).1po $(DOMAIN).2po *.new.po
+MOSTLYCLEANFILES += core core.* *.stackdump $(DOMAIN).po $(DOMAIN).1po $(DOMAIN).2po *.new.po
 MOSTLYCLEANFILES += *.o
 
 DISTCLEANFILES = $(SMALLPOTS)
@@ -369,6 +372,7 @@ SMALLPOFILES_FOR_lang = \
   ../hello-c++-qt/po/$$lang.po \
   ../hello-c++-kde/po/$$lang.po \
   ../hello-c++-gnome/po/$$lang.po \
+  ../hello-c++-wxwidgets/po/$$lang.po \
   ../hello-objc/po/$$lang.po \
   ../hello-objc-gnustep/po/$$lang.po \
   ../hello-objc-gnome/po/$$lang.po \
@@ -408,6 +412,9 @@ SMALLPOFILES_FOR_lang = \
 
 ../hello-c++-gnome/po/$(LL).po: hello-c++-gnome.pot $(LL).po
 	$(SHELL) mmsmallpo.sh hello-c++-gnome $(LL)
+
+../hello-c++-wxwidgets/po/$(LL).po: hello-c++-wxwidgets.pot $(LL).po
+	$(SHELL) mmsmallpo.sh hello-c++-wxwidgets $(LL)
 
 ../hello-objc/po/$(LL).po: hello-objc.pot $(LL).po
 	$(SHELL) mmsmallpo.sh hello-objc $(LL)

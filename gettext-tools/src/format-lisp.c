@@ -1,5 +1,5 @@
 /* Lisp format strings.
-   Copyright (C) 2001-2004 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "c-ctype.h"
 #include "gcd.h"
 #include "xalloc.h"
-#include "xerror.h"
+#include "xvasprintf.h"
 #include "format-invalid.h"
 #include "minmax.h"
 #include "gettext.h"
@@ -3370,6 +3370,7 @@ struct formatstring_parser formatstring_lisp =
   format_parse,
   format_free,
   format_get_number_of_directives,
+  NULL,
   format_check
 };
 

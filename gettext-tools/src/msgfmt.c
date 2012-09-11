@@ -1,5 +1,5 @@
 /* Converts Uniforum style .po files to binary .mo files
-   Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, April 1995.
 
    This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,9 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <limits.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
 #include <locale.h>
 
 #include "closeout.h"
@@ -39,11 +36,8 @@
 #include "relocatable.h"
 #include "basename.h"
 #include "xerror.h"
-#include "format.h"
+#include "xvasprintf.h"
 #include "xalloc.h"
-#include "plural-exp.h"
-#include "plural-table.h"
-#include "strstr.h"
 #include "stpcpy.h"
 #include "exit.h"
 #include "msgfmt.h"
@@ -53,36 +47,24 @@
 #include "write-resources.h"
 #include "write-tcl.h"
 #include "write-qt.h"
-
-#include "gettext.h"
+#include "propername.h"
 #include "message.h"
 #include "open-po.h"
 #include "read-po.h"
 #include "po-charset.h"
+#include "msgl-check.h"
+#include "gettext.h"
 
 #define _(str) gettext (str)
-
-#define SIZEOF(a) (sizeof(a) / sizeof(a[0]))
-
-/* Some platforms don't have the sigjmp_buf type in <setjmp.h>.  */
-#if defined _MSC_VER || defined __MINGW32__
-/* Native Woe32 API.  */
-# define sigjmp_buf jmp_buf
-# define sigsetjmp(env,savesigs) setjmp (env)
-# define siglongjmp longjmp
-#endif
-
-/* We use siginfo to get precise information about the signal.
-   But siginfo doesn't work on Irix 6.5.  */
-#if HAVE_SIGINFO && !defined (__sgi)
-# define USE_SIGINFO 1
-#endif
 
 /* Contains exit status for case in which no premature exit occurs.  */
 static int exit_status;
 
 /* If true include even fuzzy translations in output file.  */
-static bool include_all = false;
+static bool include_fuzzies = false;
+
+/* If true include even untranslated messages in output file.  */
+static bool include_untranslated = false;
 
 /* Specifies name of the output file.  */
 static const char *output_file_name;
@@ -175,6 +157,7 @@ static const struct option long_options[] =
   { "csharp", no_argument, NULL, CHAR_MAX + 10 },
   { "csharp-resources", no_argument, NULL, CHAR_MAX + 11 },
   { "directory", required_argument, NULL, 'D' },
+  { "endianness", required_argument, NULL, CHAR_MAX + 13 },
   { "help", no_argument, NULL, 'h' },
   { "java", no_argument, NULL, 'j' },
   { "java2", no_argument, NULL, CHAR_MAX + 5 },
@@ -189,6 +172,7 @@ static const struct option long_options[] =
   { "stringtable-input", no_argument, NULL, CHAR_MAX + 8 },
   { "tcl", no_argument, NULL, CHAR_MAX + 7 },
   { "use-fuzzy", no_argument, NULL, 'f' },
+  { "use-untranslated", no_argument, NULL, CHAR_MAX + 12 },
   { "verbose", no_argument, NULL, 'v' },
   { "version", no_argument, NULL, 'V' },
   { NULL, 0, NULL, 0 }
@@ -204,7 +188,6 @@ static void usage (int status)
 static const char *add_mo_suffix (const char *);
 static struct msg_domain *new_domain (const char *name, const char *file_name);
 static bool is_nonobsolete (const message_ty *mp);
-static void check_plural (message_list_ty *mlp);
 static void read_po_file_msgfmt (char *filename);
 
 
@@ -234,6 +217,7 @@ main (int argc, char *argv[])
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -272,7 +256,7 @@ main (int argc, char *argv[])
 	dir_list_append (optarg);
 	break;
       case 'f':
-	include_all = true;
+	include_fuzzies = true;
 	break;
       case 'h':
 	do_help = true;
@@ -348,6 +332,23 @@ main (int argc, char *argv[])
       case CHAR_MAX + 11: /* --csharp-resources */
 	csharp_resources_mode = true;
 	break;
+      case CHAR_MAX + 12: /* --use-untranslated (undocumented) */
+	include_untranslated = true;
+	break;
+      case CHAR_MAX + 13: /* --endianness={big|little} */
+	{
+	  int endianness;
+
+	  if (strcmp (optarg, "big") == 0)
+	    endianness = 1;
+	  else if (strcmp (optarg, "little") == 0)
+	    endianness = 0;
+	  else
+	    error (EXIT_FAILURE, 0, _("invalid endianness: %s"), optarg);
+
+	  byteswap = endianness ^ ENDIANNESS;
+	}
+	break;
       default:
 	usage (EXIT_FAILURE);
 	break;
@@ -362,8 +363,8 @@ main (int argc, char *argv[])
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "1995-1998, 2000-2005");
-      printf (_("Written by %s.\n"), "Ulrich Drepper");
+	      "1995-1998, 2000-2006");
+      printf (_("Written by %s.\n"), proper_name ("Ulrich Drepper"));
       exit (EXIT_SUCCESS);
     }
 
@@ -522,10 +523,27 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
   for (domain = domain_list; domain != NULL; domain = domain->next)
     message_list_remove_if_not (domain->mlp, is_nonobsolete);
 
-  /* Check the plural expression is present if needed and has valid syntax.  */
-  if (check_header)
+  /* Perform all kinds of checks: plural expressions, format strings, ...  */
+  {
+    int nerrors = 0;
+
     for (domain = domain_list; domain != NULL; domain = domain->next)
-      check_plural (domain->mlp);
+      nerrors +=
+	check_message_list (domain->mlp,
+			    1, check_format_strings, check_header,
+			    check_compatibility,
+			    check_accelerators, accelerator_char);
+
+    /* Exit with status 1 on any error.  */
+    if (nerrors > 0)
+      {
+	error (0, 0,
+	       ngettext ("found %d fatal error", "found %d fatal errors",
+			 nerrors),
+	       nerrors);
+	exit_status = EXIT_FAILURE;
+      }
+  }
 
   /* Now write out all domains.  */
   for (domain = domain_list; domain != NULL; domain = domain->next)
@@ -571,7 +589,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	}
 
       /* List is not used anymore.  */
-      message_list_free (domain->mlp);
+      message_list_free (domain->mlp, 0);
     }
 
   /* Print statistics if requested.  */
@@ -792,591 +810,6 @@ is_nonobsolete (const message_ty *mp)
 }
 
 
-static sigjmp_buf sigfpe_exit;
-
-#if USE_SIGINFO
-
-static int sigfpe_code;
-
-/* Signal handler called in case of arithmetic exception (e.g. division
-   by zero) during plural_eval.  */
-static void
-sigfpe_handler (int sig, siginfo_t *sip, void *scp)
-{
-  sigfpe_code = sip->si_code;
-  siglongjmp (sigfpe_exit, 1);
-}
-
-#else
-
-/* Signal handler called in case of arithmetic exception (e.g. division
-   by zero) during plural_eval.  */
-static void
-sigfpe_handler (int sig)
-{
-  siglongjmp (sigfpe_exit, 1);
-}
-
-#endif
-
-static void
-install_sigfpe_handler ()
-{
-#if USE_SIGINFO
-  struct sigaction action;
-  action.sa_sigaction = sigfpe_handler;
-  action.sa_flags = SA_SIGINFO;
-  sigemptyset (&action.sa_mask);
-  sigaction (SIGFPE, &action, (struct sigaction *) NULL);
-#else
-  signal (SIGFPE, sigfpe_handler);
-#endif
-}
-
-static void
-uninstall_sigfpe_handler ()
-{
-#if USE_SIGINFO
-  struct sigaction action;
-  action.sa_handler = SIG_DFL;
-  action.sa_flags = 0;
-  sigemptyset (&action.sa_mask);
-  sigaction (SIGFPE, &action, (struct sigaction *) NULL);
-#else
-  signal (SIGFPE, SIG_DFL);
-#endif
-}
-
-/* Check the values returned by plural_eval.  */
-static void
-check_plural_eval (struct expression *plural_expr,
-		   unsigned long nplurals_value,
-		   const lex_pos_ty *header_pos)
-{
-  if (sigsetjmp (sigfpe_exit, 1) == 0)
-    {
-      unsigned long n;
-
-      /* Protect against arithmetic exceptions.  */
-      install_sigfpe_handler ();
-
-      for (n = 0; n <= 1000; n++)
-	{
-	  unsigned long val = plural_eval (plural_expr, n);
-
-	  if ((long) val < 0)
-	    {
-	      /* End of protection against arithmetic exceptions.  */
-	      uninstall_sigfpe_handler ();
-
-	      error_with_progname = false;
-	      error_at_line (0, 0,
-			     header_pos->file_name, header_pos->line_number,
-			     _("plural expression can produce negative values"));
-	      error_with_progname = true;
-	      exit_status = EXIT_FAILURE;
-	      return;
-	    }
-	  else if (val >= nplurals_value)
-	    {
-	      /* End of protection against arithmetic exceptions.  */
-	      uninstall_sigfpe_handler ();
-
-	      error_with_progname = false;
-	      error_at_line (0, 0,
-			     header_pos->file_name, header_pos->line_number,
-			     _("nplurals = %lu but plural expression can produce values as large as %lu"),
-			     nplurals_value, val);
-	      error_with_progname = true;
-	      exit_status = EXIT_FAILURE;
-	      return;
-	    }
-	}
-
-      /* End of protection against arithmetic exceptions.  */
-      uninstall_sigfpe_handler ();
-    }
-  else
-    {
-      /* Caught an arithmetic exception.  */
-      const char *msg;
-
-      /* End of protection against arithmetic exceptions.  */
-      uninstall_sigfpe_handler ();
-
-#if USE_SIGINFO
-      switch (sigfpe_code)
-#endif
-	{
-#if USE_SIGINFO
-# ifdef FPE_INTDIV
-	case FPE_INTDIV:
-	  /* xgettext: c-format */
-	  msg = _("plural expression can produce division by zero");
-	  break;
-# endif
-# ifdef FPE_INTOVF
-	case FPE_INTOVF:
-	  /* xgettext: c-format */
-	  msg = _("plural expression can produce integer overflow");
-	  break;
-# endif
-	default:
-#endif
-	  /* xgettext: c-format */
-	  msg = _("plural expression can produce arithmetic exceptions, possibly division by zero");
-	}
-
-      error_with_progname = false;
-      error_at_line (0, 0, header_pos->file_name, header_pos->line_number, msg);
-      error_with_progname = true;
-      exit_status = EXIT_FAILURE;
-    }
-}
-
-
-/* Perform plural expression checking.  */
-static void
-check_plural (message_list_ty *mlp)
-{
-  const lex_pos_ty *has_plural;
-  unsigned long min_nplurals;
-  const lex_pos_ty *min_pos;
-  unsigned long max_nplurals;
-  const lex_pos_ty *max_pos;
-  size_t j;
-  message_ty *header;
-
-  /* Determine whether mlp has plural entries.  */
-  has_plural = NULL;
-  min_nplurals = ULONG_MAX;
-  min_pos = NULL;
-  max_nplurals = 0;
-  max_pos = NULL;
-  for (j = 0; j < mlp->nitems; j++)
-    {
-      message_ty *mp = mlp->item[j];
-
-      if (mp->msgid_plural != NULL)
-	{
-	  const char *p;
-	  const char *p_end;
-	  unsigned long n;
-
-	  if (has_plural == NULL)
-	    has_plural = &mp->pos;
-
-	  n = 0;
-	  for (p = mp->msgstr, p_end = p + mp->msgstr_len;
-	       p < p_end;
-	       p += strlen (p) + 1)
-	    n++;
-	  if (min_nplurals > n)
-	    {
-	      min_nplurals = n;
-	      min_pos = &mp->pos;
-	    }
-	  if (max_nplurals > n)
-	    {
-	      max_nplurals = n;
-	      min_pos = &mp->pos;
-	    }
-	}
-    }
-
-  /* Look at the plural entry for this domain.
-     Cf, function extract_plural_expression.  */
-  header = message_list_search (mlp, "");
-  if (header != NULL)
-    {
-      const char *nullentry;
-      const char *plural;
-      const char *nplurals;
-      bool try_to_help = false;
-
-      nullentry = header->msgstr;
-
-      plural = strstr (nullentry, "plural=");
-      nplurals = strstr (nullentry, "nplurals=");
-      if (plural == NULL && has_plural != NULL)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, has_plural->file_name, has_plural->line_number,
-			 _("message catalog has plural form translations..."));
-	  --error_message_count;
-	  error_at_line (0, 0, header->pos.file_name, header->pos.line_number,
-			 _("...but header entry lacks a \"plural=EXPRESSION\" attribute"));
-	  error_with_progname = true;
-	  try_to_help = true;
-	  exit_status = EXIT_FAILURE;
-	}
-      if (nplurals == NULL && has_plural != NULL)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, has_plural->file_name, has_plural->line_number,
-			 _("message catalog has plural form translations..."));
-	  --error_message_count;
-	  error_at_line (0, 0, header->pos.file_name, header->pos.line_number,
-			 _("...but header entry lacks a \"nplurals=INTEGER\" attribute"));
-	  error_with_progname = true;
-	  try_to_help = true;
-	  exit_status = EXIT_FAILURE;
-	}
-      if (plural != NULL && nplurals != NULL)
-	{
-	  const char *endp;
-	  unsigned long int nplurals_value;
-	  struct parse_args args;
-	  struct expression *plural_expr;
-
-	  /* First check the number.  */
-	  nplurals += 9;
-	  while (*nplurals != '\0' && isspace ((unsigned char) *nplurals))
-	    ++nplurals;
-	  endp = nplurals;
-	  nplurals_value = 0;
-	  if (*nplurals >= '0' && *nplurals <= '9')
-	    nplurals_value = strtoul (nplurals, (char **) &endp, 10);
-	  if (nplurals == endp)
-	    {
-	      error_with_progname = false;
-	      error_at_line (0, 0,
-			     header->pos.file_name, header->pos.line_number,
-			     _("invalid nplurals value"));
-	      error_with_progname = true;
-	      try_to_help = true;
-	      exit_status = EXIT_FAILURE;
-	    }
-
-	  /* Then check the expression.  */
-	  plural += 7;
-	  args.cp = plural;
-	  if (parse_plural_expression (&args) != 0)
-	    {
-	      error_with_progname = false;
-	      error_at_line (0, 0,
-			     header->pos.file_name, header->pos.line_number,
-			     _("invalid plural expression"));
-	      error_with_progname = true;
-	      try_to_help = true;
-	      exit_status = EXIT_FAILURE;
-	    }
-	  plural_expr = args.res;
-
-	  /* See whether nplurals and plural fit together.  */
-	  if (exit_status != EXIT_FAILURE)
-	    check_plural_eval (plural_expr, nplurals_value, &header->pos);
-
-	  /* Check the number of plurals of the translations.  */
-	  if (exit_status != EXIT_FAILURE)
-	    {
-	      if (min_nplurals < nplurals_value)
-		{
-		  error_with_progname = false;
-		  error_at_line (0, 0,
-				 header->pos.file_name, header->pos.line_number,
-				 _("nplurals = %lu..."), nplurals_value);
-		  --error_message_count;
-		  error_at_line (0, 0, min_pos->file_name, min_pos->line_number,
-				 ngettext ("...but some messages have only one plural form",
-					   "...but some messages have only %lu plural forms",
-					   min_nplurals),
-				 min_nplurals);
-		  error_with_progname = true;
-		  exit_status = EXIT_FAILURE;
-		}
-	      else if (max_nplurals > nplurals_value)
-		{
-		  error_with_progname = false;
-		  error_at_line (0, 0,
-				 header->pos.file_name, header->pos.line_number,
-				 _("nplurals = %lu..."), nplurals_value);
-		  --error_message_count;
-		  error_at_line (0, 0, max_pos->file_name, max_pos->line_number,
-				 ngettext ("...but some messages have one plural form",
-					   "...but some messages have %lu plural forms",
-					   max_nplurals),
-				 max_nplurals);
-		  error_with_progname = true;
-		  exit_status = EXIT_FAILURE;
-		}
-	      /* The only valid case is max_nplurals <= n <= min_nplurals,
-		 which means either has_plural == NULL or
-		 max_nplurals = n = min_nplurals.  */
-	    }
-	}
-      /* Try to help the translator by looking up the right plural formula
-	 for her.  */
-      if (try_to_help)
-	{
-	  const char *language;
-
-	  language = strstr (nullentry, "Language-Team: ");
-	  if (language != NULL)
-	    {
-	      language += 15;
-	      for (j = 0; j < plural_table_size; j++)
-		if (strncmp (language,
-			     plural_table[j].language,
-			     strlen (plural_table[j].language)) == 0)
-		  {
-		    char *recommended =
-		      xasprintf ("Plural-Forms: %s\\n", plural_table[j].value);
-		    fprintf (stderr,
-			     _("Try using the following, valid for %s:\n"),
-			     plural_table[j].language);
-		    fprintf (stderr, "\"%s\"\n", recommended);
-		    free (recommended);
-		    break;
-		  }
-	    }
-	}
-    }
-  else if (has_plural != NULL)
-    {
-      error_with_progname = false;
-      error_at_line (0, 0, has_plural->file_name, has_plural->line_number,
-		     _("message catalog has plural form translations, but lacks a header entry with \"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\""));
-      error_with_progname = true;
-      exit_status = EXIT_FAILURE;
-    }
-}
-
-
-/* Signal an error when checking format strings.  */
-static lex_pos_ty curr_msgid_pos;
-static void
-formatstring_error_logger (const char *format, ...)
-{
-  va_list args;
-
-  va_start (args, format);
-  fprintf (stderr, "%s:%lu: ",
-	   curr_msgid_pos.file_name,
-	   (unsigned long) curr_msgid_pos.line_number);
-  vfprintf (stderr, format, args);
-  putc ('\n', stderr);
-  fflush (stderr);
-  va_end (args);
-  ++error_message_count;
-}
-
-
-/* Perform miscellaneous checks on a message.  */
-static void
-check_pair (const char *msgid,
-	    const lex_pos_ty *msgid_pos,
-	    const char *msgid_plural,
-	    const char *msgstr, size_t msgstr_len,
-	    const lex_pos_ty *msgstr_pos, enum is_format is_format[NFORMATS])
-{
-  int has_newline;
-  unsigned int j;
-  const char *p;
-
-  /* If the msgid string is empty we have the special entry reserved for
-     information about the translation.  */
-  if (msgid[0] == '\0')
-    return;
-
-  /* Test 1: check whether all or none of the strings begin with a '\n'.  */
-  has_newline = (msgid[0] == '\n');
-#define TEST_NEWLINE(p) (p[0] == '\n')
-  if (msgid_plural != NULL)
-    {
-      if (TEST_NEWLINE(msgid_plural) != has_newline)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			 _("\
-`msgid' and `msgid_plural' entries do not both begin with '\\n'"));
-	  error_with_progname = true;
-	  exit_status = EXIT_FAILURE;
-	}
-      for (p = msgstr, j = 0; p < msgstr + msgstr_len; p += strlen (p) + 1, j++)
-	if (TEST_NEWLINE(p) != has_newline)
-	  {
-	    error_with_progname = false;
-	    error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			   _("\
-`msgid' and `msgstr[%u]' entries do not both begin with '\\n'"), j);
-	    error_with_progname = true;
-	    exit_status = EXIT_FAILURE;
-	  }
-    }
-  else
-    {
-      if (TEST_NEWLINE(msgstr) != has_newline)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			 _("\
-`msgid' and `msgstr' entries do not both begin with '\\n'"));
-	  error_with_progname = true;
-	  exit_status = EXIT_FAILURE;
-	}
-    }
-#undef TEST_NEWLINE
-
-  /* Test 2: check whether all or none of the strings end with a '\n'.  */
-  has_newline = (msgid[strlen (msgid) - 1] == '\n');
-#define TEST_NEWLINE(p) (p[0] != '\0' && p[strlen (p) - 1] == '\n')
-  if (msgid_plural != NULL)
-    {
-      if (TEST_NEWLINE(msgid_plural) != has_newline)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			 _("\
-`msgid' and `msgid_plural' entries do not both end with '\\n'"));
-	  error_with_progname = true;
-	  exit_status = EXIT_FAILURE;
-	}
-      for (p = msgstr, j = 0; p < msgstr + msgstr_len; p += strlen (p) + 1, j++)
-	if (TEST_NEWLINE(p) != has_newline)
-	  {
-	    error_with_progname = false;
-	    error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			   _("\
-`msgid' and `msgstr[%u]' entries do not both end with '\\n'"), j);
-	    error_with_progname = true;
-	    exit_status = EXIT_FAILURE;
-	  }
-    }
-  else
-    {
-      if (TEST_NEWLINE(msgstr) != has_newline)
-	{
-	  error_with_progname = false;
-	  error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			 _("\
-`msgid' and `msgstr' entries do not both end with '\\n'"));
-	  error_with_progname = true;
-	  exit_status = EXIT_FAILURE;
-	}
-    }
-#undef TEST_NEWLINE
-
-  if (check_compatibility && msgid_plural != NULL)
-    {
-      error_with_progname = false;
-      error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-		     _("plural handling is a GNU gettext extension"));
-      error_with_progname = true;
-      exit_status = EXIT_FAILURE;
-    }
-
-  if (check_format_strings)
-    /* Test 3: Check whether both formats strings contain the same number
-       of format specifications.  */
-    {
-      curr_msgid_pos = *msgid_pos;
-      if (check_msgid_msgstr_format (msgid, msgid_plural, msgstr, msgstr_len,
-				     is_format, formatstring_error_logger))
-	exit_status = EXIT_FAILURE;
-    }
-
-  if (check_accelerators && msgid_plural == NULL)
-    /* Test 4: Check that if msgid is a menu item with a keyboard accelerator,
-       the msgstr has an accelerator as well.  A keyboard accelerator is
-       designated by an immediately preceding '&'.  We cannot check whether
-       two accelerators collide, only whether the translator has bothered
-       thinking about them.  */
-    {
-      const char *p;
-
-      /* We are only interested in msgids that contain exactly one '&'.  */
-      p = strchr (msgid, accelerator_char);
-      if (p != NULL && strchr (p + 1, accelerator_char) == NULL)
-	{
-	  /* Count the number of '&' in msgstr, but ignore '&&'.  */
-	  unsigned int count = 0;
-
-	  for (p = msgstr; (p = strchr (p, accelerator_char)) != NULL; p++)
-	    if (p[1] == accelerator_char)
-	      p++;
-	    else
-	      count++;
-
-	  if (count == 0)
-	    {
-	      error_with_progname = false;
-	      error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			     _("msgstr lacks the keyboard accelerator mark '%c'"),
-			     accelerator_char);
-	      error_with_progname = true;
-	    }
-	  else if (count > 1)
-	    {
-	      error_with_progname = false;
-	      error_at_line (0, 0, msgid_pos->file_name, msgid_pos->line_number,
-			     _("msgstr has too many keyboard accelerator marks '%c'"),
-			     accelerator_char);
-	      error_with_progname = true;
-	    }
-	}
-    }
-}
-
-
-/* Perform miscellaneous checks on a header entry.  */
-static void
-check_header_entry (const char *msgstr_string)
-{
-  static const char *required_fields[] =
-  {
-    "Project-Id-Version", "PO-Revision-Date", "Last-Translator",
-    "Language-Team", "MIME-Version", "Content-Type",
-    "Content-Transfer-Encoding"
-  };
-  static const char *default_values[] =
-  {
-    "PACKAGE VERSION", "YEAR-MO-DA", "FULL NAME", "LANGUAGE", NULL,
-    "text/plain; charset=CHARSET", "ENCODING"
-  };
-  const size_t nfields = SIZEOF (required_fields);
-  int initial = -1;
-  int cnt;
-
-  for (cnt = 0; cnt < nfields; ++cnt)
-    {
-      char *endp = strstr (msgstr_string, required_fields[cnt]);
-
-      if (endp == NULL)
-	multiline_error (xasprintf ("%s: ", gram_pos.file_name),
-			 xasprintf (_("headerfield `%s' missing in header\n"),
-				    required_fields[cnt]));
-      else if (endp != msgstr_string && endp[-1] != '\n')
-	multiline_error (xasprintf ("%s: ", gram_pos.file_name),
-			 xasprintf (_("\
-header field `%s' should start at beginning of line\n"),
-				    required_fields[cnt]));
-      else if (default_values[cnt] != NULL
-	       && strncmp (default_values[cnt],
-			   endp + strlen (required_fields[cnt]) + 2,
-			   strlen (default_values[cnt])) == 0)
-	{
-	  if (initial != -1)
-	    {
-	      multiline_error (xasprintf ("%s: ", gram_pos.file_name),
-			       xstrdup (_("\
-some header fields still have the initial default value\n")));
-	      initial = -1;
-	      break;
-	    }
-	  else
-	    initial = cnt;
-	}
-    }
-
-  if (initial != -1)
-    multiline_error (xasprintf ("%s: ", gram_pos.file_name),
-		     xasprintf (_("\
-field `%s' still has initial default value\n"),
-				required_fields[initial]));
-}
-
-
 /* The rest of the file defines a subclass msgfmt_po_reader_ty of
    default_po_reader_ty.  Its particularities are:
    - The header entry check is performed on-the-fly.
@@ -1497,6 +930,7 @@ domain name \"%s\" not suitable as file name: will use prefix"), name);
 
 static void
 msgfmt_add_message (default_po_reader_ty *this,
+		    char *msgctxt,
 		    char *msgid,
 		    lex_pos_ty *msgid_pos,
 		    char *msgid_plural,
@@ -1516,7 +950,7 @@ msgfmt_add_message (default_po_reader_ty *this,
     }
 
   /* Invoke superclass method.  */
-  default_add_message (this, msgid, msgid_pos, msgid_plural,
+  default_add_message (this, msgctxt, msgid, msgid_pos, msgid_plural,
 		       msgstr, msgstr_len, msgstr_pos, force_fuzzy, obsolete);
 }
 
@@ -1533,8 +967,8 @@ msgfmt_frob_new_message (default_po_reader_ty *that, message_ty *mp,
       /* Don't emit untranslated entries.
 	 Also don't emit fuzzy entries, unless --use-fuzzy was specified.
 	 But ignore fuzziness of the header entry.  */
-      if (mp->msgstr[0] == '\0'
-	  || (!include_all && mp->is_fuzzy && mp->msgid[0] != '\0'))
+      if ((!include_untranslated && mp->msgstr[0] == '\0')
+	  || (!include_fuzzies && mp->is_fuzzy && !is_header (mp)))
 	{
 	  if (check_compatibility)
 	    {
@@ -1557,15 +991,11 @@ msgfmt_frob_new_message (default_po_reader_ty *that, message_ty *mp,
       else
 	{
 	  /* Test for header entry.  */
-	  if (mp->msgid[0] == '\0')
+	  if (is_header (mp))
 	    {
 	      this->has_header_entry = true;
 	      if (!mp->is_fuzzy)
 		this->has_nonfuzzy_header_entry = true;
-
-	      /* Do some more tests on the contents of the header entry.  */
-	      if (check_header)
-		check_header_entry (mp->msgstr);
 	    }
 	  else
 	    /* We don't count the header entry in the statistic so place
@@ -1574,11 +1004,6 @@ msgfmt_frob_new_message (default_po_reader_ty *that, message_ty *mp,
 	      ++msgs_fuzzy;
 	    else
 	      ++msgs_translated;
-
-	  /* Do some more checks on both strings.  */
-	  check_pair (mp->msgid, msgid_pos, mp->msgid_plural,
-		      mp->msgstr, mp->msgstr_len, msgstr_pos,
-		      mp->is_format);
 	}
     }
 }
@@ -1597,7 +1022,7 @@ msgfmt_comment_special (abstract_po_reader_ty *that, const char *s)
     {
       static bool warned = false;
 
-      if (!include_all && check_compatibility && !warned)
+      if (!include_fuzzies && check_compatibility && !warned)
 	{
 	  warned = true;
 	  error (0, 0, _("\

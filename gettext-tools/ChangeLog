@@ -1,3 +1,171 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* windows/gettextlib.rc: Bump version number to 0.15.0.
+	* windows/gettextsrc.rc: Likewise.
+	* windows/gettextpo.rc: Likewise.
+
+2006-07-14  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (MOSTLYCLEANFILES): New variable.
+
+2006-06-29  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Remove AC_CONFIG_FILES for files in examples subdir.
+	Use AC_CONFIG_SUBDIRS instead.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Remove AC_ISC_POSIX invocation.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume ANSI C header files and <ctype.h> functions.
+	* configure.ac: Remove AC_HEADER_STDC invocation.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume vprintf function.
+	* configure.ac: Remove AC_FUNC_VPRINTF invocation.
+	* Makefile.am (config.h_vms, config.h.msvc): Remove unused HAVE_VPRINTF
+	substitution.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (config.h_vms, config.h.msvc): Drop unused HAVE_LOCALE_H
+	substitution.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* configure.ac (localedir): Remove variable.
+	(docdir): If --docdir value was given, use that.
+	(mandir): Remove customization.
+
+2006-05-15  Bruno Haible  <bruno@clisp.org>
+
+	* woe32dll/export.h: Renamed from cygwin/export.h.
+	* woe32dll/gettextlib-exports: Renamed from cygwin/gettextlib-exports.h.
+	* woe32dll/gettextsrc-exports: Renamed from cygwin/gettextsrc-exports.h.
+	* woe32dll/gettextpo-exports: Renamed from cygwin/gettextpo-exports.h.
+	* configure.ac (WOE32DLL): Renamed from CYGWINDLL.
+	(DLL_VARIABLE): Define as nonempty on mingw if and only if
+	--enable-shared was specified.
+	* Makefile.am (EXTRA_DIST): Update.
+
+2006-05-11  Bruno Haible  <bruno@clisp.org>
+
+	* woe32dll: Directory renamed from mingw.
+	* cygwin/export.h: New file.
+	* cygwin/gettextlib-exports.c: New file.
+	* cygwin/gettextsrc-exports.c: New file.
+	* cygwin/gettextpo-exports.c: New file.
+	* configure.ac (WOE32DLL): Condition renamed from MINGW. Activate it
+	also on Cygwin. Only activate it when compiling shared libraries.
+	(CYGWINDLL): New condition.
+	(CYGWINDLL): New define.
+	(DLL_VARIABLE): Use dllimport also on Cygwin.
+	* Makefile.am (EXTRA_DIST): Add cygwin/export.h.
+
+2006-05-11  Bruno Haible  <bruno@clisp.org>
+
+	* woe32dll/c++format.cc: New file.
+
+2006-05-02  Charles Wilson  <cygwin@cwilson.fastmail.fm>
+
+	* configure.ac (LTNOUNDEF): Set to -no-undefined also on mingw and
+	Cygwin.
+
+2006-05-08  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (windows/stdbool.h): Create directory if needed.
+	Based on a patch by Charles Wilson.
+
+2006-04-30  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Invoke gl_STDARG_H.
+
+2006-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Pass a source-version to gt_JAVACOMP. Move gt_JAVAEXEC
+	call before the gt_JAVACOMP call.
+
+2006-04-23  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Invoke gl_HEADER_UNISTD.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (gettextsrc_SCRIPTS): Remove mkinstalldirs.
+
+2006-03-11  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (MSGMERGE_LIBM): New variable. Test for presence of
+	ceil() and sqrt().
+
+2005-11-23  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* configure.ac: Invoke gl_WOE32_DLL.
+
+2005-11-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (config.h_vms, config.h.msvc): Treat HAVE_FWPRINTF like
+	HAVE_WPRINTF. Needed since 2003-09-17.
+	Reported by Svante Seleborg <svante@axantum.com>.
+
+2005-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Remove gl_STRCASE invocation.
+
+2005-09-20  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Invoke BISON_I18N.
+
+2005-08-23  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Invoke gl_BYTESWAP. Define ENDIANNESS.
+
+2005-08-13  Bruno Haible  <bruno@clisp.org>
+
+	New configure options --disable-java, --disable-native-java.
+	* configure.ac: Invoke gt_JAVA_CHOICE.
+	(BUILDJAVAEXE, BUILDJAVA): Use it.
+
+2005-08-11  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Accept --without-emacs option.
+
+2005-08-03  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (intl/Makefile): Remove the VPATH line.
+	Reported by Jason Keltz <jas@cs.yorku.ca>.
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Move the AM_GNU_GETTEXT invocation early, since it
+	modifies CPPFLAGS.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* mingw: New directory.
+	* configure.ac (LTNOUNDEF): New macro.
+	(MINGW): New conditional.
+	(DLL_VARIABLE): Define also as nonempty when building shared libraries
+	with mingw.
+
+2005-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Call gt_CSHARPEXEC with parameters.
+
+2005-03-20  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: Test for field __names in struct __locale_struct.
+	Also define USE_IN_GETTEXT_TESTS.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools/tests subdirectory of GNU gettext
-## Copyright (C) 1995-1997, 2001-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1997, 2001-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,36 +19,41 @@
 
 AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 EXTRA_DIST =
+MOSTLYCLEANFILES = core *.stackdump
 
-TESTS = gettext-1 gettext-2 \
+TESTS = gettext-1 gettext-2 gettext-3 gettext-4 gettext-5 gettext-6 gettext-7 \
 	msgattrib-1 msgattrib-2 msgattrib-3 msgattrib-4 msgattrib-5 \
 	msgattrib-6 msgattrib-7 msgattrib-8 msgattrib-9 msgattrib-10 \
-	msgattrib-11 msgattrib-12 msgattrib-13 msgattrib-14 \
+	msgattrib-11 msgattrib-12 msgattrib-13 msgattrib-14 msgattrib-15 \
 	msgattrib-properties-1 \
 	msgcat-1 msgcat-2 msgcat-3 msgcat-4 msgcat-5 msgcat-6 msgcat-7 \
-	msgcat-8 msgcat-9 msgcat-10 msgcat-11 \
+	msgcat-8 msgcat-9 msgcat-10 msgcat-11 msgcat-12 msgcat-13 msgcat-14 \
 	msgcat-properties-1 msgcat-properties-2 \
 	msgcat-stringtable-1 \
 	msgcmp-1 msgcmp-2 msgcmp-3 \
 	msgcomm-1 msgcomm-2 msgcomm-3 msgcomm-4 msgcomm-5 msgcomm-6 msgcomm-7 \
 	msgcomm-8 msgcomm-9 msgcomm-10 msgcomm-11 msgcomm-12 msgcomm-13 \
 	msgcomm-14 msgcomm-15 msgcomm-16 msgcomm-17 msgcomm-18 msgcomm-19 \
-	msgcomm-20 msgcomm-21 msgcomm-22 msgcomm-23 msgcomm-24 \
-	msgconv-1 msgconv-2 msgconv-3 msgconv-4 \
-	msgen-1 msgen-2 \
-	msgexec-1 msgexec-2 msgexec-3 \
-	msgfilter-1 msgfilter-2 msgfilter-3 \
+	msgcomm-20 msgcomm-21 msgcomm-22 msgcomm-23 msgcomm-24 msgcomm-25 \
+	msgconv-1 msgconv-2 msgconv-3 msgconv-4 msgconv-5 \
+	msgen-1 msgen-2 msgen-3 \
+	msgexec-1 msgexec-2 msgexec-3 msgexec-4 \
+	msgfilter-1 msgfilter-2 msgfilter-3 msgfilter-4 \
+	msgfilter-sr-latin-1 \
 	msgfmt-1 msgfmt-2 msgfmt-3 msgfmt-4 msgfmt-5 msgfmt-6 msgfmt-7 \
-	msgfmt-8 msgfmt-9 msgfmt-10 msgfmt-11 msgfmt-12 msgfmt-13 \
+	msgfmt-8 msgfmt-9 msgfmt-10 msgfmt-11 msgfmt-12 msgfmt-13 msgfmt-14 \
+	msgfmt-15 \
 	msgfmt-properties-1 \
 	msgfmt-qt-1 \
-	msggrep-1 msggrep-2 msggrep-3 msggrep-4 msggrep-5 msggrep-6 \
-	msginit-1 \
+	msggrep-1 msggrep-2 msggrep-3 msggrep-4 msggrep-5 msggrep-6 msggrep-7 \
+	msggrep-8 \
+	msginit-1 msginit-2 \
 	msgmerge-1 msgmerge-2 msgmerge-3 msgmerge-4 msgmerge-5 msgmerge-6 \
 	msgmerge-7 msgmerge-8 msgmerge-9 msgmerge-10 msgmerge-11 msgmerge-12 \
 	msgmerge-13 msgmerge-14 msgmerge-15 msgmerge-16 msgmerge-17 \
+	msgmerge-18 \
 	msgmerge-compendium-1 msgmerge-compendium-2 msgmerge-compendium-3 \
-	msgmerge-compendium-4 \
+	msgmerge-compendium-4 msgmerge-compendium-5 \
 	msgmerge-properties-1 msgmerge-properties-2 \
 	msgmerge-update-1 msgmerge-update-2 msgmerge-update-3 \
 	msgunfmt-1 \
@@ -56,12 +61,14 @@ TESTS = gettext-1 gettext-2 \
 	msgunfmt-java-1 \
 	msgunfmt-properties-1 \
 	msgunfmt-tcl-1 \
-	msguniq-1 msguniq-2 msguniq-3 msguniq-4 \
+	msguniq-1 msguniq-2 msguniq-3 msguniq-4 msguniq-5 \
+	recode-sr-latin-1 recode-sr-latin-2 \
 	xgettext-1 xgettext-2 xgettext-3 xgettext-4 xgettext-5 xgettext-6 \
-	xgettext-7 xgettext-8 \
+	xgettext-7 xgettext-8 xgettext-9 \
 	xgettext-awk-1 \
 	xgettext-c-1 xgettext-c-2 xgettext-c-3 xgettext-c-4 xgettext-c-5 \
-	xgettext-c-6 xgettext-c-7 xgettext-c-8 xgettext-c-9 \
+	xgettext-c-6 xgettext-c-7 xgettext-c-8 xgettext-c-9 xgettext-c-10 \
+	xgettext-c-11 xgettext-c-12 xgettext-c-13 xgettext-c-14 xgettext-c-15 \
 	xgettext-csharp-1 xgettext-csharp-2 xgettext-csharp-3 \
 	xgettext-csharp-4 xgettext-csharp-5 \
 	xgettext-elisp-1 \
@@ -73,17 +80,18 @@ TESTS = gettext-1 gettext-2 \
 	xgettext-objc-1 xgettext-objc-2 \
 	xgettext-perl-1 xgettext-perl-2 xgettext-perl-3 xgettext-perl-4 \
 	xgettext-perl-5 \
-	xgettext-php-1 \
+	xgettext-php-1 xgettext-php-2 \
 	xgettext-po-1 \
 	xgettext-properties-1 \
-	xgettext-python-1 xgettext-python-2 \
+	xgettext-python-1 xgettext-python-2 xgettext-python-3 \
 	xgettext-scheme-1 \
-	xgettext-sh-1 xgettext-sh-2 xgettext-sh-3 \
+	xgettext-sh-1 xgettext-sh-2 xgettext-sh-3 xgettext-sh-4 xgettext-sh-5 \
 	xgettext-smalltalk-1 \
 	xgettext-stringtable-1 \
 	xgettext-tcl-1 xgettext-tcl-2 \
-	xgettext-ycp-1 xgettext-ycp-2 \
+	xgettext-ycp-1 xgettext-ycp-2 xgettext-ycp-3 \
 	format-awk-1 format-awk-2 \
+	format-boost-1 format-boost-2 \
 	format-c-1 format-c-2 format-c-3 format-c-4 format-c-5 \
 	format-csharp-1 format-csharp-2 \
 	format-elisp-1 format-elisp-2 \
@@ -109,8 +117,14 @@ TESTS = gettext-1 gettext-2 \
 	lang-ycp lang-tcl lang-perl-1 lang-perl-2 lang-php lang-po lang-rst
 
 EXTRA_DIST += $(TESTS) \
-	test.mo xg-c-1.ok.po mex-test2.ok msguniq-a.in msguniq-a.inp \
-	msguniq-a.out qttest_pl.po qttest_pl.qm ChangeLog.0
+	test.mo xg-c-1.ok.po mex-test2.ok \
+	msgmerge-v.comp.po msgmerge-v.pot msgmerge-v.out \
+	msguniq-a.in msguniq-a.inp msguniq-a.out \
+	qttest_pl.po qttest_pl.qm \
+	qttest2_de.po qttest2_de.qm qttest2_de.ts \
+	ChangeLog.0 \
+	gettext-3-1.po gettext-3-2.po gettext-4.po gettext-5.po \
+	gettext-6-1.po gettext-6-2.po gettext-7.po
 
 XGETTEXT = ../src/xgettext
 
@@ -139,13 +153,18 @@ TESTS_ENVIRONMENT = top_srcdir=$(top_srcdir) \
 		    MSGMERGE="$(CHECKER) msgmerge" \
 		    MSGUNFMT="$(CHECKER) msgunfmt" \
 		    MSGUNIQ="$(CHECKER) msguniq" \
+		    RECODE="$(CHECKER) recode" \
 		    OBJEXT='@OBJEXT@' EXEEXT='@EXEEXT@' \
 		    LIBTOOL='@LIBTOOL@' \
 		    CC='@CC@' CFLAGS='@CFLAGS@' \
 		    CXX='@CXX@' CXXFLAGS='@CXXFLAGS@' \
 		    CPPFLAGS='@CPPFLAGS@' LDFLAGS='@LDFLAGS@' \
 		    LTLIBINTL='@LTLIBINTL@' \
+		    JAVA_CHOICE='@JAVA_CHOICE@' \
+		    BUILDJAVA='@BUILDJAVA@' \
 		    TESTJAVA='@TESTJAVA@' \
+		    CSHARP_CHOICE='@CSHARP_CHOICE@' \
+		    BUILDCSHARP='@BUILDCSHARP@' \
 		    TESTCSHARP='@TESTCSHARP@' \
 		    TESTLIBASPRINTF='@TESTLIBASPRINTF@' \
 		    LOCALE_FR='@LOCALE_FR@' \
@@ -160,7 +179,6 @@ xg-c-1.ok.po: $(top_srcdir)/src/xgettext.c $(top_srcdir)/src/msgfmt.c
 	  $(top_srcdir)/src/xgettext.c $(top_srcdir)/src/msgfmt.c
 
 # Three auxiliary programs used by the tests.
-localedir = $(datadir)/locale
 AM_CPPFLAGS = \
   -I.. \
   -I../lib -I$(top_srcdir)/lib \
@@ -169,9 +187,9 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 # INTL_MACOSX_LIBS is needed because the programs depend on libintl.la
 # but libtool doesn't put -Wl,-framework options into .la files.
 LDADD = $(LDADD_@USE_INCLUDED_LIBINTL@) @INTL_MACOSX_LIBS@
-LDADD_yes = ../intl/libintl.la
-LDADD_no = ../intl/libgnuintl.la @LTLIBINTL@
-noinst_PROGRAMS = tstgettext tstngettext testlocale cake fc3 fc4 fc5
+LDADD_yes = ../intl/libintl.la @LTLIBTHREAD@
+LDADD_no = ../intl/libgnuintl.la @LTLIBTHREAD@ @LTLIBINTL@
+noinst_PROGRAMS = tstgettext tstngettext testlocale gettext-3-prg gettext-4-prg gettext-5-prg gettext-6-prg gettext-7-prg cake fc3 fc4 fc5
 tstgettext_SOURCES = tstgettext.c setlocale.c
 tstgettext_CFLAGS = -DINSTALLDIR=\".\"
 tstgettext_LDADD = ../lib/libgettextlib.la $(LDADD)
@@ -179,6 +197,22 @@ tstngettext_SOURCES = tstngettext.c setlocale.c
 tstngettext_CFLAGS = -DINSTALLDIR=\".\"
 tstngettext_LDADD = ../lib/libgettextlib.la $(LDADD)
 testlocale_SOURCES = testlocale.c
+gettext_3_prg_SOURCES = gettext-3-prg.c
+gettext_3_prg_LDADD = ../lib/libgettextlib.la $(LDADD)
+gettext_4_prg_SOURCES = gettext-4-prg.c
+gettext_4_prg_LDADD = ../lib/libgettextlib.la $(LDADD)
+gettext_5_prg_SOURCES = gettext-5-prg.c
+gettext_5_prg_LDADD = ../lib/libgettextlib.la $(LDADD)
+gettext_6_prg_SOURCES = gettext-6-prg.c
+gettext_6_prg_CFLAGS = $(gettext_6_prg_CFLAGS_@GLIBC2@)
+gettext_6_prg_CFLAGS_yes = -DUSE_POSIX_THREADS
+gettext_6_prg_LDADD = $(gettext_6_prg_LDADD_@GLIBC2@)
+gettext_6_prg_LDADD_yes = ../lib/libgettextlib.la $(LDADD) -lpthread
+gettext_7_prg_SOURCES = gettext-7-prg.c
+gettext_7_prg_CFLAGS = $(gettext_7_prg_CFLAGS_@GLIBC2@)
+gettext_7_prg_CFLAGS_yes = -DUSE_POSIX_THREADS
+gettext_7_prg_LDADD = $(gettext_7_prg_LDADD_@GLIBC2@)
+gettext_7_prg_LDADD_yes = ../lib/libgettextlib.la $(LDADD) -lpthread
 cake_SOURCES = plural-1-prg.c setlocale.c
 cake_LDADD = ../lib/libgettextlib.la $(LDADD)
 fc3_SOURCES = format-c-3-prg.c setlocale.c

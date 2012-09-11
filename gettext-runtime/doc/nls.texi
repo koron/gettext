@@ -1,7 +1,7 @@
 @node Translation Intro
 @chapter Notes on the Free Translation Project
 
-@set STATUS June 2006
+@set STATUS July 2006
 
 Free software is going international!  The Free Translation Project is
 a way to get maintainers of free software, translators, and users all
@@ -145,7 +145,7 @@ The locale naming convention of @samp{@var{ll}_@var{CC}}, with
 country, is the one use on systems based on GNU libc.  On other systems,
 some variations of this scheme are used, such as @samp{@var{ll}} or
 @samp{@var{ll}_@var{CC}.@var{encoding}}.  You can get the list of
-locales supported by your system for your country by running the command
+locales supported by your system for your language by running the command
 @samp{locale -a | grep '^@var{ll}'}.
 
 Not all programs have translations for all languages.  By default, an

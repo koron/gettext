@@ -1,3 +1,90 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* ca.po: Update from Ivan Vilata i Balaguer <ivan@selidor.net>.
+	* de.po: Update from Karl Eichwalder <ke@suse.de>.
+	* fr.po: Update from Michel Robitaille <robitail@iro.umontreal.ca>.
+	* it.po: Update from Marco Colombo <m.colombo@ed.ac.uk>.
+	* sv.po: Update from Jan Djärv <jan.h.d@swipnet.se>.
+	* vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+
+2006-07-03  Bruno Haible  <bruno@clisp.org>
+
+	* it.po: Update from Marco Colombo <m.colombo@ed.ac.uk>.
+	* ja.po: Update from Masahito Yamaga <ma@yama-ga.com>.
+	* tr.po: Update from Nilgün Belma Bugüner <nilgun@buguner.name.tr>.
+	* zh_CN.po: Update from Funda Wang <fundawang@linux.net.cn>.
+
+2006-06-12  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (mkinstalldirs): New variable. Needed by $(mkdir_p)
+	if an mkinstalldirs file is present.
+
+2006-03-13  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Add lib/javaversion.c.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (MKINSTALLDIRS, mkinstalldirs): Remove variables.
+	(mkdir_p): New variable.
+	(install-data, install-data-yes, installdirs-data,
+	installdirs-data-yes): Use $(mkdir_p) instead of $(mkinstalldirs).
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Don't ignore the --localedir option from autoconf >= 2.60.
+	* Makefile.in.in (localedir): Set to the value determined by the
+	configure script.
+
+2006-04-07  Bruno Haible  <bruno@clisp.org>
+
+	* ca.po: Update from Ivan Vilata i Balaguer <ivan@selidor.net>.
+	* de.po: Update from Karl Eichwalder <ke@suse.de>.
+	* es.po: Update from Max de Mendizábal <max@upn.mx>.
+	* fr.po: Update from Michel Robitaille <robitail@iro.umontreal.ca>.
+	* it.po: Update from Marco Colombo <m.colombo@ed.ac.uk>.
+	* pl.po: Update from Rafał Maszkowski <rzm@icm.edu.pl>.
+	* ru.po: Update from Oleg S. Tihonov <ost@tatnipi.ru>.
+	* sk.po: Update from Marcel Telka <marcel@telka.sk>.
+	* sl.po: Update from
+	Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>.
+	* uk.po: Update from Maxim V. Dziumanenko <mvd@mylinux.com.ua>.
+	* vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+	* zh_CN.po: Update from Funda Wang <fundawang@linux.net.cn>.
+	* zh_TW.po: Update from Abel Cheung <abelcheung@gmail.com>.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* POTFILES.in: Add lib/quotearg.c, src/format-boost.c,
+	src/format-scheme.c, src/msgl-check.c, src/po-xerror.c,
+	src/recode-sr-latin.c, src/x-scheme.c. Remove src/po-lex.h.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (XGETTEXT_OPTIONS): Add keywords 'proper_name' and
+	'proper_name_utf8'.
+
+2005-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (USE_MSGCTXT): New macro.
+	* Makefile.in.in (GMSGFMT, MSGFMT, XGETTEXT): Define according to the
+	value of $(USE_MSGCTXT).
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (datarootdir): New variable.
+	Suggested by Stepan Kasal <kasal@ucw.cz>.
+
+2005-03-13  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (Makefile): Call config.status with calling convention
+	supported since autoconf-2.50.
+	Suggested by Alexandre Duret-Lutz <adl@src.lip6.fr>.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

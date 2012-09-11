@@ -1,5 +1,5 @@
 /* Edit translations using a subprocess.
-   Copyright (C) 2001-2005 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -35,14 +35,13 @@
 # include <sys/time.h>
 #endif
 
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#elif defined _MSC_VER || defined __MINGW32__
+#include <unistd.h>
+#if defined _MSC_VER || defined __MINGW32__
 # include <io.h>
 #endif
 
-/* Get fd_set (on AIX) or select() declaration (on EMX).  */
-#if defined (_AIX) || defined (__EMX__)
+/* Get fd_set (on AIX or Minix) or select() declaration (on EMX).  */
+#if defined (_AIX) || defined (_MINIX) || defined (__EMX__)
 # include <sys/select.h>
 #endif
 
@@ -62,6 +61,10 @@
 #include "findprog.h"
 #include "pipe.h"
 #include "wait-process.h"
+#include "filters.h"
+#include "msgl-iconv.h"
+#include "po-charset.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -95,6 +98,9 @@ static const char *sub_path;
 /* Argument list for the subprogram.  */
 static char **sub_argv;
 static int sub_argc;
+
+/* Filter function.  */
+static void (*filter) (const char *str, size_t len, char **resultp, size_t *lengthp);
 
 /* Long options.  */
 static const struct option long_options[] =
@@ -130,6 +136,7 @@ static void usage (int status)
 	__attribute__ ((noreturn))
 #endif
 ;
+static void generic_filter (const char *str, size_t len, char **resultp, size_t *lengthp);
 static msgdomain_list_ty *process_msgdomain_list (msgdomain_list_ty *mdlp);
 
 
@@ -144,7 +151,7 @@ main (int argc, char **argv)
   msgdomain_list_ty *result;
   bool sort_by_filepos = false;
   bool sort_by_msgid = false;
-  size_t i;
+  int i;
 
   /* Set program name for messages.  */
   set_program_name (argv[0]);
@@ -157,6 +164,7 @@ main (int argc, char **argv)
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -271,8 +279,8 @@ main (int argc, char **argv)
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "2001-2005");
-      printf (_("Written by %s.\n"), "Bruno Haible");
+	      "2001-2006");
+      printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
 
@@ -332,16 +340,29 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
   /* Read input file.  */
   result = read_po_file (input_file);
 
-  /* Warn if the current locale is not suitable for this PO file.  */
-  compare_po_locale_charsets (result);
+  /* Recognize special programs as built-ins.  */
+  if (strcmp (sub_name, "recode-sr-latin") == 0 && sub_argc == 1)
+    {
+      filter = serbian_to_latin;
 
-  /* Attempt to locate the program.
-     This is an optimization, to avoid that spawn/exec searches the PATH
-     on every call.  */
-  sub_path = find_in_path (sub_name);
+      /* Convert the input to UTF-8 first.  */
+      result = iconv_msgdomain_list (result, po_charset_utf8, input_file);
+    }
+  else
+    {
+      filter = generic_filter;
 
-  /* Finish argument list for the program.  */
-  sub_argv[0] = (char *) sub_path;
+      /* Warn if the current locale is not suitable for this PO file.  */
+      compare_po_locale_charsets (result);
+
+      /* Attempt to locate the program.
+	 This is an optimization, to avoid that spawn/exec searches the PATH
+	 on every call.  */
+      sub_path = find_in_path (sub_name);
+
+      /* Finish argument list for the program.  */
+      sub_argv[0] = (char *) sub_path;
+    }
 
   /* Apply the subprogram.  */
   result = process_msgdomain_list (result);
@@ -547,12 +568,11 @@ nonintr_select (int n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 # endif
 #endif
 
-/* Process a string STR of size LEN bytes through the subprogram, then
-   remove NUL bytes.
+/* Process a string STR of size LEN bytes through the subprogram.
    Store the freshly allocated result at *RESULTP and its length at *LENGTHP.
  */
 static void
-process_string (const char *str, size_t len, char **resultp, size_t *lengthp)
+generic_filter (const char *str, size_t len, char **resultp, size_t *lengthp)
 {
 #if defined _MSC_VER || defined __MINGW32__
   /* Native Woe32 API.  */
@@ -684,6 +704,23 @@ process_string (const char *str, size_t len, char **resultp, size_t *lengthp)
     error (EXIT_FAILURE, 0, _("%s subprocess terminated with exit code %d"),
 	   sub_name, exitstatus);
 
+  *resultp = result;
+  *lengthp = length;
+#endif
+}
+
+
+/* Process a string STR of size LEN bytes, then remove NUL bytes.
+   Store the freshly allocated result at *RESULTP and its length at *LENGTHP.
+ */
+static void
+process_string (const char *str, size_t len, char **resultp, size_t *lengthp)
+{
+  char *result;
+  size_t length;
+
+  filter (str, len, &result, &length);
+
   /* Remove NUL bytes from result.  */
   {
     char *p = result;
@@ -705,7 +742,6 @@ process_string (const char *str, size_t len, char **resultp, size_t *lengthp)
 
   *resultp = result;
   *lengthp = length;
-#endif
 }
 
 
@@ -723,7 +759,7 @@ process_message (message_ty *mp)
   size_t k;
 
   /* Keep the header entry unmodified, if --keep-header was given.  */
-  if (mp->msgid[0] == '\0' && keep_header)
+  if (is_header (mp) && keep_header)
     return;
 
   /* Count NUL delimited substrings.  */

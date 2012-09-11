@@ -102,7 +102,8 @@ SHELL = /bin/sh
 
 PROGRAMS = \
 msgcmp.exe msgfmt.exe msgmerge.exe msgunfmt.exe xgettext.exe \
-msgattrib.exe msgcat.exe msgcomm.exe msgconv.exe msgen.exe msgexec.exe msgfilter.exe msggrep.exe msginit.exe msguniq.exe
+msgattrib.exe msgcat.exe msgcomm.exe msgconv.exe msgen.exe msgexec.exe msgfilter.exe msggrep.exe msginit.exe msguniq.exe \
+recode-sr-latin.exe
 
 OBJECTS = \
   message.obj \
@@ -148,11 +149,12 @@ OBJECTS = \
   format-perl-brace.obj \
   format-php.obj \
   format-gcc-internal.obj \
-  format-qt.obj
+  format-qt.obj \
+  format-boost.obj
 
 msgcmp_OBJECTS = msgcmp.obj
-msgfmt_OBJECTS = msgfmt.obj write-mo.obj write-java.obj write-csharp.obj write-resources.obj write-tcl.obj write-qt.obj plural-eval.obj
-msgmerge_OBJECTS = msgmerge.obj plural-count.obj
+msgfmt_OBJECTS = msgfmt.obj write-mo.obj write-java.obj write-csharp.obj write-resources.obj write-tcl.obj write-qt.obj plural-eval.obj hash-string.obj
+msgmerge_OBJECTS = msgmerge.obj msgl-fsearch.obj plural-count.obj
 msgunfmt_OBJECTS = msgunfmt.obj read-mo.obj read-java.obj read-csharp.obj read-resources.obj read-tcl.obj
 xgettext_OBJECTS = xgettext.obj x-c.obj x-po.obj x-sh.obj x-python.obj x-lisp.obj x-elisp.obj x-librep.obj x-scheme.obj x-smalltalk.obj x-java.obj x-csharp.obj x-awk.obj x-ycp.obj x-tcl.obj x-perl.obj x-php.obj x-rst.obj x-glade.obj
 msgattrib_OBJECTS = msgattrib.obj
@@ -161,10 +163,11 @@ msgcomm_OBJECTS = msgcomm.obj
 msgconv_OBJECTS = msgconv.obj
 msgen_OBJECTS = msgen.obj
 msgexec_OBJECTS = msgexec.obj
-msgfilter_OBJECTS = msgfilter.obj
+msgfilter_OBJECTS = msgfilter.obj filter-sr-latin.obj
 msggrep_OBJECTS = msggrep.obj
-msginit_OBJECTS = msginit.obj plural-count.obj localealias.obj
+msginit_OBJECTS = msginit.obj lang-table.obj plural-count.obj localealias.obj
 msguniq_OBJECTS = msguniq.obj
+recode_sr_latin_OBJECTS = recode-sr-latin.obj filter-sr-latin.obj
 LDADD =
 
 RESOURCES = gettextsrc.res
@@ -305,6 +308,9 @@ format-gcc-internal.obj : format-gcc-internal.c
 format-qt.obj : format-qt.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c format-qt.c
 
+format-boost.obj : format-boost.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c format-boost.c
+
 !if !$(DLL)
 
 gettextsrc.lib : $(OBJECTS)
@@ -351,8 +357,14 @@ write-qt.obj : write-qt.c
 plural-eval.obj : plural-eval.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c plural-eval.c
 
+hash-string.obj : ..\..\gettext-runtime\intl\hash-string.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c ..\..\gettext-runtime\intl\hash-string.c
+
 msgmerge.obj : msgmerge.c
 	$(CC) $(INCLUDES) $(CFLAGS) -DINSTALLPREFIX=\"$(IIprefix)\" -DINSTALLDIR=\"$(IIbindir)\" -c -Tp msgmerge.c
+
+msgl-fsearch.obj : msgl-fsearch.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c msgl-fsearch.c
 
 plural-count.obj : plural-count.c
 	$(CC) $(INCLUDES) $(CFLAGS) -c plural-count.c
@@ -459,11 +471,20 @@ msggrep.obj : msggrep.c
 msginit.obj : msginit.c
 	$(CC) $(INCLUDES) $(CFLAGS) -DINSTALLPREFIX=\"$(IIprefix)\" -DINSTALLDIR=\"$(IIbindir)\" -c msginit.c
 
+lang-table.obj : lang-table.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c lang-table.c
+
 localealias.obj : ..\..\gettext-runtime\intl\localealias.c
 	$(CC) $(INCLUDES) $(CFLAGS) -DLOCALE_ALIAS_PATH=\"$(IIaliaspath)\" -c ..\..\gettext-runtime\intl\localealias.c
 
 msguniq.obj : msguniq.c
 	$(CC) $(INCLUDES) $(CFLAGS) -DINSTALLPREFIX=\"$(IIprefix)\" -DINSTALLDIR=\"$(IIbindir)\" -c -Tp msguniq.c
+
+filter-sr-latin.obj : filter-sr-latin.c
+	$(CC) $(INCLUDES) $(CFLAGS) -c filter-sr-latin.c
+
+recode-sr-latin.obj : recode-sr-latin.c
+	$(CC) $(INCLUDES) $(CFLAGS) -DINSTALLPREFIX=\"$(IIprefix)\" -DINSTALLDIR=\"$(IIbindir)\" -c recode-sr-latin.c
 
 msgcmp.exe : $(msgcmp_OBJECTS)
 	$(CC) $(MFLAGS) $(DEBUGFLAGS) $(msgcmp_OBJECTS) gettextsrc.lib ..\lib\gettextlib.lib ..\intl\intl.lib $(libdir)\iconv.lib $(LDADD) -Femsgcmp.exe
@@ -510,6 +531,9 @@ msginit.exe : $(msginit_OBJECTS)
 msguniq.exe : $(msguniq_OBJECTS)
 	$(CC) $(MFLAGS) $(DEBUGFLAGS) $(msguniq_OBJECTS) gettextsrc.lib ..\lib\gettextlib.lib ..\intl\intl.lib $(libdir)\iconv.lib $(LDADD) -Femsguniq.exe
 
+recode-sr-latin.exe : $(recode_sr_latin_OBJECTS)
+	$(CC) $(MFLAGS) $(DEBUGFLAGS) $(recode_sr_latin_OBJECTS) ..\lib\gettextlib.lib ..\intl\intl.lib $(libdir)\iconv.lib $(LDADD) -Ferecode-sr-latin.exe
+
 # Compilation rules for gettextpo.lib objects, with $(PICFLAGS).
 
 gettext-po.obj : gettext-po.c
@@ -554,6 +578,7 @@ install : all force
 	$(INSTALL_PROGRAM) msggrep.exe $(bindir)\msggrep.exe
 	$(INSTALL_PROGRAM) msginit.exe $(bindir)\msginit.exe
 	$(INSTALL_PROGRAM) msguniq.exe $(bindir)\msguniq.exe
+	$(INSTALL_PROGRAM) recode-sr-latin.exe $(bindir)\recode-sr-latin.exe
 	-mkdir $(datadir)
 	-mkdir $(pkgdatadir)
 	$(INSTALL_DATA) msgunfmt.tcl $(pkgdatadir)\msgunfmt.tcl
@@ -595,6 +620,7 @@ uninstall : force
 	$(RM) $(bindir)\msggrep.exe
 	$(RM) $(bindir)\msginit.exe
 	$(RM) $(bindir)\msguniq.exe
+	$(RM) $(bindir)\recode-sr-latin.exe
 	$(RM) $(pkgdatadir)\msgunfmt.tcl
 	$(RM) $(includedir)\gettext-po.h
 !if $(DLL)

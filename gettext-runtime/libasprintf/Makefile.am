@@ -1,5 +1,5 @@
 ## Makefile for the gettext-runtime/libasprintf subdirectory of GNU gettext
-## Copyright (C) 2002-2005 Free Software Foundation, Inc.
+## Copyright (C) 2002-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify it
 ## under the terms of the GNU Library General Public License as published
@@ -62,6 +62,7 @@ EXTRA_DIST += $(lib_asprintf_EXTRASOURCES)
 # How to build libasprintf.
 # With libtool 1.5.14, on some platforms, like BeOS, "libtool --tag=CXX" fails
 # to create a shared library, however "libtool --tag=CC" succeeds.
+libasprintf_la_LDFLAGS = @LTNOUNDEF@
 libasprintf.la: $(libasprintf_la_OBJECTS) $(libasprintf_la_DEPENDENCIES)
 	$(CXXLINK) -rpath $(libdir) $(libasprintf_la_LDFLAGS) $(libasprintf_la_OBJECTS) $(libasprintf_la_LIBADD) $(LIBS) || \
 	$(LINK) -rpath $(libdir) $(libasprintf_la_LDFLAGS) $(libasprintf_la_OBJECTS) $(libasprintf_la_LIBADD) $(LIBS)
@@ -86,12 +87,6 @@ clean-local:
 
 # Documentation.
 
-docdir = $(datadir)/doc/@PACKAGE@
-dvidir = $(docdir)
-psdir = $(docdir)
-pdfdir = $(docdir)
-htmldir = $(docdir)
-
 MAKEINFO = env LANG= LC_MESSAGES= LC_ALL= LANGUAGE= @MAKEINFO@
 MAKEINFOFLAGS = --no-split
 
@@ -114,11 +109,11 @@ CLEANFILES = autosprintf.pdf
 # Documentation in DVI format.
 
 install-dvi: autosprintf.dvi
-	$(mkinstalldirs) $(DESTDIR)$(dvidir)
+	$(mkdir_p) $(DESTDIR)$(dvidir)
 	$(INSTALL_DATA) `if test -f autosprintf.dvi; then echo .; else echo $(srcdir); fi`/autosprintf.dvi $(DESTDIR)$(dvidir)/autosprintf.dvi
 
 installdirs-dvi:
-	$(mkinstalldirs) $(DESTDIR)$(dvidir)
+	$(mkdir_p) $(DESTDIR)$(dvidir)
 
 uninstall-dvi:
 	$(RM) $(DESTDIR)$(dvidir)/autosprintf.dvi
@@ -137,11 +132,11 @@ autosprintf.ps: autosprintf.dvi
 	$(DVIPS) -o $@ `if test -f autosprintf.dvi; then echo autosprintf.dvi; else echo $(srcdir)/autosprintf.dvi; fi`
 
 install-ps: autosprintf.ps
-	$(mkinstalldirs) $(DESTDIR)$(psdir)
+	$(mkdir_p) $(DESTDIR)$(psdir)
 	$(INSTALL_DATA) `if test -f autosprintf.ps; then echo .; else echo $(srcdir); fi`/autosprintf.ps $(DESTDIR)$(psdir)/autosprintf.ps
 
 installdirs-ps:
-	$(mkinstalldirs) $(DESTDIR)$(psdir)
+	$(mkdir_p) $(DESTDIR)$(psdir)
 
 uninstall-ps:
 	$(RM) $(DESTDIR)$(psdir)/autosprintf.ps
@@ -152,11 +147,11 @@ uninstall-ps:
 SUFFIXES = .pdf
 
 install-pdf: autosprintf.pdf
-	$(mkinstalldirs) $(DESTDIR)$(pdfdir)
+	$(mkdir_p) $(DESTDIR)$(pdfdir)
 	$(INSTALL_DATA) `if test -f autosprintf.pdf; then echo .; else echo $(srcdir); fi`/autosprintf.pdf $(DESTDIR)$(pdfdir)/autosprintf.pdf
 
 installdirs-pdf:
-	$(mkinstalldirs) $(DESTDIR)$(pdfdir)
+	$(mkdir_p) $(DESTDIR)$(pdfdir)
 
 uninstall-pdf:
 	$(RM) $(DESTDIR)$(pdfdir)/autosprintf.pdf
@@ -175,11 +170,11 @@ autosprintf_all.html: autosprintf.texi
 	mv autosprintf.html autosprintf_all.html
 
 install-html: autosprintf_all.html
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkdir_p) $(DESTDIR)$(htmldir)
 	$(INSTALL_DATA) `if test -f autosprintf_all.html; then echo .; else echo $(srcdir); fi`/autosprintf_all.html $(DESTDIR)$(htmldir)/autosprintf.html
 
 installdirs-html:
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkdir_p) $(DESTDIR)$(htmldir)
 
 uninstall-html:
 	$(RM) $(DESTDIR)$(htmldir)/autosprintf.html

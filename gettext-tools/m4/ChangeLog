@@ -1,3 +1,192 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* stdarg.m4: Update from gnulib.
+
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* javacomp.m4 (gt_JAVACOMP): Convert target_version "null" to "1.1".
+
+2006-07-19  Bruno Haible  <bruno@clisp.org>
+
+	* getline.m4 (AM_FUNC_GETLINE): When cross-compiling, assume that
+	getline works on glibc2 systems. Needed to avoid trouble in
+	relocatable.c.
+	Reported by Nils Magnus Larsgard <nmlarsgaard@atmel.no>.
+
+2006-06-28  Bruno Haible  <bruno@clisp.org>
+
+	Assume <dirent.h> on all Unix platforms. Assume closedir works.
+	* backupfile.m4 (gt_PREREQ_BACKUPFILE): Don't invoke AC_HEADER_DIRENT,
+	AC_FUNC_CLOSEDIR_VOID. Instead test for dirent.h.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Remove isc-posix.m4.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume correct S_ISDIR macro.
+	* tmpdir.m4 (gt_TMPDIR): Remove AC_STAT_MACROS_BROKEN invocation.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	Assume working 'const'.
+	* fnmatch.m4 (_AC_LIBOBJ_FNMATCH): Remove AC_C_CONST invocation.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* setlocale.m4 (gt_SETLOCALE): Assume <locale.h> exists.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* Makefile.am (docdir): Remove variable.
+
+2006-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* setenv.m4 (gl_PREREQ_SETENV, gl_PREREQ_UNSETENV): Remove test
+	whether errno is declared. Assume <errno.h> declares errno.
+
+2006-06-15  Eric Blake  <ebb9@byu.net>
+
+	* ssize_t.m4 (gt_TYPE_SSIZE_T): Work in spite of -Werror.
+
+2006-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Remove inttypes.m4, add inttypes-h.m4.
+
+2006-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* locale-fr.m4 (gt_LOCALE_FR): Require AM_LANGINFO_CODESET. Verify
+	that nl_langinfo(CODESET) is nonempty. Set LC_CTYPE to empty for the
+	test.
+	(gt_LOCALE_FR_UTF8): Likewise.
+	Needed for MacOS X 10.3.x, to make the lang-tcl test work.
+
+2006-05-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* regex.m4 (gl_INCLUDED_REGEX): Fix M4 underquoting.
+
+2006-04-30  Bruno Haible  <bruno@clisp.org>
+
+	* relocatable.m4 (AC_RELOCATABLE): Also test for availability of
+	<unistd.h>, <mach-o/dyld.h>. _NSGetExecutablePath.
+
+2006-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* javaexec.m4 (gt_JAVAEXEC): On Cygwin, set CLASSPATH_SEPARATOR to a
+	semicolon.
+	* javacomp.m4 (gt_JAVACOMP): Likewise. Use CLASSPATH_SEPARATOR for
+	the conftestver execution.
+
+2006-04-30  Bruno Haible  <bruno@clisp.org>
+
+	* stdarg.m4: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2006-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* javacomp.m4 (gt_JAVACOMP): Accept a source-version and an optional
+	target-version argument. Verify that the compiler groks source of the
+	specified source-version, or add -source option as necessary. Verify
+	that the compiler produces bytecode in the specified target-version,
+	or add -target and -source options as necessary. Make the result of
+	the test available as variable CONF_JAVAC. Also log error output in
+	config.log.
+
+2006-04-23  Bruno Haible  <bruno@clisp.org>
+
+	* unistd_h.m4: New file, from gnulib.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Prepare for autoconf-2.60.
+	* regex.m4 (gl_INCLUDED_REGEX): Include <stdlib.h>, for exit()
+	declaration.
+
+2006-03-12  Bruno Haible  <bruno@clisp.org>
+
+	* javaexec.m4 (gt_JAVAEXEC): Make the result of the test available as
+	variable CONF_JAVA, for subsequent autoconf tests. Also log error
+	output in config.log.
+
+2006-03-11  Bruno Haible  <bruno@clisp.org>
+
+	* javacomp.m4 (gt_JAVACOMP): Treat gcj-4.x like gcj-3.x.
+
+2005-12-04  Bruno Haible  <bruno@clisp.org>
+
+	* csharpexec.m4 (gt_CSHARPEXEC): Add support for 'clix' launcher
+	(untested).
+
+2005-12-04  Bruno Haible  <bruno@clisp.org>
+
+	* csharpcomp.m4 (gt_CSHARPCOMP): Also set CSHARPCOMPFLAGS.
+
+2005-11-24  Bruno Haible  <bruno@clisp.org>
+
+	Cygwin portability.
+	* relocatable.m4 (AC_RELOCATABLE): Require AC_EXEEXT. Arrange to set
+	RELOC_EXEEXT while invoking install-reloc.
+
+2005-09-20  Bruno Haible  <bruno@clisp.org>
+
+	* bison-i18n.m4: New file, from bison-2.1.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2005-08-23  Bruno Haible  <bruno@clisp.org>
+
+	* byteswap.m4: New file, from gnulib.
+	* Makefile.am (EXTRA_DIST): Add byteswap.m4.
+
+2005-08-13  Bruno Haible  <bruno@clisp.org>
+
+	* java.m4: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2005-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* strcase.m4: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2005-07-24  Bruno Haible  <bruno@clisp.org>
+
+	Tidy up exported symbols.
+	* Makefile.am (aclocal_DATA): Add visibility.m4.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Add lock.m4.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* relocatable.m4 (AC_RELOCATABLE): On mingw, simply set
+	SET_RELOCATABLE to a trivial value.
+
+2005-07-05  Bruno Haible  <bruno@clisp.org>
+
+	* mbrtowc.m4 (gl_FUNC_MBRTOWC): Upgrade to version from current
+	autoconf CVS. Needed for mingw.
+
+2005-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* csharpexec-test.exe: New file.
+	* csharpexec.m4 (gt_CSHARPEXEC): Test whether the C# engine can execute
+	it.
+	* Makefile.am (examplesbuildaux_DATA, EXTRA_DIST): Add
+	csharpexec-test.exe.
+
+2005-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* csharpcomp.m4 (gt_CSHARPCOMP): Check that cscc can actually compile
+	a trivial program.
+	Reported by Pierre <pierre42d@9online.fr>.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

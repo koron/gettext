@@ -1,3 +1,77 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* de.po: Update from Karl Eichwalder <ke@suse.de>.
+	* eo.po: New file, from D. Dale Gulledge <dsplat@rochester.rr.com>.
+	* fr.po: Update from Michel Robitaille <robitail@iro.umontreal.ca>.
+	* ga.po: Update from Kevin Patrick Scannell <scannell@slu.edu>.
+	* ru.po: Update from Oleg S. Tihonov <ost@tatnipi.ru>.
+	* sv.po: Update from Jan Djärv <jan.h.d@swipnet.se>.
+	* vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+	* zh_HK.po: New file, from Abel Cheung <abelcheung@gmail.com>.
+	* zh_TW.po: Update from Abel Cheung <abelcheung@gmail.com>.
+	* LINGUAS: Add eo, zh_HK.
+
+2006-07-03  Bruno Haible  <bruno@clisp.org>
+
+	* it.po: Update from Marco Colombo <m.colombo@ed.ac.uk>.
+	* ja.po: Update from Masahito Yamaga <ma@yama-ga.com>.
+	* ko.po: Update from Changwoo Ryu <cwryu@debian.org>.
+	* pl.po: Update from Rafał Maszkowski <rzm@icm.edu.pl>.
+	* tr.po: Update from Nilgün Belma Bugüner <nilgun@buguner.name.tr>.
+
+2006-06-12  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (mkinstalldirs): New variable. Needed by $(mkdir_p)
+	if an mkinstalldirs file is present.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (MKINSTALLDIRS, mkinstalldirs): Remove variables.
+	(mkdir_p): New variable.
+	(install-data, install-data-yes, installdirs-data,
+	installdirs-data-yes): Use $(mkdir_p) instead of $(mkinstalldirs).
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Don't ignore the --localedir option from autoconf >= 2.60.
+	* Makefile.in.in (localedir): Set to the value determined by the
+	configure script.
+
+2006-04-07  Bruno Haible  <bruno@clisp.org>
+
+	* es.po: Update from Max de Mendizábal <max@upn.mx>.
+	* pt.po: Update from Helder Correia <helder.pereira.correia@gmail.com>.
+	* sl.po: Update from
+	Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>.
+	* vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+	* zh_TW.po: Update from Abel Cheung <abelcheung@gmail.com>.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (XGETTEXT_OPTIONS): Add keywords 'proper_name' and
+	'proper_name_utf8'.
+
+2005-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (USE_MSGCTXT): New macro.
+	* Makefile.in.in (GMSGFMT, MSGFMT, XGETTEXT): Define according to the
+	value of $(USE_MSGCTXT).
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (datarootdir): New variable.
+	Suggested by Stepan Kasal <kasal@ucw.cz>.
+
+2005-03-13  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (Makefile): Call config.status with calling convention
+	supported since autoconf-2.50.
+	Suggested by Alexandre Duret-Lutz <adl@src.lip6.fr>.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

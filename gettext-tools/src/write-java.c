@@ -1,5 +1,5 @@
 /* Writing Java ResourceBundles.
-   Copyright (C) 2001-2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -32,9 +32,6 @@
 #include <string.h>
 
 #include <sys/stat.h>
-#if STAT_MACROS_BROKEN
-# undef S_ISDIR
-#endif
 #if !defined S_ISDIR && defined S_IFDIR
 # define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
@@ -57,32 +54,28 @@
 # define S_IXUSR 00100
 #endif
 
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
 #ifdef __MINGW32__
-/* mingw's mkdir() function has 1 argument, but we pass 2 arguments.
+# include <io.h>
+/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
    Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) mkdir)
+# define mkdir ((int (*)()) _mkdir)
 #endif
 
 #include "c-ctype.h"
 #include "error.h"
+#include "xerror.h"
+#include "xvasprintf.h"
 #include "javacomp.h"
 #include "message.h"
-#include "mkdtemp.h"
 #include "msgfmt.h"
 #include "msgl-iconv.h"
-#include "pathmax.h"
 #include "plural-exp.h"
 #include "po-charset.h"
 #include "xalloc.h"
 #include "xallocsa.h"
 #include "pathname.h"
-#include "fatal-signal.h"
 #include "fwriteerror.h"
-#include "tmpdir.h"
+#include "clean-temp.h"
 #include "utf8-ucs4.h"
 #include "gettext.h"
 
@@ -873,7 +866,7 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
       struct expression *plural;
       unsigned long int nplurals;
 
-      header_entry = message_list_search (mlp, "");
+      header_entry = message_list_search (mlp, NULL, "");
       extract_plural_expression (header_entry ? header_entry->msgstr : NULL,
 				 &plural, &nplurals);
 
@@ -893,50 +886,6 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
 }
 
 
-/* Asynchronously cleaning up temporary files, when we receive any of the
-   usually occurring signals whose default action is to terminate the
-   program.  */
-
-static struct
-{
-  const char *tmpdir;
-  unsigned int subdir_count;
-  const char * const *subdir;
-  const char *file_name;
-} cleanup_list;
-
-/* The signal handler.  It gets called asynchronously.  */
-static void
-cleanup ()
-{
-  unsigned int i;
-
-  /* First cleanup the files in the subdirectory.  */
-  {
-    const char *filename = cleanup_list.file_name;
-
-    if (filename != NULL)
-      unlink (filename);
-  }
-
-  /* Then cleanup the subdirectories.  */
-  for (i = cleanup_list.subdir_count; i > 0; )
-    {
-      const char *filename = cleanup_list.subdir[--i];
-
-      rmdir (filename);
-    }
-
-  /* Then cleanup the main temporary directory.  */
-  {
-    const char *filename = cleanup_list.tmpdir;
-
-    if (filename != NULL)
-      rmdir (filename);
-  }
-}
-
-
 int
 msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
 		      const char *resource_name, const char *locale_name,
@@ -944,8 +893,7 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
 		      bool assume_java2)
 {
   int retval;
-  char *template;
-  char *tmpdir;
+  struct temp_dir *tmpdir;
   int ndots;
   char *class_name;
   char **subdirs;
@@ -957,42 +905,34 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
   if (mlp->nitems == 0)
     return 0;
 
+  /* Determine whether mlp has entries with context.  */
+  {
+    bool has_context;
+    size_t j;
+
+    has_context = false;
+    for (j = 0; j < mlp->nitems; j++)
+      if (mlp->item[j]->msgctxt != NULL)
+	has_context = true;
+    if (has_context)
+      {
+	multiline_error (xstrdup (""),
+			 xstrdup (_("\
+message catalog has context dependent translations\n\
+but the Java ResourceBundle format doesn't support contexts\n")));
+	return 1;
+      }
+  }
+
   retval = 1;
 
   /* Convert the messages to Unicode.  */
   iconv_message_list (mlp, canon_encoding, po_charset_utf8, NULL);
 
-  cleanup_list.tmpdir = NULL;
-  cleanup_list.subdir_count = 0;
-  cleanup_list.file_name = NULL;
-  {
-    static bool cleanup_already_registered = false;
-    if (!cleanup_already_registered)
-      {
-	at_fatal_signal (&cleanup);
-	cleanup_already_registered = true;
-      }
-  }
-
   /* Create a temporary directory where we can put the Java file.  */
-  template = (char *) xallocsa (PATH_MAX);
-  if (path_search (template, PATH_MAX, NULL, "msg", 1))
-    {
-      error (0, errno,
-	     _("cannot find a temporary directory, try setting $TMPDIR"));
-      goto quit1;
-    }
-  block_fatal_signals ();
-  tmpdir = mkdtemp (template);
-  cleanup_list.tmpdir = tmpdir;
-  unblock_fatal_signals ();
+  tmpdir = create_temp_dir ("msg", NULL, false);
   if (tmpdir == NULL)
-    {
-      error (0, errno,
-	     _("cannot create a temporary directory using template \"%s\""),
-	     template);
-      goto quit1;
-    }
+    goto quit1;
 
   /* Assign a default value to the resource name.  */
   if (resource_name == NULL)
@@ -1007,11 +947,7 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
     }
 
   if (locale_name != NULL)
-    {
-      class_name =
-	(char *) xmalloc (strlen (resource_name) + 1 + strlen (locale_name) + 1);
-      sprintf (class_name, "%s_%s", resource_name, locale_name);
-    }
+    class_name = xasprintf ("%s_%s", resource_name, locale_name);
   else
     class_name = xstrdup (resource_name);
 
@@ -1021,7 +957,7 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
     const char *last_dir;
     int i;
 
-    last_dir = tmpdir;
+    last_dir = tmpdir->dir_name;
     p = resource_name;
     for (i = 0; i < ndots; i++)
       {
@@ -1038,8 +974,7 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
 
     if (locale_name != NULL)
       {
-	char *suffix = (char *) xmalloc (1 + strlen (locale_name) + 5 + 1);
-	sprintf (suffix, "_%s.java", locale_name);
+	char *suffix = xasprintf ("_%s.java", locale_name);
 	java_file_name = concatenated_pathname (last_dir, p, suffix);
 	free (suffix);
       }
@@ -1053,28 +988,26 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
   {
     int i;
 
-    cleanup_list.subdir = (const char * const *) subdirs;
-    cleanup_list.subdir_count = 0;
     for (i = 0; i < ndots; i++)
       {
-	cleanup_list.subdir_count = i + 1;
+	register_temp_subdir (tmpdir, subdirs[i]);
 	if (mkdir (subdirs[i], S_IRUSR | S_IWUSR | S_IXUSR) < 0)
 	  {
 	    error (0, errno, _("failed to create \"%s\""), subdirs[i]);
-	    while (i-- > 0)
-	      rmdir (subdirs[i]);
+	    unregister_temp_subdir (tmpdir, subdirs[i]);
 	    goto quit3;
 	  }
       }
   }
 
   /* Create the Java file.  */
-  cleanup_list.file_name = java_file_name;
+  register_temp_file (tmpdir, java_file_name);
   java_file = fopen (java_file_name, "w");
   if (java_file == NULL)
     {
       error (0, errno, _("failed to create \"%s\""), java_file_name);
-      goto quit4;
+      unregister_temp_file (tmpdir, java_file_name);
+      goto quit3;
     }
 
   write_java_code (java_file, class_name, mlp, assume_java2);
@@ -1082,8 +1015,7 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
   if (fwriteerror (java_file))
     {
       error (0, errno, _("error while writing \"%s\" file"), java_file_name);
-      fclose (java_file);
-      goto quit5;
+      goto quit3;
     }
 
   /* Compile the Java file to a .class file.
@@ -1091,27 +1023,17 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
      Java compilers create the class files in the source file's directory -
      which is in a temporary directory in our case.  */
   java_sources[0] = java_file_name;
-  if (compile_java_class (java_sources, 1, NULL, 0, directory, true, false,
-			  true, verbose))
+  if (compile_java_class (java_sources, 1, NULL, 0, "1.3", "1.1", directory,
+			  true, false, true, verbose))
     {
       error (0, 0, _("\
 compilation of Java class failed, please try --verbose or set $JAVAC"));
-      goto quit5;
+      goto quit3;
     }
 
   retval = 0;
 
- quit5:
-  unlink (java_file_name);
- quit4:
-  cleanup_list.file_name = NULL;
-  {
-    int i;
-    for (i = ndots; i-- > 0; )
-      rmdir (subdirs[i]);
-  }
  quit3:
-  cleanup_list.subdir_count = 0;
   {
     int i;
     free (java_file_name);
@@ -1121,10 +1043,7 @@ compilation of Java class failed, please try --verbose or set $JAVAC"));
   freesa (subdirs);
   free (class_name);
  quit2:
-  rmdir (tmpdir);
+  cleanup_temp_dir (tmpdir);
  quit1:
-  cleanup_list.tmpdir = NULL;
-  freesa (template);
-  /* Here we could unregister the cleanup() handler.  */
   return retval;
 }

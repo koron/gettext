@@ -1,5 +1,5 @@
 ## Makefile for the gettext-runtime/lib subdirectory of GNU gettext
-## Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -29,11 +29,18 @@ noinst_LIBRARIES = libgrt.a
 libgrt_a_SOURCES = \
   ../../gettext-tools/lib/allocsa.h ../../gettext-tools/lib/allocsa.c \
   ../../gettext-tools/lib/basename.h ../../gettext-tools/lib/basename.c \
+  ../../gettext-tools/lib/c-ctype.h ../../gettext-tools/lib/c-ctype.c \
+  ../../gettext-tools/lib/c-strcase.h ../../gettext-tools/lib/c-strcasecmp.c \
   ../../gettext-tools/lib/closeout.h ../../gettext-tools/lib/closeout.c \
   ../../gettext-tools/lib/exit.h \
   ../../gettext-tools/lib/fwriteerror.h ../../gettext-tools/lib/fwriteerror.c \
+  ../../gettext-tools/lib/gettext.h \
+  ../../gettext-tools/lib/iconvstring.h ../../gettext-tools/lib/iconvstring.c \
+  ../../gettext-tools/lib/localcharset.h ../../gettext-tools/lib/localcharset.c \
   ../../gettext-tools/lib/pathmax.h \
   ../../gettext-tools/lib/progname.h ../../gettext-tools/lib/progname.c ../../gettext-tools/lib/progreloc.c \
+  ../../gettext-tools/lib/propername.h ../../gettext-tools/lib/propername.c \
+  ../../gettext-tools/lib/strstr.h \
   ../../gettext-tools/lib/unlocked-io.h \
   ../../gettext-tools/lib/xalloc.h ../../gettext-tools/lib/xmalloc.c ../../gettext-tools/lib/xstrdup.c \
   ../../gettext-tools/lib/xreadlink.h ../../gettext-tools/lib/xreadlink.c
@@ -62,7 +69,7 @@ AM_CPPFLAGS = \
   -I../intl -I$(srcdir)/../intl \
   -I../../gettext-tools/lib -I$(srcdir)/../../gettext-tools/lib
 
-DEFS = -DDEPENDS_ON_LIBINTL=1 @DEFS@
+DEFS = -DEXEEXT=\"$(EXEEXT)\" -DDEPENDS_ON_LIBINTL=1 @DEFS@
 
 # List of files to be distributed.
 
@@ -70,11 +77,11 @@ EXTRA_DIST += $(LIBADD_SOURCE)
 
 
 # >>> gnulib module stdbool.
+BUILT_SOURCES += $(STDBOOL_H)
 EXTRA_DIST += ../../gettext-tools/lib/stdbool_.h
 
 # The following is needed in order to create an <stdbool.h> when the system
 # doesn't have one that works.
-all-local $(libgrt_a_OBJECTS): @STDBOOL_H@
 stdbool.h: ../../gettext-tools/lib/stdbool_.h
 	sed -e 's/@''HAVE__BOOL''@/@HAVE__BOOL@/g' < $(srcdir)/../../gettext-tools/lib/stdbool_.h > stdbool.h
 MOSTLYCLEANFILES += stdbool.h
@@ -82,11 +89,11 @@ MOSTLYCLEANFILES += stdbool.h
 
 
 # >>> gnulib module alloca.
+BUILT_SOURCES += $(ALLOCA_H)
 EXTRA_DIST += ../../gettext-tools/lib/alloca_.h
 
 # The following is needed in order to create an <alloca.h> when the system
 # doesn't have one that works with the given compiler.
-all-local $(libgrt_a_OBJECTS): @ALLOCA_H@
 alloca.h: ../../gettext-tools/lib/alloca_.h
 	cp $(srcdir)/../../gettext-tools/lib/alloca_.h alloca.h
 MOSTLYCLEANFILES += alloca.h
@@ -99,11 +106,15 @@ EXTRA_DIST += ../../gettext-tools/lib/getopt_.h ../../gettext-tools/lib/getopt_i
 
 # The following is needed in order to create a <getopt.h> when the system
 # doesn't have one that works.
-all-local $(libgettextlib_la_OBJECTS): @GETOPT_H@
 getopt.h: ../../gettext-tools/lib/getopt_.h
 	cp $(srcdir)/../../gettext-tools/lib/getopt_.h getopt.h
 MOSTLYCLEANFILES += getopt.h
 # <<< gnulib module getopt.
+
+
+# >>> gnulib module localcharset.
+DEFS += -DLIBDIR=\"$(libdir)\"
+# <<< gnulib module localcharset.
 
 
 # VMS support.

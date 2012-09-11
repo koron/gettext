@@ -8,8 +8,14 @@ tmpfiles=""
 trap 'rm -fr $tmpfiles' 1 2 3 15
 
 # Test whether a C++ compiler is found and libasprintf is built.
-test "${CXX}" != ":" || exit 77
-test "${TESTLIBASPRINTF}" = yes || exit 77
+test "${CXX}" != ":" || {
+  echo "Skipping test: no C++ compiler found"
+  exit 77
+}
+test "${TESTLIBASPRINTF}" = yes || {
+  echo "Skipping test: configured with --disable-libasprintf"
+  exit 77
+}
 
 tmpfiles="$tmpfiles prog.cc"
 cat <<\EOF > prog.cc
@@ -38,10 +44,8 @@ int main (int argc, char *argv[])
 
   xsetenv ("LC_ALL", argv[1], 1);
   if (setlocale (LC_ALL, "") == NULL)
-    {
-      cerr << "Couldn't set locale." << endl;
-      exit (77);
-    }
+    // Couldn't set locale.
+    exit (77);
 
   textdomain ("prog");
   bindtextdomain ("prog", ".");
@@ -61,7 +65,10 @@ top_builddir=..
 tmpfiles="$tmpfiles prog.${OBJEXT} prog${EXEEXT}"
 # Compile in two steps from .cc to .o and from .o to 'prog'. This way,
 # relinking is faster because doesn't need to redo the first step.
-${CXX} ${CXXFLAGS} ${CPPFLAGS} -c prog.cc -I.. -I../../gettext-runtime/libasprintf -I$top_srcdir/lib -I../intl \
+# Put the -I flags before ${CXXFLAGS} ${CPPFLAGS}, to make sure that libintl.h
+# is found in the build directory, regardless of -I options present in
+# ${CXXFLAGS} or ${CPPFLAGS}.
+${CXX} -I.. -I../../gettext-runtime/libasprintf -I$top_srcdir/lib -I../intl ${CXXFLAGS} ${CPPFLAGS} -c prog.cc \
   || exit 1
 ${LIBTOOL} --quiet --mode=link ${CXX} ${CXXFLAGS} ${LDFLAGS} -o prog prog.${OBJEXT} ../../gettext-runtime/libasprintf/libasprintf.la ../lib/libgettextlib.la ${LTLIBINTL} \
   || exit 1
@@ -158,6 +165,11 @@ if test $LOCALE_FR_UTF8 != none; then
   esac
 fi
 if test $LOCALE_FR = none && test $LOCALE_FR_UTF8 = none; then
+  if test -f /usr/bin/localedef; then
+    echo "Skipping test: no french locale is installed"
+  else
+    echo "Skipping test: no french locale is supported"
+  fi
   rm -fr $tmpfiles; exit 77
 fi
 

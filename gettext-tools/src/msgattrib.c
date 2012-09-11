@@ -1,5 +1,5 @@
 /* Manipulates attributes of messages in translation catalogs.
-   Copyright (C) 2001-2005 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 #include "read-po.h"
 #include "write-po.h"
 #include "exit.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -146,6 +147,7 @@ main (int argc, char **argv)
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -312,8 +314,8 @@ main (int argc, char **argv)
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "2001-2005");
-      printf (_("Written by %s.\n"), "Bruno Haible");
+	      "2001-2006");
+      printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
 
@@ -493,7 +495,7 @@ static bool
 is_message_selected (const message_ty *mp)
 {
   /* Always keep the header entry.  */
-  if (mp->msgid[0] == '\0')
+  if (is_header (mp))
     return true;
 
   if ((to_remove & (REMOVE_UNTRANSLATED | REMOVE_TRANSLATED))
@@ -537,10 +539,10 @@ process_message_list (message_list_ty *mlp,
 	  /* Attribute changes only affect messages listed in --only-file
 	     and not listed in --ignore-file.  */
 	  if ((only_mlp
-	       ? message_list_search (only_mlp, mp->msgid) != NULL
+	       ? message_list_search (only_mlp, mp->msgctxt, mp->msgid) != NULL
 	       : true)
 	      && (ignore_mlp
-		  ? message_list_search (ignore_mlp, mp->msgid) == NULL
+		  ? message_list_search (ignore_mlp, mp->msgctxt, mp->msgid) == NULL
 		  : true))
 	    {
 	      if (to_change & SET_FUZZY)
@@ -548,7 +550,7 @@ process_message_list (message_list_ty *mlp,
 	      if (to_change & RESET_FUZZY)
 		mp->is_fuzzy = false;
 	      /* Always keep the header entry non-obsolete.  */
-	      if ((to_change & SET_OBSOLETE) && (mp->msgid[0] != '\0'))
+	      if ((to_change & SET_OBSOLETE) && !is_header (mp))
 		mp->obsolete = true;
 	      if (to_change & RESET_OBSOLETE)
 		mp->obsolete = false;

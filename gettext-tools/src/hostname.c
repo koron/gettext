@@ -1,5 +1,5 @@
 /* Display hostname in various forms.
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -29,16 +29,13 @@
 #include <locale.h>
 
 #if defined _WIN32 || defined __WIN32__
-# undef WIN32   /* avoid warning on mingw32 */
-# define WIN32
+# define WIN32_NATIVE
 #endif
 
 /* Get gethostname().  */
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
-#ifdef WIN32
+#ifdef WIN32_NATIVE
 /* Native Woe32 API lacks gethostname() but has GetComputerName() instead.  */
 # include <windows.h>
 #else
@@ -90,6 +87,7 @@
 #include "basename.h"
 #include "xalloc.h"
 #include "exit.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -184,7 +182,7 @@ This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
 	      "2001-2003");
-      printf (_("Written by %s.\n"), "Bruno Haible");
+      printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
 
@@ -246,7 +244,7 @@ Informative output:\n"));
 static char *
 xgethostname ()
 {
-#ifdef WIN32
+#ifdef WIN32_NATIVE
   char hostname[MAX_COMPUTERNAME_LENGTH+1];
   DWORD size = sizeof (hostname);
 

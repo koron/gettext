@@ -1,5 +1,5 @@
 /* Initializes a new PO file.
-   Copyright (C) 2001-2005 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -37,33 +37,13 @@
 # include <pwd.h>
 #endif
 
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
+#include <unistd.h>
 
 #if HAVE_DIRENT_H
 # include <dirent.h>
-#else
-# define dirent direct
-# if HAVE_SYS_NDIR_H
-#  include <sys/ndir.h>
-# endif
-# if HAVE_SYS_DIR_H
-#  include <sys/dir.h>
-# endif
-# if HAVE_NDIR_H
-#  include <ndir.h>
-# endif
 #endif
 
-#if CLOSEDIR_VOID
-/* Fake a return value. */
-# define CLOSEDIR(d) (closedir (d), 0)
-#else
-# define CLOSEDIR(d) closedir (d)
-#endif
-
-#if HAVE_DIRENT_H || HAVE_NDIR_H || HAVE_SYS_DIR_H || HAVE_SYS_NDIR_H
+#if HAVE_DIRENT_H
 # define HAVE_DIR 1
 #else
 # define HAVE_DIR 0
@@ -85,11 +65,13 @@
 #include "localcharset.h"
 #include "po-time.h"
 #include "plural-table.h"
+#include "lang-table.h"
 #include "xalloc.h"
 #include "xallocsa.h"
 #include "exit.h"
 #include "pathname.h"
 #include "xerror.h"
+#include "xvasprintf.h"
 #include "msgl-english.h"
 #include "plural-count.h"
 #include "pipe.h"
@@ -97,6 +79,7 @@
 #include "getline.h"
 #include "xsetenv.h"
 #include "str-list.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -177,6 +160,7 @@ main (int argc, char **argv)
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -269,8 +253,8 @@ main (int argc, char **argv)
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "2001-2005");
-      printf (_("Written by %s.\n"), "Bruno Haible");
+	      "2001-2006");
+      printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
 
@@ -311,11 +295,7 @@ file.  This is necessary so you can test your translations.\n")));
   /* Default output file name is CATALOGNAME.po.  */
   if (output_file == NULL)
     {
-      size_t cnlen = strlen (catalogname);
-
-      output_file = (char *) xmalloc (cnlen + 3 + 1);
-      memcpy (output_file, catalogname, cnlen);
-      memcpy (output_file + cnlen, ".po", 3 + 1);
+      output_file = xasprintf ("%s.po", catalogname);
 
       /* But don't overwrite existing PO files.  */
       if (access (output_file, F_OK) == 0)
@@ -470,7 +450,7 @@ Please specify the input .pot file through the --input option.\n")));
 	  else
 	    break;
 	}
-      if (CLOSEDIR (dirp))
+      if (closedir (dirp))
 	error (EXIT_FAILURE, errno, _("error reading current directory"));
 
       if (found != NULL)
@@ -503,6 +483,7 @@ catalogname_for_locale (const char *locale)
     "ak_GH",	/* Akan		Ghana */
     "am_ET",	/* Amharic	Ethiopia */
     "an_ES",	/* Aragonese	Spain */
+    "ang_GB",	/* Old English	Britain */
     "as_IN",	/* Assamese	India */
     "av_RU",	/* Avaric	Russia */
     "az_AZ",	/* Azerbaijani	Azerbaijan */
@@ -549,8 +530,12 @@ catalogname_for_locale (const char *locale)
     "is_IS",	/* Icelandic	Iceland */
     "it_IT",	/* Italian	Italy */
     "ja_JP",	/* Japanese	Japan */
+    "jab_NG",	/* Hyam		Nigeria */
     "jv_ID",	/* Javanese	Indonesia */
     "ka_GE",	/* Georgian	Georgia */
+    "kaj_NG",	/* Jju		Nigeria */
+    "kcg_NG",	/* Tyap		Nigeria */
+    "kdm_NG",	/* Kagoma	Nigeria */
     "kg_CD",	/* Kongo	Democratic Republic of Congo */
     "kk_KZ",	/* Kazakh	Kazakhstan */
     "kl_GL",	/* Kalaallisut	Greenland */
@@ -565,25 +550,30 @@ catalogname_for_locale (const char *locale)
     "lt_LT",	/* Lithuanian	Lithuania */
     "lu_CD",	/* Luba-Katanga	Democratic Republic of Congo */
     "lv_LV",	/* Latvian	Latvia */
+    "mai_IN",	/* Maithili	India */
     "mg_MG",	/* Malagasy	Madagascar */
     "mk_MK",	/* Macedonian	Macedonia */
     "ml_IN",	/* Malayalam	India */
     "mn_MN",	/* Mongolian	Mongolia */
+    "mni_IN",	/* Manipuri	India */
     "mr_IN",	/* Marathi	India */
     "ms_MY",	/* Malay	Malaysia */
     "mt_MT",	/* Maltese	Malta */
     "my_MM",	/* Burmese	Myanmar */
-    "mni_IN",	/* Manipuri	India */
     "na_NR",	/* Nauru	Nauru */
+    "nah_MX",	/* Nahuatl	Mexico */
     "nb_NO",	/* Norwegian Bokmål	Norway */
+    "nds_DE",	/* Low Saxon	Germany */
     "ne_NP",	/* Nepali	Nepal */
     "nl_NL",	/* Dutch	Netherlands */
     "nn_NO",	/* Norwegian Nynorsk	Norway */
     "no_NO",	/* Norwegian	Norway */
+    "nso_ZA",	/* Northern Sotho	South Africa */
     "oc_FR",	/* Occitan	France */
     "oj_CA",	/* Ojibwa	Canada */
     "or_IN",	/* Oriya	India */
     "pa_IN",	/* Punjabi	India */
+    "pbb_CO",	/* Páez		Colombia */
     "pl_PL",	/* Polish	Poland */
     "ps_AF",	/* Pashto	Afghanistan */
     "pt_PT",	/* Portuguese	Portugal */
@@ -603,6 +593,7 @@ catalogname_for_locale (const char *locale)
     "sr_YU",	/* Serbian	Yugoslavia */
     "sv_SE",	/* Swedish	Sweden */
     "te_IN",	/* Telugu	India */
+    "tet_ID",	/* Tetum	Indonesia */
     "tg_TJ",	/* Tajik	Tajikistan */
     "th_TH",	/* Thai		Thailand */
     "tk_TM",	/* Turkmen	Turkmenistan */
@@ -615,7 +606,8 @@ catalogname_for_locale (const char *locale)
     "ve_ZA",	/* Venda	South Africa */
     "vi_VN",	/* Vietnamese	Vietnam */
     "wa_BE",	/* Walloon	Belgium */
-    "wen_DE"	/* Sorbian	Germany */
+    "wen_DE",	/* Sorbian	Germany */
+    "zap_MX"	/* Zapotec	Mexico */
   };
   const char *dot;
   size_t i;
@@ -627,7 +619,7 @@ catalogname_for_locale (const char *locale)
       const char *codeset_end;
       char *shorter_locale;
 
-      codeset_end = strpbrk (dot + 1, "_@+,");
+      codeset_end = strpbrk (dot + 1, "_@");
       if (codeset_end == NULL)
 	codeset_end = dot + strlen (dot);
 
@@ -667,7 +659,7 @@ language_of_locale (const char *locale)
 {
   const char *language_end;
 
-  language_end = strpbrk (locale, "_.@+,");
+  language_end = strpbrk (locale, "_.@");
   if (language_end != NULL)
     {
       size_t len;
@@ -734,200 +726,11 @@ canonical_locale_charset ()
 static const char *
 englishname_of_language ()
 {
-  /* Derived from ISO 639.  */
-  static struct { const char *code; const char *english; } table[] = {
-    { "aa", "Afar" },
-    { "ab", "Abkhazian" },
-    { "ae", "Avestan" },
-    { "af", "Afrikaans" },
-    { "ak", "Akan" },
-    { "am", "Amharic" },
-    { "an", "Aragonese" },
-    { "ar", "Arabic" },
-    { "as", "Assamese" },
-    { "av", "Avaric" },
-    { "ay", "Aymara" },
-    { "az", "Azerbaijani" },
-    { "ba", "Bashkir" },
-    { "be", "Belarusian" },
-    { "bg", "Bulgarian" },
-    { "bh", "Bihari" },
-    { "bi", "Bislama" },
-    { "bm", "Bambara" },
-    { "bn", "Bengali" },
-    { "bo", "Tibetan" },
-    { "br", "Breton" },
-    { "bs", "Bosnian" },
-    { "ca", "Catalan" },
-    { "ce", "Chechen" },
-    { "ch", "Chamorro" },
-    { "co", "Corsican" },
-    { "cr", "Cree" },
-    { "cs", "Czech" },
-    { "cu", "Church Slavic" },
-    { "cv", "Chuvash" },
-    { "cy", "Welsh" },
-    { "da", "Danish" },
-    { "de", "German" },
-    { "dv", "Divehi" },
-    { "dz", "Dzongkha" },
-    { "ee", "Ewe" },
-    { "el", "Greek" },
-    { "en", "English" },
-    { "eo", "Esperanto" },
-    { "es", "Spanish" },
-    { "et", "Estonian" },
-    { "eu", "Basque" },
-    { "fa", "Persian" },
-    { "ff", "Fulah" },
-    { "fi", "Finnish" },
-    { "fj", "Fijian" },
-    { "fo", "Faroese" },
-    { "fr", "French" },
-    { "fy", "Frisian" },
-    { "ga", "Irish" },
-    { "gd", "Scots" },
-    { "gl", "Galician" },
-    { "gn", "Guarani" },
-    { "gu", "Gujarati" },
-    { "gv", "Manx" },
-    { "ha", "Hausa" },
-    { "he", "Hebrew" },
-    { "hi", "Hindi" },
-    { "ho", "Hiri Motu" },
-    { "hr", "Croatian" },
-    { "ht", "Haitian" },
-    { "hu", "Hungarian" },
-    { "hy", "Armenian" },
-    { "hz", "Herero" },
-    { "ia", "Interlingua" },
-    { "id", "Indonesian" },
-    { "ie", "Interlingue" },
-    { "ig", "Igbo" },
-    { "ii", "Sichuan Yi" },
-    { "ik", "Inupiak" },
-    { "is", "Icelandic" },
-    { "it", "Italian" },
-    { "iu", "Inuktitut" },
-    { "ja", "Japanese" },
-    { "jw", "Javanese" },
-    { "ka", "Georgian" },
-    { "kg", "Kongo" },
-    { "ki", "Kikuyu" },
-    { "kj", "Kuanyama" },
-    { "kk", "Kazakh" },
-    { "kl", "Kalaallisut" },
-    { "km", "Khmer" },
-    { "kn", "Kannada" },
-    { "ko", "Korean" },
-    { "kr", "Kanuri" },
-    { "ks", "Kashmiri" },
-    { "ku", "Kurdish" },
-    { "kv", "Komi" },
-    { "kw", "Cornish" },
-    { "ky", "Kirghiz" },
-    { "kok", "Konkani" },
-    { "la", "Latin" },
-    { "lb", "Letzeburgesch" },
-    { "lg", "Ganda" },
-    { "li", "Limburgish" },
-    { "ln", "Lingala" },
-    { "lo", "Laotian" },
-    { "lt", "Lithuanian" },
-    { "lu", "Luba-Katanga" },
-    { "lv", "Latvian" },
-    { "mg", "Malagasy" },
-    { "mh", "Marshall" },
-    { "mi", "Maori" },
-    { "mk", "Macedonian" },
-    { "ml", "Malayalam" },
-    { "mn", "Mongolian" },
-    { "mo", "Moldavian" },
-    { "mr", "Marathi" },
-    { "ms", "Malay" },
-    { "mt", "Maltese" },
-    { "my", "Burmese" },
-    { "mni", "Manipuri" },
-    { "na", "Nauru" },
-    { "nb", "Norwegian Bokmal" },
-    { "nd", "North Ndebele" },
-    { "ne", "Nepali" },
-    { "ng", "Ndonga" },
-    { "nl", "Dutch" },
-    { "nn", "Norwegian Nynorsk" },
-    { "no", "Norwegian" },
-    { "nr", "South Ndebele" },
-    { "nv", "Navajo" },
-    { "ny", "Nyanja" },
-    { "oc", "Occitan" },
-    { "oj", "Ojibwa" },
-    { "om", "(Afan) Oromo" },
-    { "or", "Oriya" },
-    { "os", "Ossetian" },
-    { "pa", "Punjabi" },
-    { "pi", "Pali" },
-    { "pl", "Polish" },
-    { "ps", "Pashto" },
-    { "pt", "Portuguese" },
-    { "qu", "Quechua" },
-    { "rm", "Rhaeto-Roman" },
-    { "rn", "Kirundi" },
-    { "ro", "Romanian" },
-    { "ru", "Russian" },
-    { "rw", "Kinyarwanda" },
-    { "sa", "Sanskrit" },
-    { "sc", "Sardinian" },
-    { "sd", "Sindhi" },
-    { "se", "Northern Sami" },
-    { "sg", "Sango" },
-    { "si", "Sinhalese" },
-    { "sk", "Slovak" },
-    { "sl", "Slovenian" },
-    { "sm", "Samoan" },
-    { "sn", "Shona" },
-    { "so", "Somali" },
-    { "sq", "Albanian" },
-    { "sr", "Serbian" },
-    { "ss", "Siswati" },
-    { "st", "Sesotho" },
-    { "su", "Sundanese" },
-    { "sv", "Swedish" },
-    { "sw", "Swahili" },
-    { "ta", "Tamil" },
-    { "te", "Telugu" },
-    { "tg", "Tajik" },
-    { "th", "Thai" },
-    { "ti", "Tigrinya" },
-    { "tk", "Turkmen" },
-    { "tl", "Tagalog" },
-    { "tn", "Setswana" },
-    { "to", "Tonga" },
-    { "tr", "Turkish" },
-    { "ts", "Tsonga" },
-    { "tt", "Tatar" },
-    { "tw", "Twi" },
-    { "ty", "Tahitian" },
-    { "ug", "Uighur" },
-    { "uk", "Ukrainian" },
-    { "ur", "Urdu" },
-    { "uz", "Uzbek" },
-    { "ve", "Venda" },
-    { "vi", "Vietnamese" },
-    { "vo", "Volapuk" },
-    { "wo", "Wolof" },
-    { "wen", "Sorbian" },
-    { "xh", "Xhosa" },
-    { "yi", "Yiddish" },
-    { "yo", "Yoruba" },
-    { "za", "Zhuang" },
-    { "zh", "Chinese" },
-    { "zu", "Zulu" }
-  };
   size_t i;
 
-  for (i = 0; i < SIZEOF (table); i ++)
-    if (strcmp (table[i].code, language) == 0)
-      return table[i].english;
+  for (i = 0; i < language_table_size; i ++)
+    if (strcmp (language_table[i].code, language) == 0)
+      return language_table[i].english;
 
   return xasprintf ("Language %s", language);
 }
@@ -976,6 +779,7 @@ project_id ()
   if (linelen == (size_t)(-1))
     {
       error (0, 0, _("%s subprocess I/O error"), prog);
+      fclose (fp);
       goto failed;
     }
   if (linelen > 0 && line[linelen - 1] == '\n')
@@ -1043,6 +847,7 @@ project_id_version ()
   if (linelen == (size_t)(-1))
     {
       error (0, 0, _("%s subprocess I/O error"), prog);
+      fclose (fp);
       goto failed;
     }
   if (linelen > 0 && line[linelen - 1] == '\n')
@@ -1201,6 +1006,7 @@ you in case of unexpected technical problems.\n");
   if (linelen == (size_t)(-1))
     {
       error (0, 0, _("%s subprocess I/O error"), prog);
+      fclose (fp);
       goto failed;
     }
   if (linelen > 0 && line[linelen - 1] == '\n')
@@ -1689,7 +1495,7 @@ fill_header (msgdomain_list_ty *mdlp)
 
 	  /* Search the header entry.  */
 	  for (j = 0; j < mlp->nitems; j++)
-	    if (mlp->item[j]->msgid[0] == '\0' && !mlp->item[j]->obsolete)
+	    if (is_header (mlp->item[j]) && !mlp->item[j]->obsolete)
 	      {
 		header_mp = mlp->item[j];
 		break;
@@ -1700,7 +1506,7 @@ fill_header (msgdomain_list_ty *mdlp)
 	    {
 	      static lex_pos_ty pos = { __FILE__, __LINE__ };
 
-	      header_mp = message_alloc ("", NULL, "", 1, &pos);
+	      header_mp = message_alloc (NULL, "", NULL, "", 1, &pos);
 	      message_list_prepend (mlp, header_mp);
 	    }
 
@@ -1771,7 +1577,7 @@ update_msgstr_plurals (msgdomain_list_ty *mdlp)
       char *untranslated_plural_msgstr;
       size_t j;
 
-      header_entry = message_list_search (mlp, "");
+      header_entry = message_list_search (mlp, NULL, "");
       nplurals = get_plural_count (header_entry ? header_entry->msgstr : NULL);
       untranslated_plural_msgstr = (char *) xmalloc (nplurals);
       memset (untranslated_plural_msgstr, '\0', nplurals);

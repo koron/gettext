@@ -34,6 +34,8 @@ exec_prefix = $(prefix)
 bindir = $(exec_prefix)\bin
 libdir = $(exec_prefix)\lib
 includedir = $(prefix)\include
+pkgdatadir = $(datadir)\gettext
+IIpkgdatadir = $(IIdatadir)\\gettext
 
 # Programs used by "make":
 
@@ -60,7 +62,7 @@ OPTIMFLAGS = -D_NDEBUG -O1
 DEBUGFLAGS =
 !endif
 
-CFLAGS = $(MFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS) -DHAVE_CONFIG_H -DEXEEXT=\".exe\" -DDEPENDS_ON_LIBINTL=1 -DDEPENDS_ON_LIBICONV=1
+CFLAGS = $(MFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS) -DHAVE_CONFIG_H -DPKGDATADIR=\"$(IIpkgdatadir)\" -DEXEEXT=\".exe\" -DDEPENDS_ON_LIBINTL=1 -DDEPENDS_ON_LIBICONV=1
 
 INCLUDES = -I. -I.. -I..\intl -I..\windows -I$(includedir)
 
@@ -88,6 +90,7 @@ OBJECTS = \
   c-strcasecmp.obj \
   c-strncasecmp.obj \
   classpath.obj \
+  clean-temp.obj \
   closeout.obj \
   copy-file.obj \
   csharpcomp.obj \
@@ -102,14 +105,17 @@ OBJECTS = \
   fwriteerror.obj \
   gcd.obj \
   hash.obj \
+  iconvstring.obj \
   javacomp.obj \
   javaexec.obj \
+  javaversion.obj \
   linebreak.obj \
   mbswidth.obj \
   obstack.obj \
   concatpath.obj \
   pipe.obj \
   progname.obj progreloc.obj \
+  propername.obj \
   quote.obj \
   quotearg.obj \
   safe-read.obj \
@@ -121,6 +127,7 @@ OBJECTS = \
   xallocsa.obj \
   xerror.obj \
   xsetenv.obj \
+  xvasprintf.obj xasprintf.obj \
   \
   error.obj \
   fnmatch.obj \
@@ -132,7 +139,6 @@ OBJECTS = \
   setenv.obj unsetenv.obj \
   stpcpy.obj \
   stpncpy.obj \
-  strcasecmp.obj strncasecmp.obj \
   vasprintf.obj
 
 RESOURCES = gettextlib.res
@@ -165,6 +171,9 @@ c-strncasecmp.obj : c-strncasecmp.c
 
 classpath.obj : classpath.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c classpath.c
+
+clean-temp.obj : clean-temp.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c clean-temp.c
 
 closeout.obj : closeout.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c closeout.c
@@ -208,11 +217,17 @@ gcd.obj : gcd.c
 hash.obj : hash.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c hash.c
 
+iconvstring.obj : iconvstring.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c iconvstring.c
+
 javacomp.obj : javacomp.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c javacomp.c
 
 javaexec.obj : javaexec.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c javaexec.c
+
+javaversion.obj : javaversion.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c javaversion.c
 
 linebreak.obj : linebreak.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c linebreak.c
@@ -234,6 +249,9 @@ progname.obj : progname.c
 
 progreloc.obj : progreloc.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c progreloc.c
+
+propername.obj : propername.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c propername.c
 
 quote.obj : quote.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c quote.c
@@ -271,6 +289,12 @@ xerror.obj : xerror.c
 xsetenv.obj : xsetenv.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c xsetenv.c
 
+xvasprintf.obj : xvasprintf.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c xvasprintf.c
+
+xasprintf.obj : xasprintf.c
+	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c xasprintf.c
+
 error.obj : error.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c error.c
 
@@ -306,12 +330,6 @@ stpcpy.obj : stpcpy.c
 
 stpncpy.obj : stpncpy.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c stpncpy.c
-
-strcasecmp.obj : strcasecmp.c
-	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c strcasecmp.c
-
-strncasecmp.obj : strncasecmp.c
-	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c strncasecmp.c
 
 vasprintf.obj : vasprintf.c
 	$(CC) $(INCLUDES) $(CFLAGS) $(PICFLAGS) -c vasprintf.c

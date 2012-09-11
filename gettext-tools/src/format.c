@@ -1,5 +1,5 @@
 /* Format strings.
-   Copyright (C) 2001-2004 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 /* Specification.  */
 #include "format.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -53,18 +54,24 @@ struct formatstring_parser *formatstring_parsers[NFORMATS] =
   /* format_perl_brace */	&formatstring_perl_brace,
   /* format_php */		&formatstring_php,
   /* format_gcc_internal */	&formatstring_gcc_internal,
-  /* format_qt */		&formatstring_qt
+  /* format_qt */		&formatstring_qt,
+  /* format_boost */		&formatstring_boost
 };
 
 /* Check whether both formats strings contain compatible format
-   specifications.  Return true if there is an error.  */
-bool
+   specifications.
+   PLURAL_DISTRIBUTION is either NULL or an array of nplurals elements,
+   PLURAL_DISTRIBUTION[j] being true if the value j appears to be assumed
+   infinitely often by the plural formula.
+   Return the number of errors that were seen.  */
+int
 check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 			   const char *msgstr, size_t msgstr_len,
-			   enum is_format is_format[NFORMATS],
+			   const enum is_format is_format[NFORMATS],
+			   const unsigned char *plural_distribution,
 			   formatstring_error_logger_t error_logger)
 {
-  bool err = false;
+  int seen_errors = 0;
   size_t i;
   unsigned int j;
 
@@ -98,6 +105,7 @@ check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 	  {
 	    char buf[18+1];
 	    const char *pretty_msgstr = "msgstr";
+	    bool has_plural_translations = (strlen (msgstr) + 1 < msgstr_len);
 	    const char *p_end = msgstr + msgstr_len;
 	    const char *p;
 
@@ -115,10 +123,24 @@ check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 
 		if (msgstr_descr != NULL)
 		  {
+		    /* Use strict checking (require same number of format
+		       directives on both sides) if the message has no plurals,
+		       or if msgid_plural exists but on the msgstr[] side
+		       there is only msgstr[0], or if plural_distribution[j]
+		       indicates that the variant applies to infinitely many
+		       values of N.
+		       Use relaxed checking when there are at least two
+		       msgstr[] forms and the plural_distribution array does
+		       not give more precise information.  */
+		    bool strict_checking =
+		      (msgid_plural == NULL
+		       || !has_plural_translations
+		       || (plural_distribution != NULL && plural_distribution[j]));
+
 		    if (parser->check (msgid_descr, msgstr_descr,
-				       msgid_plural == NULL,
+				       strict_checking,
 				       error_logger, pretty_msgstr))
-		      err = true;
+		      seen_errors++;
 
 		    parser->free (msgstr_descr);
 		  }
@@ -128,7 +150,7 @@ check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 '%s' is not a valid %s format string, unlike 'msgid'. Reason: %s"),
 				  pretty_msgstr, format_language_pretty[i],
 				  invalid_reason);
-		    err = true;
+		    seen_errors++;
 		    free (invalid_reason);
 		  }
 	      }
@@ -139,5 +161,5 @@ check_msgid_msgstr_format (const char *msgid, const char *msgid_plural,
 	  free (invalid_reason);
       }
 
-  return err;
+  return seen_errors;
 }

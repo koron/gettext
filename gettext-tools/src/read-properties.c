@@ -1,5 +1,5 @@
 /* Reading Java .properties files.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,8 @@
 #include "message.h"
 #include "read-po-abstract.h"
 #include "xalloc.h"
-#include "exit.h"
+#include "xvasprintf.h"
+#include "po-xerror.h"
 #include "msgl-ascii.h"
 #include "utf16-ucs4.h"
 #include "ucs4-utf8.h"
@@ -77,8 +78,14 @@ phase1_getc ()
   if (c == EOF)
     {
       if (ferror (fp))
-	error (EXIT_FAILURE, errno, _("error while reading \"%s\""),
-	       real_file_name);
+	{
+	  const char *errno_description = strerror (errno);
+	  po_xerror (PO_SEVERITY_FATAL_ERROR, NULL, NULL, 0, 0, false,
+		     xasprintf ("%s: %s",
+				xasprintf (_("error while reading \"%s\""),
+					   real_file_name),
+				errno_description));
+	}
       return EOF;
     }
 
@@ -211,10 +218,9 @@ phase4_getuc ()
 	      else
 		{
 		  phase3_ungetc (c1);
-		  error_with_progname = false;
-		  error (0, 0, _("%s:%lu: warning: invalid \\uxxxx syntax for Unicode character"),
-			 real_file_name, (unsigned long) gram_pos.line_number);
-		  error_with_progname = true;
+		  po_xerror (PO_SEVERITY_ERROR, NULL,
+			     real_file_name, gram_pos.line_number, (size_t)(-1),
+			     false, _("warning: invalid \\uxxxx syntax for Unicode character"));
 		  return 'u';
 		}
 	    }
@@ -530,7 +536,7 @@ properties_parse (abstract_po_reader_ty *this, FILE *file,
 		 and if it is not already header/fuzzy/untranslated.  */
 	      force_fuzzy = (hidden && msgid[0] != '\0' && msgstr[0] != '\0');
 
-	      po_callback_message (msgid, &msgid_pos, NULL,
+	      po_callback_message (NULL, msgid, &msgid_pos, NULL,
 				   msgstr, strlen (msgstr) + 1, &msgstr_pos,
 				   force_fuzzy, false);
 	    }

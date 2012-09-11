@@ -11,11 +11,11 @@ glibc21.m4 \
 iconv.m4 \
 intdiv0.m4 \
 intmax.m4 \
+inttypes-h.m4 \
 inttypes-pri.m4 \
-inttypes.m4 \
 inttypes_h.m4 \
-isc-posix.m4 \
 lcmessage.m4 \
+lock.m4 \
 longdouble.m4 \
 longlong.m4 \
 nls.m4 \
@@ -27,6 +27,7 @@ size_max.m4 \
 stdint_h.m4 \
 uintmax_t.m4 \
 ulonglong.m4 \
+visibility.m4 \
 wchar_t.m4 \
 wint_t.m4 \
 xsize.m4

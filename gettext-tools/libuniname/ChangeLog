@@ -1,3 +1,22 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-02-21  Bruno Haible  <bruno@clisp.org>
+
+	* gen-uninames: Update for Unicode 4.1.0.
+	* uninames.h: Regenerated for Unicode 4.1.0 by gen-uninames.
+	* uniname.c: (unicode_character_name, unicode_name_character): Update
+	for Unicode 4.1.0.
+	* UnicodeDataNames.txt: Update for Unicode 4.1.0.
+	Reported by Andriy Gapon <avg@icyb.net.ua>.
+
+2005-10-06  Bruno Haible  <bruno@clisp.org>
+
+	* uniname.c: Test HAVE_CONFIG_H using #ifdef.
+	* test-names.c: Likewise.
+	Reported by Ralf Wildenhues on bug-gnulib.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

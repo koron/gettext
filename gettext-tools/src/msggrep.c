@@ -1,5 +1,5 @@
 /* Extract some translations of a translation catalog.
-   Copyright (C) 2001-2005 Free Software Foundation, Inc.
+   Copyright (C) 2001-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -31,9 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#elif defined _MSC_VER || defined __MINGW32__
+#include <unistd.h>
+#if defined _MSC_VER || defined __MINGW32__
 # include <io.h>
 #endif
 
@@ -55,6 +54,7 @@
 #include "xallocsa.h"
 #include "exit.h"
 #include "libgrep.h"
+#include "propername.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -62,6 +62,9 @@
 
 /* Force output of PO file even if empty.  */
 static int force_po;
+
+/* Output only non-matching messages.  */
+static bool invert_match = false;
 
 /* Selected source files.  */
 static string_list_ty *location_files;
@@ -78,7 +81,7 @@ struct grep_task {
   bool case_insensitive;
   void *compiled_patterns;
 };
-static struct grep_task grep_task[3];
+static struct grep_task grep_task[5];
 
 /* Long options.  */
 static const struct option long_options[] =
@@ -89,13 +92,16 @@ static const struct option long_options[] =
   { "domain", required_argument, NULL, 'M' },
   { "escape", no_argument, NULL, CHAR_MAX + 1 },
   { "extended-regexp", no_argument, NULL, 'E' },
+  { "extracted-comment", no_argument, NULL, 'X' },
   { "file", required_argument, NULL, 'f' },
   { "fixed-strings", no_argument, NULL, 'F' },
   { "force-po", no_argument, &force_po, 1 },
   { "help", no_argument, NULL, 'h' },
   { "ignore-case", no_argument, NULL, 'i' },
   { "indent", no_argument, NULL, CHAR_MAX + 2 },
+  { "invert-match", no_argument, NULL, 'v' },
   { "location", required_argument, NULL, 'N' },
+  { "msgctxt", no_argument, NULL, 'J' },
   { "msgid", no_argument, NULL, 'K' },
   { "msgstr", no_argument, NULL, 'T' },
   { "no-escape", no_argument, NULL, CHAR_MAX + 3 },
@@ -155,6 +161,7 @@ main (int argc, char **argv)
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -169,7 +176,7 @@ main (int argc, char **argv)
   location_files = string_list_alloc ();
   domain_names = string_list_alloc ();
 
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < 5; i++)
     {
       struct grep_task *gt = &grep_task[i];
 
@@ -180,7 +187,7 @@ main (int argc, char **argv)
       gt->case_insensitive = false;
     }
 
-  while ((opt = getopt_long (argc, argv, "CD:e:Ef:FhiKM:N:o:pPTVw:",
+  while ((opt = getopt_long (argc, argv, "CD:e:Ef:FhiJKM:N:o:pPTvVw:X",
 			     long_options, NULL))
 	 != EOF)
     switch (opt)
@@ -189,7 +196,7 @@ main (int argc, char **argv)
 	break;
 
       case 'C':
-	grep_pass = 2;
+	grep_pass = 3;
 	break;
 
       case 'D':
@@ -282,8 +289,12 @@ error while reading \"%s\""), optarg);
 	grep_task[grep_pass].case_insensitive = true;
 	break;
 
-      case 'K':
+      case 'J':
 	grep_pass = 0;
+	break;
+
+      case 'K':
+	grep_pass = 1;
 	break;
 
       case 'M':
@@ -311,7 +322,11 @@ error while reading \"%s\""), optarg);
 	break;
 
       case 'T':
-	grep_pass = 1;
+	grep_pass = 2;
+	break;
+
+      case 'v':
+	invert_match = true;
 	break;
 
       case 'V':
@@ -326,6 +341,10 @@ error while reading \"%s\""), optarg);
 	  if (endp != optarg)
 	    message_page_width_set (value);
 	}
+	break;
+
+      case 'X':
+	grep_pass = 4;
 	break;
 
       case CHAR_MAX + 1:
@@ -374,8 +393,8 @@ error while reading \"%s\""), optarg);
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "2001-2005");
-      printf (_("Written by %s.\n"), "Bruno Haible");
+	      "2001-2006");
+      printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
 
@@ -404,7 +423,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 	   "--sort-output", "--sort-by-file");
 
   /* Compile the patterns.  */
-  for (grep_pass = 0; grep_pass < 3; grep_pass++)
+  for (grep_pass = 0; grep_pass < 5; grep_pass++)
     {
       struct grep_task *gt = &grep_task[grep_pass];
 
@@ -427,7 +446,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 
   if (grep_task[0].pattern_count > 0
       || grep_task[1].pattern_count > 0
-      || grep_task[2].pattern_count > 0)
+      || grep_task[2].pattern_count > 0
+      || grep_task[3].pattern_count > 0
+      || grep_task[4].pattern_count > 0)
     {
       /* Warn if the current locale is not suitable for this PO file.  */
       compare_po_locale_charsets (result);
@@ -453,7 +474,7 @@ static void
 no_pass (int opt)
 {
   error (EXIT_SUCCESS, 0,
-	 _("option '%c' cannot be used before 'K' or 'T' or 'C' has been specified"),
+	 _("option '%c' cannot be used before 'J' or 'K' or 'T' or 'C' or 'X' has been specified"),
 	 opt);
   usage (EXIT_FAILURE);
 }
@@ -502,31 +523,39 @@ or if it is -.\n"));
       printf (_("\
 Message selection:\n\
   [-N SOURCEFILE]... [-M DOMAINNAME]...\n\
-  [-K MSGID-PATTERN] [-T MSGSTR-PATTERN] [-C COMMENT-PATTERN]\n\
+  [-J MSGCTXT-PATTERN] [-K MSGID-PATTERN] [-T MSGSTR-PATTERN]\n\
+  [-C COMMENT-PATTERN] [-X EXTRACTED-COMMENT-PATTERN]\n\
 A message is selected if it comes from one of the specified source files,\n\
 or if it comes from one of the specified domains,\n\
+or if -J is given and its context (msgctxt) matches MSGCTXT-PATTERN,\n\
 or if -K is given and its key (msgid or msgid_plural) matches MSGID-PATTERN,\n\
 or if -T is given and its translation (msgstr) matches MSGSTR-PATTERN,\n\
-or if -C is given and the translator's comment matches COMMENT-PATTERN.\n\
+or if -C is given and the translator's comment matches COMMENT-PATTERN,\n\
+or if -X is given and the extracted comment matches EXTRACTED-COMMENT-PATTERN.\n\
 \n\
 When more than one selection criterion is specified, the set of selected\n\
 messages is the union of the selected messages of each criterion.\n\
 \n\
-MSGID-PATTERN or MSGSTR-PATTERN or COMMENT-PATTERN syntax:\n\
+MSGCTXT-PATTERN or MSGID-PATTERN or MSGSTR-PATTERN or COMMENT-PATTERN or\n\
+EXTRACTED-COMMENT-PATTERN syntax:\n\
   [-E | -F] [-e PATTERN | -f FILE]...\n\
 PATTERNs are basic regular expressions by default, or extended regular\n\
 expressions if -E is given, or fixed strings if -F is given.\n\
 \n\
   -N, --location=SOURCEFILE   select messages extracted from SOURCEFILE\n\
   -M, --domain=DOMAINNAME     select messages belonging to domain DOMAINNAME\n\
+  -J, --msgctxt               start of patterns for the msgctxt\n\
   -K, --msgid                 start of patterns for the msgid\n\
   -T, --msgstr                start of patterns for the msgstr\n\
   -C, --comment               start of patterns for the translator's comment\n\
+  -X, --extracted-comment     start of patterns for the extracted comment\n\
   -E, --extended-regexp       PATTERN is an extended regular expression\n\
   -F, --fixed-strings         PATTERN is a set of newline-separated strings\n\
   -e, --regexp=PATTERN        use PATTERN as a regular expression\n\
   -f, --file=FILE             obtain PATTERN from FILE\n\
   -i, --ignore-case           ignore case distinctions\n\
+  -v, --invert-match          output only the messages that do not match any\n\
+                              selection criterion\n\
 "));
       printf ("\n");
       printf (_("\
@@ -639,29 +668,31 @@ is_string_selected (int grep_pass, const char *str, size_t len)
 }
 
 
-/* Return true if a message matches.  */
+/* Return true if a message matches, considering only the positive selection
+   criteria and ignoring --invert-match.  */
 static bool
-is_message_selected (const message_ty *mp)
+is_message_selected_no_invert (const message_ty *mp)
 {
   size_t i;
   const char *msgstr;
   size_t msgstr_len;
   const char *p;
 
-  /* Always keep the header entry.  */
-  if (mp->msgid[0] == '\0')
-    return true;
-
   /* Test whether one of mp->filepos[] is selected.  */
   for (i = 0; i < mp->filepos_count; i++)
     if (filename_list_match (location_files, mp->filepos[i].file_name))
       return true;
 
+  /* Test msgctxt using the --msgctxt arguments.  */
+  if (mp->msgctxt != NULL
+      && is_string_selected (0, mp->msgctxt, strlen (mp->msgctxt)))
+    return true;
+
   /* Test msgid and msgid_plural using the --msgid arguments.  */
-  if (is_string_selected (0, mp->msgid, strlen (mp->msgid)))
+  if (is_string_selected (1, mp->msgid, strlen (mp->msgid)))
     return true;
   if (mp->msgid_plural != NULL
-      && is_string_selected (0, mp->msgid_plural, strlen (mp->msgid_plural)))
+      && is_string_selected (1, mp->msgid_plural, strlen (mp->msgid_plural)))
     return true;
 
   /* Test msgstr using the --msgstr arguments.  */
@@ -672,14 +703,14 @@ is_message_selected (const message_ty *mp)
     {
       size_t length = strlen (p);
 
-      if (is_string_selected (1, p, length))
+      if (is_string_selected (2, p, length))
 	return true;
 
       p += length + 1;
     }
 
   /* Test translator comments using the --comment arguments.  */
-  if (grep_task[2].pattern_count > 0
+  if (grep_task[3].pattern_count > 0
       && mp->comment != NULL && mp->comment->nitems > 0)
     {
       size_t length;
@@ -705,7 +736,42 @@ is_message_selected (const message_ty *mp)
       if (q != total_comment + length)
 	abort ();
 
-      selected = is_string_selected (2, total_comment, length);
+      selected = is_string_selected (3, total_comment, length);
+
+      freesa (total_comment);
+
+      if (selected)
+	return true;
+    }
+
+  /* Test extracted comments using the --extracted-comment arguments.  */
+  if (grep_task[4].pattern_count > 0
+      && mp->comment_dot != NULL && mp->comment_dot->nitems > 0)
+    {
+      size_t length;
+      char *total_comment;
+      char *q;
+      size_t j;
+      bool selected;
+
+      length = 0;
+      for (j = 0; j < mp->comment_dot->nitems; j++)
+	length += strlen (mp->comment_dot->item[j]) + 1;
+      total_comment = (char *) xallocsa (length);
+
+      q = total_comment;
+      for (j = 0; j < mp->comment_dot->nitems; j++)
+	{
+	  size_t l = strlen (mp->comment_dot->item[j]);
+
+	  memcpy (q, mp->comment_dot->item[j], l);
+	  q += l;
+	  *q++ = '\n';
+	}
+      if (q != total_comment + length)
+	abort ();
+
+      selected = is_string_selected (4, total_comment, length);
 
       freesa (total_comment);
 
@@ -714,6 +780,25 @@ is_message_selected (const message_ty *mp)
     }
 
   return false;
+}
+
+
+/* Return true if a message matches.  */
+static bool
+is_message_selected (const message_ty *mp)
+{
+  bool result;
+
+  /* Always keep the header entry.  */
+  if (is_header (mp))
+    return true;
+
+  result = is_message_selected_no_invert (mp);
+
+  if (invert_match)
+    return !result;
+  else
+    return result;
 }
 
 

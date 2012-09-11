@@ -1,5 +1,5 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1997-1998, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1997-1998, 2000-2006 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
@@ -41,6 +41,7 @@
 #include "write-po.h"
 #include "msgl-cat.h"
 #include "exit.h"
+#include "propername.h"
 #include "gettext.h"
 
 
@@ -120,6 +121,7 @@ main (int argc, char *argv[])
 
   /* Set the text message domain.  */
   bindtextdomain (PACKAGE, relocate (LOCALEDIR));
+  bindtextdomain ("bison-runtime", relocate (BISON_LOCALEDIR));
   textdomain (PACKAGE);
 
   /* Ensure that write errors on stdout are detected.  */
@@ -261,8 +263,8 @@ main (int argc, char *argv[])
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 "),
-	      "1995-1998, 2000-2005");
-      printf (_("Written by %s.\n"), "Peter Miller");
+	      "1995-1998, 2000-2006");
+      printf (_("Written by %s.\n"), proper_name ("Peter Miller"));
       exit (EXIT_SUCCESS);
     }
 

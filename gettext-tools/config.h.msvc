@@ -5,9 +5,6 @@
 #define DEFAULT_OUTPUT_ALIGNMENT 1
 
 
-/* Define to 1 if the `closedir' function returns void instead of `int'. */
-#undef CLOSEDIR_VOID
-
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -32,6 +29,10 @@
 /* Define to 1 if the package shall run at any location in the filesystem. */
 #define ENABLE_RELOCATABLE 1
 
+/* Define according to the byte order of the target machine: 1 for big endian,
+   0 for little endian. */
+#undef ENDIANNESS
+
 /* Define to 1 if you have `alloca', as a function or macro. */
 #define HAVE_ALLOCA 1
 
@@ -39,8 +40,17 @@
    */
 #undef HAVE_ALLOCA_H
 
+/* Define to 1 if you have the `argz_count' function. */
+#undef HAVE_ARGZ_COUNT
+
 /* Define to 1 if you have the <argz.h> header file. */
 #undef HAVE_ARGZ_H
+
+/* Define to 1 if you have the `argz_next' function. */
+#undef HAVE_ARGZ_NEXT
+
+/* Define to 1 if you have the `argz_stringify' function. */
+#undef HAVE_ARGZ_STRINGIFY
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
@@ -56,6 +66,12 @@
 
 /* Define to 1 if you have the `btowc' function. */
 #define HAVE_BTOWC 1
+
+/* Define to 1 if the compiler understands __builtin_expect. */
+#undef HAVE_BUILTIN_EXPECT
+
+/* Define to 1 if you have the <byteswap.h> header file. */
+#undef HAVE_BYTESWAP_H
 
 /* Define to 1 if you have the `canonicalize_file_name' function. */
 #undef HAVE_CANONICALIZE_FILE_NAME
@@ -155,27 +171,20 @@
    don't. */
 #define HAVE_DECL__SNWPRINTF 1
 
-/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
-   */
+/* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
-#undef HAVE_DOPRNT
-
 /* Define if you have the declaration of environ. */
 #define HAVE_ENVIRON_DECL 1
-
-/* Define if you have the declaration of errno. */
-#define HAVE_ERRNO_DECL 1
 
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
 /* Define to 1 if you have the `fwprintf' function. */
-#undef HAVE_FWPRINTF
+#define HAVE_FWPRINTF 1
 
 /* Define to 1 if you have the `getcwd' function. */
 #define HAVE_GETCWD 1
@@ -256,9 +265,6 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
 
-/* Define to 1 if you have the <locale.h> header file. */
-#define HAVE_LOCALE_H 1
-
 /* Define if you have the 'long double' type. */
 #undef HAVE_LONG_DOUBLE
 
@@ -267,6 +273,9 @@
 
 /* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
+
+/* Define to 1 if you have the <mach-o/dyld.h> header file. */
+#undef HAVE_MACH_O_DYLD_H
 
 /* Define to 1 if you have the <malloc.h> header file. */
 #undef HAVE_MALLOC_H
@@ -307,11 +316,9 @@
 /* Define to 1 if you have the `munmap' function. */
 #undef HAVE_MUNMAP
 
-/* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
-#undef HAVE_NDIR_H
-
-/* Define to 1 if you have the <nl_types.h> header file. */
-#undef HAVE_NL_TYPES_H
+/* Define if you have <langinfo.h> and it defines the NL_LOCALE_NAME macro if
+   _GNU_SOURCE is defined. */
+#undef HAVE_NL_LOCALE_NAME
 
 /* Define to 1 if you have the `pathconf' function. */
 #undef HAVE_PATHCONF
@@ -324,6 +331,12 @@
 
 /* Define to 1 if you have the `posix_spawn' function. */
 #undef HAVE_POSIX_SPAWN
+
+/* Define if the <pthread.h> defines PTHREAD_MUTEX_RECURSIVE. */
+#undef HAVE_PTHREAD_MUTEX_RECURSIVE
+
+/* Define if the POSIX multithreading library has read/write locks. */
+#undef HAVE_PTHREAD_RWLOCK
 
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #define HAVE_PTRDIFF_T 1
@@ -405,9 +418,6 @@
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
 
-/* Define to 1 if you have the `strncasecmp' function. */
-#undef HAVE_STRNCASECMP
-
 /* Define to 1 if you have the `strpbrk' function. */
 #define HAVE_STRPBRK 1
 
@@ -417,13 +427,8 @@
 /* Define to 1 if you have the `strtoul' function. */
 #define HAVE_STRTOUL 1
 
-/* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
-   */
-#undef HAVE_SYS_DIR_H
-
-/* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
-   */
-#undef HAVE_SYS_NDIR_H
+/* Define to 1 if `__names' is member of `struct __locale_struct'. */
+#undef HAVE_STRUCT___LOCALE_STRUCT___NAMES
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
@@ -482,8 +487,9 @@
 /* Define to 1 if you have the <vfork.h> header file. */
 #undef HAVE_VFORK_H
 
-/* Define to 1 if you have the `vprintf' function. */
-#define HAVE_VPRINTF 1
+/* Define to 1 or 0, depending whether the compiler supports simple visibility
+   declarations. */
+#undef HAVE_VISIBILITY
 
 /* Define to 1 if you have the `waitid' function. */
 #undef HAVE_WAITID
@@ -527,14 +533,8 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
-/* Define to 1 if you have the `__argz_count' function. */
-#undef HAVE___ARGZ_COUNT
-
-/* Define to 1 if you have the `__argz_next' function. */
-#undef HAVE___ARGZ_NEXT
-
-/* Define to 1 if you have the `__argz_stringify' function. */
-#undef HAVE___ARGZ_STRINGIFY
+/* Define to 1 if you have the `_NSGetExecutablePath' function. */
+#undef HAVE__NSGETEXECUTABLEPATH
 
 /* Define to 1 if you have the `__fsetlocking' function. */
 #undef HAVE___FSETLOCKING
@@ -574,6 +574,9 @@
 /* Define if <inttypes.h> exists and defines unusable PRI* macros. */
 #undef PRI_MACROS_BROKEN
 
+/* Define if the pthread_in_use() detection is hard. */
+#undef PTHREAD_IN_USE_DETECTION_HARD
+
 /* Define as const if the declaration of setlocale() needs const. */
 #define SETLOCALE_CONST const
 
@@ -583,7 +586,7 @@
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
+   automatically deduced at runtime.
 	STACK_DIRECTION > 0 => grows toward higher addresses
 	STACK_DIRECTION < 0 => grows toward lower addresses
 	STACK_DIRECTION = 0 => direction of growth unknown */
@@ -598,16 +601,46 @@
 /* Define to 1 if strerror_r returns char *. */
 #undef STRERROR_R_CHAR_P
 
+/* Define if the POSIX multithreading library can be used. */
+#undef USE_POSIX_THREADS
+
+/* Define if references to the POSIX multithreading library should be made
+   weak. */
+#undef USE_POSIX_THREADS_WEAK
+
+/* Define if the GNU Pth multithreading library can be used. */
+#undef USE_PTH_THREADS
+
+/* Define if references to the GNU Pth multithreading library should be made
+   weak. */
+#undef USE_PTH_THREADS_WEAK
+
+/* Define if the old Solaris multithreading library can be used. */
+#undef USE_SOLARIS_THREADS
+
+/* Define if references to the old Solaris multithreading library should be
+   made weak. */
+#undef USE_SOLARIS_THREADS_WEAK
+
 /* Define to 1 if you want getc etc. to use unlocked I/O if available.
    Unlocked I/O can improve performance in unithreaded apps, but it is not
    safe for multithreaded apps. */
 #define USE_UNLOCKED_IO 1
 
+/* Define if the Win32 multithreading API can be used. */
+#undef USE_WIN32_THREADS
+
 /* Version number of package */
-#define VERSION "0.14.6"
+#define VERSION "0.15"
 
 /* Define if unsetenv() returns void, not int. */
 #undef VOID_UNSETENV
+
+/* Define when --enable-shared is used on mingw or Cygwin. */
+#undef WOE32DLL
+
+/* Define to 1 to internationalize bison runtime messages. */
+#undef YYENABLE_NLS
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.
@@ -640,9 +673,6 @@
    used. */
 #define __GETOPT_PREFIX
 
-/* Define to empty if `const' does not conform to ANSI C. */
-#undef const
-
 /* Define as 'access' if you don't have the eaccess() function. */
 #undef eaccess
 
@@ -651,6 +681,9 @@
 
 /* Define to a replacement function name for getline(). */
 #define getline rpl_getline
+
+/* A replacement for va_copy, if needed.  */
+#define gl_va_copy(a,b) ((a) = (b))
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
@@ -663,9 +696,6 @@
 
 /* Define to `int' if <sys/types.h> does not define. */
 #define mode_t int
-
-/* Define to `long' if <sys/types.h> does not define. */
-#undef off_t
 
 /* Define to `int' if <sys/types.h> does not define. */
 #define pid_t int
@@ -688,7 +718,7 @@
 /* Define to empty if the C compiler doesn't support this keyword. */
 #undef signed
 
-/* Define to `unsigned' if <sys/types.h> does not define. */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
 
 /* Define as a signed type of the same size as size_t. */
@@ -698,9 +728,47 @@
    <inttypes.h> don't define. */
 #define uintmax_t unsigned long
 
+/* Define as a macro for copying va_list variables. */
+#undef va_copy
+
 /* Define as `fork' if `vfork' does not work. */
 #undef vfork
 
+
+#define __libc_lock_t                   gl_lock_t
+#define __libc_lock_define              gl_lock_define
+#define __libc_lock_define_initialized  gl_lock_define_initialized
+#define __libc_lock_init                gl_lock_init
+#define __libc_lock_lock                gl_lock_lock
+#define __libc_lock_unlock              gl_lock_unlock
+#define __libc_lock_recursive_t                   gl_recursive_lock_t
+#define __libc_lock_define_recursive              gl_recursive_lock_define
+#define __libc_lock_define_initialized_recursive  gl_recursive_lock_define_initialized
+#define __libc_lock_init_recursive                gl_recursive_lock_init
+#define __libc_lock_lock_recursive                gl_recursive_lock_lock
+#define __libc_lock_unlock_recursive              gl_recursive_lock_unlock
+#define glthread_in_use  libintl_thread_in_use
+#define glthread_lock_init     libintl_lock_init
+#define glthread_lock_lock     libintl_lock_lock
+#define glthread_lock_unlock   libintl_lock_unlock
+#define glthread_lock_destroy  libintl_lock_destroy
+#define glthread_rwlock_init     libintl_rwlock_init
+#define glthread_rwlock_rdlock   libintl_rwlock_rdlock
+#define glthread_rwlock_wrlock   libintl_rwlock_wrlock
+#define glthread_rwlock_unlock   libintl_rwlock_unlock
+#define glthread_rwlock_destroy  libintl_rwlock_destroy
+#define glthread_recursive_lock_init     libintl_recursive_lock_init
+#define glthread_recursive_lock_lock     libintl_recursive_lock_lock
+#define glthread_recursive_lock_unlock   libintl_recursive_lock_unlock
+#define glthread_recursive_lock_destroy  libintl_recursive_lock_destroy
+#define glthread_once                 libintl_once
+#define glthread_once_call            libintl_once_call
+#define glthread_once_singlethreaded  libintl_once_singlethreaded
+
+
+
+/* Indicator for intl/ that it is compiled for testing purposes only.  */
+#define USE_IN_GETTEXT_TESTS
 
 /* A file name cannot consist of any character possible.  INVALID_PATH_CHAR
    contains the characters not allowed.  */
@@ -724,7 +792,7 @@
 #define PAGE_WIDTH 79
 
 /* On Windows, variables that may be in a DLL must be marked specially.  */
-#if defined _MSC_VER && defined _DLL
+#if (defined _MSC_VER && defined _DLL) || defined WOE32DLL
 # define DLL_VARIABLE __declspec (dllimport)
 #else
 # define DLL_VARIABLE

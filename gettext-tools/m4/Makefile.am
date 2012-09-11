@@ -14,11 +14,11 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/iconv.m4 \
   ../../gettext-runtime/m4/intdiv0.m4 \
   ../../gettext-runtime/m4/intmax.m4 \
-  ../../gettext-runtime/m4/inttypes.m4 \
   ../../gettext-runtime/m4/inttypes_h.m4 \
+  ../../gettext-runtime/m4/inttypes-h.m4 \
   ../../gettext-runtime/m4/inttypes-pri.m4 \
-  ../../gettext-runtime/m4/isc-posix.m4 \
   ../../gettext-runtime/m4/lcmessage.m4 \
+  ../../gettext-runtime/m4/lock.m4 \
   ../../gettext-runtime/m4/longdouble.m4 \
   ../../gettext-runtime/m4/longlong.m4 \
   ../../gettext-runtime/m4/nls.m4 \
@@ -30,24 +30,26 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/stdint_h.m4 \
   ../../gettext-runtime/m4/uintmax_t.m4 \
   ../../gettext-runtime/m4/ulonglong.m4 \
+  ../../gettext-runtime/m4/visibility.m4 \
   ../../gettext-runtime/m4/wchar_t.m4 \
   ../../gettext-runtime/m4/wint_t.m4 \
   ../../gettext-runtime/m4/xsize.m4
 
 # Files installed for the examples.
 
-docdir = @docdir@
 examplesbuildauxdir = $(docdir)/examples/build-aux
 examplesbuildaux_DATA = \
   gcj.m4 javacomp.m4 javaexec.m4 \
-  csharpcomp.m4 csharpexec.m4
+  csharpcomp.m4 csharpexec.m4 csharpexec-test.exe
 
 # Generate this list with
 # find . -type f -name '*.m4' -printf '%f\n' | sort | tr '\012' @ | sed 's/@$/%/;s/@/ \\@/g' | tr @% '\012\012'
-EXTRA_DIST = README ChangeLog.0 \
+EXTRA_DIST = README ChangeLog.0 csharpexec-test.exe \
 alloca.m4 \
 allocsa.m4 \
 backupfile.m4 \
+bison-i18n.m4 \
+byteswap.m4 \
 canonicalize.m4 \
 csharp.m4 \
 csharpcomp.m4 \
@@ -64,6 +66,7 @@ getndelim2.m4 \
 getopt.m4 \
 hard-locale.m4 \
 hostname.m4 \
+java.m4 \
 javacomp.m4 \
 javaexec.m4 \
 locale-fr.m4 \
@@ -86,9 +89,9 @@ sig_atomic_t.m4 \
 siginfo.m4 \
 signalblocking.m4 \
 ssize_t.m4 \
+stdarg.m4 \
 stdbool.m4 \
 stpncpy.m4 \
-strcase.m4 \
 strdup.m4 \
 strerror.m4 \
 strerror_r.m4 \
@@ -96,5 +99,6 @@ strtol.m4 \
 strtoul.m4 \
 tmpdir.m4 \
 unionwait.m4 \
+unistd_h.m4 \
 unlocked-io.m4 \
 xreadlink.m4

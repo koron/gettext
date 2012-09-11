@@ -1,3 +1,33 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* Makefile.am (localedir): Remove variable.
+
+2006-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* envsubst.c: Include propername.h.
+	(main): Call proper_name. Bump copyright year.
+	* gettext.c: Include propername.h.
+	(main): Call proper_name. Bump copyright year.
+	* ngettext.c: Include propername.h.
+	(main): Call proper_name. Bump copyright year.
+	* Makefile.am (LDADD): Add LTLIBICONV.
+
+2005-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.sh.in: Fix behaviour when the sourceing script has a name
+	ending in gettext.sh.
+	Reported by Andreas Schwab <schwab@suse.de>.
+
+2005-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.sh.in: Make it work when sourced by zsh.
+	Reported by Sergio Talens-Oliag <sto@debian.org>.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

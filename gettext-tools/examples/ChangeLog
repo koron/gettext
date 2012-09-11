@@ -1,3 +1,263 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* hello-*/autogen.sh (GETTEXT_TOPSRCDIR): In the build directory case,
+	append one more "/..".
+
+2006-07-20  Bruno Haible  <bruno@clisp.org>
+
+	* po/sv.po: Update from Jan Djärv <jan.h.d@swipnet.se>.
+	* po/vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+	* po/zh_HK.po: New file, from Abel Cheung <abelcheung@gmail.com>.
+	* po/LINGUAS: Add zh_HK.
+	* hello-*/po/LINGUAS: Update.
+	* Makefile.am (EXAMPLESFILES): Add the new message catalogs.
+
+2006-07-14  Bruno Haible  <bruno@clisp.org>
+
+	* po/Makefile.am (MOSTLYCLEANFILES): Add *.stackdump.
+	* hello-*/po/Makefile.am (MOSTLYCLEANFILES): Likewise.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (Makefile): Invoke FIX_MAKEFILE_TOPDIR_DISTRIB instead
+	of FIX_MAKEFILE_DISTRIB.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c++-kde/admin/cvs.sh: Disable the search for specific
+	versions of autoconf, autoheader, autom4te, automake, aclocal.
+	Accept autoconf, autoheader versions > 2.59. Accept automake
+	versions > 1.8.x.
+
+2006-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): New variable.
+
+2006-07-03  Bruno Haible  <bruno@clisp.org>
+
+	* po/eo.po: New file, from Edmund Grimley Evans <edmundo@rano.org>.
+	* po/it.po: Update from Marco Colombo <m.colombo@ed.ac.uk>.
+	* po/LINGUAS: Add eo.
+	* hello-*/po/LINGUAS: Update.
+	* Makefile.am (EXAMPLESFILES): Add the new message catalogs.
+
+2006-06-29  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: New file.
+	* Makefile.am (AUTOMAKE_OPTIONS): Drop gnits, use foreign instead.
+	* po/Makefile.am (POTFILES): Remove examples/ prefix.
+
+2006-06-27  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/{autoclean.sh,m4/Makefile.am}: Remove isc-posix.m4.
+	* hello-c-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++-kde/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-objc/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-objc-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Assume autoconf >= 2.60.
+	* Makefile.am (docdir): Remove variable.
+	* po/Makefile.am (localedir): Remove variable.
+
+2006-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/{autoclean.sh,m4/Makefile.am}: Replace inttypes.m4 with
+	inttypes-h.m4.
+	* hello-c-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-c++-kde/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-objc/{autoclean.sh,m4/Makefile.am}: Likewise.
+	* hello-objc-gnome/{autoclean.sh,m4/Makefile.am}: Likewise.
+
+2006-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* hello-java/configure.ac: Pass a source-version to gt_JAVACOMP. Move
+	gt_JAVAEXEC call before the gt_JAVACOMP call.
+	* hello-java-awt/configure.ac: Likewise.
+	* hello-java-swing/configure.ac: Likewise.
+
+2006-04-17  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am: Use $(mkdir_p) instead of $(mkinstalldirs).
+	* hello-csharp/Makefile.am: Likewise.
+	* hello-csharp-forms/Makefile.am: Likewise.
+	* hello-java/Makefile.am: Likewise.
+	* hello-java-awt/Makefile.am: Likewise.
+	* hello-java-swing/Makefile.am: Likewise.
+	* hello-pascal/Makefile.am: Likewise.
+	* hello-c++-qt/po/Makefile.am: Likewise.
+	* hello-c++-wxwidgets/po/Makefile.am: Likewise.
+	* hello-clisp/po/Makefile.am: Likewise.
+	* hello-csharp/po/Makefile.am: Likewise.
+	* hello-csharp-forms/po/Makefile.am: Likewise.
+	* hello-gawk/po/Makefile.am: Likewise.
+	* hello-guile/po/Makefile.am: Likewise.
+	* hello-librep/po/Makefile.am: Likewise.
+	* hello-pascal/po/Makefile.am: Likewise.
+	* hello-perl/po/Makefile.am: Likewise.
+	* hello-php/po/Makefile.am: Likewise.
+	* hello-python/po/Makefile.am: Likewise.
+	* hello-sh/po/Makefile.am: Likewise.
+	* hello-smalltalk/po/Makefile.am: Likewise.
+	* hello-tcl/po/Makefile.am: Likewise.
+	* hello-tcl-tk/po/Makefile.am: Likewise.
+	* hello-ycp/po/Makefile.am: Likewise.
+	* hello-*/autoclean.sh: Don't remove mkinstalldirs.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Don't ignore the --localedir option from autoconf >= 2.60.
+	* hello-c/Makefile.am (localedir): Remove variable.
+	* hello-c-gnome/Makefile.am (localedir): Likewise.
+	* hello-objc/Makefile.am (localedir): Likewise.
+	* hello-objc-gnome/Makefile.am (localedir): Likewise.
+	* hello-c++/Makefile.am (localedir): Likewise.
+	* hello-c++-kde/Makefile.am (localedir): Likewise.
+	* hello-c++-gnome/Makefile.am (localedir): Likewise.
+	* hello-c++-qt/Makefile.am (localedir): Likewise.
+	* hello-c++-qt/po/Makefile.am (localedir): Likewise.
+	* hello-c++-wxwidgets/Makefile.am (localedir): Likewise.
+	* hello-c++-wxwidgets/po/Makefile.am (localedir): Likewise.
+	* hello-clisp/po/Makefile.am (localedir): Likewise.
+	* hello-gawk/po/Makefile.am (localedir): Likewise.
+	* hello-guile/po/Makefile.am (localedir): Likewise.
+	* hello-librep/po/Makefile.am (localedir): Likewise.
+	* hello-pascal/po/Makefile.am (localedir): Likewise.
+	* hello-perl/po/Makefile.am (localedir): Likewise.
+	* hello-php/po/Makefile.am (localedir): Likewise.
+	* hello-python/po/Makefile.am (localedir): Likewise.
+	* hello-sh/po/Makefile.am (localedir): Likewise.
+	* hello-smalltalk/po/Makefile.am (localedir): Likewise.
+	* hello-ycp/po/Makefile.am (localedir): Likewise.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/configure.ac: Use gettext-0.15 infrastructure.
+	* hello-c-gnome/configure.ac: Likewise.
+	* hello-objc/configure.ac: Likewise.
+	* hello-objc-gnome/configure.ac: Likewise.
+	* hello-c++/configure.ac: Likewise.
+	* hello-c++-kde/configure.in.in: Likewise.
+	* hello-c++-gnome/configure.ac: Likewise.
+	* hello-c-gnome/m4/Makefile.am (EXTRA_DIST): Add lock.m4.
+	* hello-c++-kde/m4/Makefile.am (EXTRA_DIST): Likewise.
+
+2006-04-14  Bruno Haible  <bruno@clisp.org>
+
+	Prepare for autoconf-2.60.
+	* hello-clisp/configure.ac: Set datarootdir before evaluating
+	${datadir}.
+	* hello-gawk/configure.ac: Likewise.
+	* hello-guile/configure.ac: Likewise.
+	* hello-librep/configure.ac: Likewise.
+	* hello-pascal/configure.ac: Likewise.
+	* hello-perl/configure.ac: Likewise.
+	* hello-php/configure.ac: Likewise.
+	* hello-python/configure.ac: Likewise.
+	* hello-sh/configure.ac: Likewise.
+	* hello-smalltalk/configure.ac: Likewise.
+
+2006-04-07  Bruno Haible  <bruno@clisp.org>
+
+	* po/hu.po: New file, from Kiss Tamás <atomi@inf.elte.hu>.
+	* po/pt.po: New file, from
+	Helder Correia <helder.pereira.correia@gmail.com>.
+	* po/sl.po: New file, from
+	Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>.
+	* po/vi.po: Update from Clytie Siddall <clytie@riverland.net.au>.
+	* po/LINGUAS: Add hu, pt, sl.
+	* hello-*/po/LINGUAS: Update.
+	* Makefile.am (EXAMPLESFILES): Add the new message catalogs.
+
+2006-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* hello-csharp-forms/README: New file.
+	* Makefile.am (EXAMPLESFILES): Add it.
+
+2006-03-25  Bruno Haible  <bruno@clisp.org>
+
+	New example for wxWidgets.
+	* hello-c++-wxwidgets: New subdirectory.
+	* README: Mention it.
+	* Makefile.am (EXAMPLESFILES): Add the files in hello-c++-wxwidgets.
+	* po/Makefile.am (POTFILES): Add hello-c++-wxwidgets source.
+	(SMALLPOTS): Add hello-c++-wxwidgets.pot.
+	(hello-c++-wxwidgets.pot): New rule.
+	(SMALLPOFILES_FOR_lang): Add hello-c++-wxwidgets elements.
+	(../hello-c++-wxwidgets/po/$(LL).po): New rule.
+
+2005-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-c-gnome/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-c++/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-c++-gnome/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-c++-kde/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-objc/po/Makevars (USE_MSGCTXT): New macro.
+	* hello-objc-gnome/po/Makevars (USE_MSGCTXT): New macro.
+
+2005-09-19  Bruno Haible  <bruno@clisp.org>
+
+	* hello-*/autogen.sh: Also install m4/progtest.m4.
+	* hello-*/autoclean.sh: Also remove m4/progtest.m4.
+
+2005-07-24  Bruno Haible  <bruno@clisp.org>
+
+	Tidy up exported symbols.
+	* hello-c/m4/Makefile.am (EXTRA_DIST): Add visibility.m4.
+	* hello-c-gnome/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c++/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c++-gnome/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c++-kde/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-objc/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-objc-gnome/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c/autoclean.sh: Remove also m4/visibility.m4.
+	* hello-c-gnome/autoclean.sh: Likewise.
+	* hello-c++/autoclean.sh: Likewise.
+	* hello-c++-gnome/autoclean.sh: Likewise.
+	* hello-c++-kde/autoclean.sh: Likewise.
+	* hello-objc/autoclean.sh: Likewise.
+	* hello-objc-gnome/autoclean.sh: Likewise.
+
+2005-07-26  Bruno Haible  <bruno@clisp.org>
+
+	* installpaths.in (datarootdir): New variable.
+
+2005-07-16  Bruno Haible  <bruno@clisp.org>
+
+	* hello-c/m4/Makefile.am (EXTRA_DIST): Add lock.m4.
+	* hello-c++/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c++-gnome/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-objc/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-objc-gnome/m4/Makefile.am (EXTRA_DIST): Likewise.
+	* hello-c/autoclean.sh: Remove also m4/lock.m4.
+	* hello-c-gnome/autoclean.sh: Likewise.
+	* hello-c++/autoclean.sh: Likewise.
+	* hello-c++-gnome/autoclean.sh: Likewise.
+	* hello-c++-kde/autoclean.sh: Likewise.
+	* hello-objc/autoclean.sh: Likewise.
+	* hello-objc-gnome/autoclean.sh: Likewise.
+
+2005-05-01  Bruno Haible  <bruno@clisp.org>
+
+	* hello-csharp/configure.ac, hello-csharp-forms/configure.ac: Call
+	gt_CSHARPEXEC with parameters.
+	* hello-csharp/m4/Makefile.am, hello-csharp-forms/m4/Makefile.am
+	(EXTRA_DIST): Add csharpexec-test.exe.
+	* hello-csharp/autogen.sh, hello-csharp-forms/autogen.sh: Also copy
+	m4/csharpexec-test.exe.
+	* hello-csharp/autoclean.sh, hello-csharp-forms/autoclean.sh: Also
+	remove m4/csharpexec-test.exe.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.
@@ -278,7 +538,7 @@
 
 2003-12-02  Bruno Haible  <bruno@clisp.org>
 
-	* examples/Makefile.am (EXTRA_DIST): Don't add the EXAMPLESFILES.
+	* Makefile.am (EXTRA_DIST): Don't add the EXAMPLESFILES.
 	(distdir1): New rule. Install the EXAMPLESFILES after 'update-po'.
 
 2003-11-30  Bruno Haible  <bruno@clisp.org>

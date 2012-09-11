@@ -1,5 +1,5 @@
 /* xgettext glade backend.
-   Copyright (C) 2002-2003 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2005-2006 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2002.
 
@@ -39,6 +39,7 @@
 #include "x-glade.h"
 #include "error.h"
 #include "xerror.h"
+#include "xvasprintf.h"
 #include "basename.h"
 #include "progname.h"
 #include "xalloc.h"
@@ -78,9 +79,9 @@ x_glade_keyword (const char *name)
   else
     {
       if (keywords.table == NULL)
-	init_hash (&keywords, 100);
+	hash_init (&keywords, 100);
 
-      insert_entry (&keywords, name, strlen (name), NULL);
+      hash_insert_entry (&keywords, name, strlen (name), NULL);
     }
 }
 
@@ -91,6 +92,8 @@ init_keywords ()
 {
   if (default_keywords)
     {
+      /* When adding new keywords here, also update the documentation in
+	 xgettext.texi!  */
       x_glade_keyword ("label");
       x_glade_keyword ("title");
       x_glade_keyword ("text");
@@ -123,8 +126,13 @@ static void (*p_XML_SetCharacterDataHandler) (XML_Parser parser, XML_CharacterDa
 static void (*p_XML_SetCommentHandler) (XML_Parser parser, XML_CommentHandler handler);
 static int (*p_XML_Parse) (XML_Parser parser, const char *s, int len, int isFinal);
 static enum XML_Error (*p_XML_GetErrorCode) (XML_Parser parser);
+#if XML_MAJOR_VERSION >= 2
+static XML_Size (*p_XML_GetCurrentLineNumber) (XML_Parser parser);
+static XML_Size (*p_XML_GetCurrentColumnNumber) (XML_Parser parser);
+#else
 static int (*p_XML_GetCurrentLineNumber) (XML_Parser parser);
 static int (*p_XML_GetCurrentColumnNumber) (XML_Parser parser);
+#endif
 static void (*p_XML_ParserFree) (XML_Parser parser);
 static const XML_LChar * (*p_XML_ErrorString) (int code);
 
@@ -146,7 +154,14 @@ load_libexpat ()
 {
   if (libexpat_loaded == 0)
     {
-      void *handle = dlopen ("libexpat.so.0", RTLD_LAZY);
+      void *handle;
+      /* Be careful to use exactly the version of libexpat that matches the
+	 binary interface declared in <expat.h>.  */
+#if XML_MAJOR_VERSION >= 2
+      handle = dlopen ("libexpat.so.1", RTLD_LAZY);
+#else
+      handle = dlopen ("libexpat.so.0", RTLD_LAZY);
+#endif
       if (handle != NULL
 	  && (p_XML_ParserCreate = dlsym (handle, "XML_ParserCreate")) != NULL
 	  && (p_XML_SetElementHandler = dlsym (handle, "XML_SetElementHandler")) != NULL
@@ -234,7 +249,7 @@ start_element_handler (void *userData, const char *name,
   /* In Glade 1, a few specific elements are translatable.  */
   if (!p->extract_string)
     p->extract_string =
-      (find_entry (&keywords, name, strlen (name), &hash_result) == 0);
+      (hash_find_entry (&keywords, name, strlen (name), &hash_result) == 0);
   /* In Glade 2, all <property> and <atkproperty> elements are translatable
      that have the attribute translatable="yes".  */
   if (!p->extract_string
@@ -268,8 +283,8 @@ start_element_handler (void *userData, const char *name,
 		  pos.file_name = logical_file_name;
 		  pos.line_number = XML_GetCurrentLineNumber (parser);
 
-		  remember_a_message (mlp, xstrdup (attp[1]),
-				      null_context, &pos);
+		  remember_a_message (mlp, NULL, xstrdup (attp[1]),
+				      null_context, &pos, savable_comment);
 		}
 	      break;
 	    }
@@ -281,7 +296,7 @@ start_element_handler (void *userData, const char *name,
   p->bufmax = 0;
   p->buflen = 0;
   if (!p->extract_string)
-    xgettext_comment_reset ();
+    savable_comment_reset ();
 }
 
 /* Callback called when </element> is seen.  */
@@ -305,7 +320,8 @@ end_element_handler (void *userData, const char *name)
 	  pos.file_name = logical_file_name;
 	  pos.line_number = p->lineno;
 
-	  remember_a_message (mlp, p->buffer, null_context, &pos);
+	  remember_a_message (mlp, NULL, p->buffer, null_context, &pos,
+			      savable_comment);
 	  p->buffer = NULL;
 	}
     }
@@ -317,7 +333,7 @@ end_element_handler (void *userData, const char *name)
   /* Decrease stack depth.  */
   stack_depth--;
 
-  xgettext_comment_reset ();
+  savable_comment_reset ();
 }
 
 /* Callback called when some text is seen.  */
@@ -358,7 +374,7 @@ comment_handler (void *userData, const char *data)
       while (q > p && (q[-1] == ' ' || q[-1] == '\t'))
 	q--;
       *q = '\0';
-      xgettext_comment_add (p);
+      savable_comment_add (p);
     }
   q = p + strlen (p);
   while (p[0] == ' ' || p[0] == '\t')
@@ -366,7 +382,7 @@ comment_handler (void *userData, const char *data)
   while (q > p && (q[-1] == ' ' || q[-1] == '\t'))
     q--;
   *q = '\0';
-  xgettext_comment_add (p);
+  savable_comment_add (p);
   free (copy);
 }
 
@@ -410,16 +426,16 @@ error while reading \"%s\""), real_filename);
 	}
 
       if (XML_Parse (parser, buf, count, 0) == 0)
-	error (EXIT_FAILURE, 0, _("%s:%d:%d: %s"), logical_filename,
-	       XML_GetCurrentLineNumber (parser),
-	       XML_GetCurrentColumnNumber (parser) + 1,
+	error (EXIT_FAILURE, 0, _("%s:%lu:%lu: %s"), logical_filename,
+	       (unsigned long) XML_GetCurrentLineNumber (parser),
+	       (unsigned long) XML_GetCurrentColumnNumber (parser) + 1,
 	       XML_ErrorString (XML_GetErrorCode (parser)));
     }
 
   if (XML_Parse (parser, NULL, 0, 1) == 0)
-    error (EXIT_FAILURE, 0, _("%s:%d:%d: %s"), logical_filename,
-	   XML_GetCurrentLineNumber (parser),
-	   XML_GetCurrentColumnNumber (parser) + 1,
+    error (EXIT_FAILURE, 0, _("%s:%lu:%lu: %s"), logical_filename,
+	   (unsigned long) XML_GetCurrentLineNumber (parser),
+	   (unsigned long) XML_GetCurrentColumnNumber (parser) + 1,
 	   XML_ErrorString (XML_GetErrorCode (parser)));
 
   XML_ParserFree (parser);

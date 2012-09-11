@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools/doc subdirectory of GNU gettext
-## Copyright (C) 1995-1997, 2001-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1997, 2001-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -16,12 +16,6 @@
 ## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 ## Process this file with automake to produce Makefile.in.
-
-docdir = @docdir@
-dvidir = $(docdir)
-psdir = $(docdir)
-pdfdir = $(docdir)
-htmldir = $(docdir)
 
 AUTOMAKE_OPTIONS = 1.2 gnits
 EXTRA_DIST =
@@ -41,6 +35,7 @@ gettext_TEXINFOS = \
   msggrep.texi msgfilter.texi msguniq.texi msgcomm.texi msgcmp.texi \
   msgattrib.texi msgen.texi msgexec.texi msgfmt.texi msgunfmt.texi \
   gettextize.texi autopoint.texi iso-639.texi iso-3166.texi \
+  gpl.texi lgpl.texi fdl.texi \
   $(top_srcdir)/../gettext-runtime/doc/rt-gettext.texi \
   $(top_srcdir)/../gettext-runtime/doc/rt-ngettext.texi \
   $(top_srcdir)/../gettext-runtime/doc/rt-envsubst.texi
@@ -110,11 +105,11 @@ MAINTAINERCLEANFILES = gettext_*.html
 TEXI2DVI = texi2dvi $(TEXINCLUDES)
 
 install-dvi: gettext.dvi
-	$(mkinstalldirs) $(DESTDIR)$(dvidir)
+	$(mkdir_p) $(DESTDIR)$(dvidir)
 	$(INSTALL_DATA) `if test -f gettext.dvi; then echo .; else echo $(srcdir); fi`/gettext.dvi $(DESTDIR)$(dvidir)/gettext.dvi
 
 installdirs-dvi:
-	$(mkinstalldirs) $(DESTDIR)$(dvidir)
+	$(mkdir_p) $(DESTDIR)$(dvidir)
 
 uninstall-dvi:
 	$(RM) $(DESTDIR)$(dvidir)/gettext.dvi
@@ -143,11 +138,11 @@ gettext.ps: gettext.dvi
 	$(DVIPS) -o $@ `if test -f gettext.dvi; then echo gettext.dvi; else echo $(srcdir)/gettext.dvi; fi`
 
 install-ps: gettext.ps
-	$(mkinstalldirs) $(DESTDIR)$(psdir)
+	$(mkdir_p) $(DESTDIR)$(psdir)
 	$(INSTALL_DATA) `if test -f gettext.ps; then echo .; else echo $(srcdir); fi`/gettext.ps $(DESTDIR)$(psdir)/gettext.ps
 
 installdirs-ps:
-	$(mkinstalldirs) $(DESTDIR)$(psdir)
+	$(mkdir_p) $(DESTDIR)$(psdir)
 
 uninstall-ps:
 	$(RM) $(DESTDIR)$(psdir)/gettext.ps
@@ -161,11 +156,11 @@ TEXI2PDF = @TEXI2PDF@ $(TEXINCLUDES)
 SUFFIXES = .pdf
 
 install-pdf: gettext.pdf
-	$(mkinstalldirs) $(DESTDIR)$(pdfdir)
+	$(mkdir_p) $(DESTDIR)$(pdfdir)
 	$(INSTALL_DATA) `if test -f gettext.pdf; then echo .; else echo $(srcdir); fi`/gettext.pdf $(DESTDIR)$(pdfdir)/gettext.pdf
 
 installdirs-pdf:
-	$(mkinstalldirs) $(DESTDIR)$(pdfdir)
+	$(mkdir_p) $(DESTDIR)$(pdfdir)
 
 uninstall-pdf:
 	$(RM) $(DESTDIR)$(pdfdir)/gettext.pdf
@@ -181,28 +176,28 @@ html-split: gettext_toc.html
 # Override of automake's definition.
 # We want to use texi2html, not makeinfo --html.
 gettext.html: gettext.texi version.texi $(gettext_TEXINFOS)
-	$(TEXI2HTML) $(TEXINCLUDES) -expandinfo -number -monolithic `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi`
+	$(TEXI2HTML) $(TEXINCLUDES) -number -monolithic `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi`
 
 gettext_toc.html: gettext.texi version.texi $(gettext_TEXINFOS)
 	case "@PERL@" in \
 	  *"/missing perl") \
-	     $(TEXI2HTML) $(TEXINCLUDES) -expandinfo -number -split_chapter `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi` || exit 0 ;; \
+	     $(TEXI2HTML) $(TEXINCLUDES) -number -split_chapter `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi` || exit 0 ;; \
 	  *) $(RM) gettext_*.html ; \
-	     $(TEXI2HTML) $(TEXINCLUDES) -expandinfo -number -split_chapter `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi` ;; \
+	     $(TEXI2HTML) $(TEXINCLUDES) -number -split_chapter `if test -f gettext.texi; then echo gettext.texi; else echo $(srcdir)/gettext.texi; fi` ;; \
 	esac
 
 install-html-monolithic: gettext.html
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkdir_p) $(DESTDIR)$(htmldir)
 	$(INSTALL_DATA) `if test -f gettext.html; then echo .; else echo $(srcdir); fi`/gettext.html $(DESTDIR)$(htmldir)/gettext.html
 
 install-html-split: gettext_toc.html
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkdir_p) $(DESTDIR)$(htmldir)
 	for file in `if test -f gettext_toc.html; then echo .; else echo $(srcdir); fi`/gettext_*.html; do \
 	  $(INSTALL_DATA) $$file $(DESTDIR)$(htmldir)/`basename $$file`; \
 	done
 
 installdirs-html:
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)
+	$(mkdir_p) $(DESTDIR)$(htmldir)
 
 uninstall-html-monolithic:
 	$(RM) $(DESTDIR)$(htmldir)/gettext.html
@@ -211,14 +206,14 @@ uninstall-html-split:
 	$(RM) $(DESTDIR)$(htmldir)/gettext_*.html
 
 dist-html-monolithic:
-	$(mkinstalldirs) $(distdir)/
+	$(mkdir_p) $(distdir)/
 	file=gettext.html; \
 	if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	cp -p $$d/$$file $(distdir)/$$file || exit 1
 
 # We would like to put gettext_*.html into EXTRA_DIST, but it doesn't work.
 dist-html-split:
-	$(mkinstalldirs) $(distdir)/
+	$(mkdir_p) $(distdir)/
 	file=gettext_toc.html; \
 	if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	for file in `cd $$d && echo gettext_*.html`; do \

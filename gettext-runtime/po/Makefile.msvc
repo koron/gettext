@@ -58,6 +58,9 @@ install : all force
 	-mkdir $(localedir)\en@boldquot
 	-mkdir $(localedir)\en@boldquot\LC_MESSAGES
 	$(INSTALL_DATA) en@boldquot.gmo $(localedir)\en@boldquot\LC_MESSAGES\gettext-runtime.mo
+	-mkdir $(localedir)\eo
+	-mkdir $(localedir)\eo\LC_MESSAGES
+	$(INSTALL_DATA) eo.gmo $(localedir)\eo\LC_MESSAGES\gettext-runtime.mo
 	-mkdir $(localedir)\es
 	-mkdir $(localedir)\es\LC_MESSAGES
 	$(INSTALL_DATA) es.gmo $(localedir)\es\LC_MESSAGES\gettext-runtime.mo
@@ -136,6 +139,9 @@ install : all force
 	-mkdir $(localedir)\zh_CN
 	-mkdir $(localedir)\zh_CN\LC_MESSAGES
 	$(INSTALL_DATA) zh_CN.gmo $(localedir)\zh_CN\LC_MESSAGES\gettext-runtime.mo
+	-mkdir $(localedir)\zh_HK
+	-mkdir $(localedir)\zh_HK\LC_MESSAGES
+	$(INSTALL_DATA) zh_HK.gmo $(localedir)\zh_HK\LC_MESSAGES\gettext-runtime.mo
 	-mkdir $(localedir)\zh_TW
 	-mkdir $(localedir)\zh_TW\LC_MESSAGES
 	$(INSTALL_DATA) zh_TW.gmo $(localedir)\zh_TW\LC_MESSAGES\gettext-runtime.mo
@@ -160,6 +166,8 @@ installdirs : force
 	-mkdir $(localedir)\en@quot\LC_MESSAGES
 	-mkdir $(localedir)\en@boldquot
 	-mkdir $(localedir)\en@boldquot\LC_MESSAGES
+	-mkdir $(localedir)\eo
+	-mkdir $(localedir)\eo\LC_MESSAGES
 	-mkdir $(localedir)\es
 	-mkdir $(localedir)\es\LC_MESSAGES
 	-mkdir $(localedir)\et
@@ -212,6 +220,8 @@ installdirs : force
 	-mkdir $(localedir)\vi\LC_MESSAGES
 	-mkdir $(localedir)\zh_CN
 	-mkdir $(localedir)\zh_CN\LC_MESSAGES
+	-mkdir $(localedir)\zh_HK
+	-mkdir $(localedir)\zh_HK\LC_MESSAGES
 	-mkdir $(localedir)\zh_TW
 	-mkdir $(localedir)\zh_TW\LC_MESSAGES
 
@@ -224,6 +234,7 @@ uninstall : force
 	$(RM) $(localedir)\el\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\en@quot\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\en@boldquot\LC_MESSAGES\gettext-runtime.mo
+	$(RM) $(localedir)\eo\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\es\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\et\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\fi\LC_MESSAGES\gettext-runtime.mo
@@ -250,6 +261,7 @@ uninstall : force
 	$(RM) $(localedir)\uk\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\vi\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\zh_CN\LC_MESSAGES\gettext-runtime.mo
+	$(RM) $(localedir)\zh_HK\LC_MESSAGES\gettext-runtime.mo
 	$(RM) $(localedir)\zh_TW\LC_MESSAGES\gettext-runtime.mo
 
 check : all

@@ -6,6 +6,7 @@
 prefix = SYS$DATA:[
 exec_prefix = $(prefix)
 libdir = $(exec_prefix).lib
+pkgdatadir = $(datadir).gettext
 
 # Programs used by "make":
 
@@ -20,7 +21,7 @@ WARN_CFLAGS = /warning
 OPTIMFLAGS = /optimize
 
 CFLAGS = $(ABIFLAGS) $(WARN_CFLAGS) $(OPTIMFLAGS)
-DEFS = "VMS=1","HAVE_CONFIG_H=1","EXEEXT="".exe""","LIBDIR=""$(libdir)]"""
+DEFS = "VMS=1","HAVE_CONFIG_H=1","PKGDATADIR=""$(pkgdatadir)]""","EXEEXT="".exe""","LIBDIR=""$(libdir)]"""
 
 INCLUDES = /include=([],[-],[-.intl])
 
@@ -46,6 +47,7 @@ OBJECTS = \
   c-strcasecmp.obj, \
   c-strncasecmp.obj, \
   classpath.obj, \
+  clean-temp.obj, \
   closeout.obj, \
   copy-file.obj, \
   csharpcomp.obj, \
@@ -60,14 +62,17 @@ OBJECTS = \
   fwriteerror.obj, \
   gcd.obj, \
   hash.obj, \
+  iconvstring.obj, \
   javacomp.obj, \
   javaexec.obj, \
+  javaversion.obj, \
   linebreak.obj, \
   mbswidth.obj, \
   obstack.obj, \
   concatpath.obj, \
   pipe.obj, \
   progname.obj, progreloc.obj, \
+  propername.obj, \
   quote.obj, \
   quotearg.obj, \
   safe-read.obj, \
@@ -79,6 +84,7 @@ OBJECTS = \
   xallocsa.obj, \
   xerror.obj, \
   xsetenv.obj, \
+  xvasprintf.obj, xasprintf.obj, \
   \
   error.obj, \
   fnmatch.obj, \
@@ -127,6 +133,9 @@ c-strncasecmp.obj : c-strncasecmp.c
 classpath.obj : classpath.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) classpath.c
 
+clean-temp.obj : clean-temp.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) clean-temp.c
+
 closeout.obj : closeout.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) closeout.c
 
@@ -169,11 +178,17 @@ gcd.obj : gcd.c
 hash.obj : hash.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) hash.c
 
+iconvstring.obj : iconvstring.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) iconvstring.c
+
 javacomp.obj : javacomp.c,alloca.h
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) javacomp.c
 
 javaexec.obj : javaexec.c,alloca.h
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) javaexec.c
+
+javaversion.obj : javaversion.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) javaversion.c
 
 linebreak.obj : linebreak.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) linebreak.c
@@ -195,6 +210,9 @@ progname.obj : progname.c
 
 progreloc.obj : progreloc.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) progreloc.c
+
+propername.obj : propername.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) propername.c
 
 quote.obj : quote.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) quote.c
@@ -231,6 +249,12 @@ xerror.obj : xerror.c
 
 xsetenv.obj : xsetenv.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) xsetenv.c
+
+xvasprintf.obj : xvasprintf.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) xvasprintf.c
+
+xasprintf.obj : xasprintf.c
+	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) xasprintf.c
 
 error.obj : error.c
 	$(CC) $(INCLUDES) $(CFLAGS) /define=($(DEFS)) error.c

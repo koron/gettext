@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2001-2002 Free Software Foundation, Inc.
+/* Copyright (C) 1999, 2001-2002, 2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -40,9 +40,6 @@
 #endif
 
 #include <sys/stat.h>
-#if STAT_MACROS_BROKEN
-# undef S_ISDIR
-#endif
 #if !defined S_ISDIR && defined S_IFDIR
 # define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
@@ -74,6 +71,17 @@
 
 #if ! (HAVE___SECURE_GETENV || _LIBC)
 # define __secure_getenv getenv
+#endif
+
+/* Pathname support.
+   ISSLASH(C)           tests whether C is a directory separator character.
+ */
+#if defined _WIN32 || defined __WIN32__ || defined __CYGWIN__ || defined __EMX__ || defined __DJGPP__
+  /* Win32, Cygwin, OS/2, DOS */
+# define ISSLASH(C) ((C) == '/' || (C) == '\\')
+#else
+  /* Unix */
+# define ISSLASH(C) ((C) == '/')
 #endif
 
 
@@ -134,7 +142,7 @@ path_search (char *tmpl, size_t tmpl_len, const char *dir, const char *pfx,
     }
 
   dlen = strlen (dir);
-  while (dlen > 1 && dir[dlen - 1] == '/')
+  while (dlen >= 1 && ISSLASH (dir[dlen - 1]))
     dlen--;			/* remove trailing slashes */
 
   /* check we have room for "${dir}/${pfx}XXXXXX\0" */

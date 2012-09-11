@@ -1,5 +1,5 @@
 /* xgettext RST backend.
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
@@ -21,11 +21,11 @@
 # include "config.h"
 #endif
 
-#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stddef.h>
 
+#include "c-ctype.h"
 #include "message.h"
 #include "xgettext.h"
 #include "x-rst.h"
@@ -165,7 +165,7 @@ extract_rst (FILE *f,
 	      c = getc (f);
 	      if (c == EOF && ferror (f))
 		goto bomb;
-	      if (c == EOF || !isdigit (c))
+	      if (c == EOF || !c_isdigit (c))
 		{
 		  error_with_progname = false;
 		  error (EXIT_FAILURE, 0, _("%s:%d: missing number after #"),
@@ -176,7 +176,7 @@ extract_rst (FILE *f,
 	      for (;;)
 		{
 		  c = getc (f);
-		  if (c == EOF || !isdigit (c))
+		  if (c == EOF || !c_isdigit (c))
 		    break;
 		  n = n * 10 + (c - '0');
 		}
@@ -219,7 +219,7 @@ extract_rst (FILE *f,
       pos.file_name = location;
       pos.line_number = (size_t)(-1);
 
-      remember_a_message (mlp, msgid, null_context, &pos);
+      remember_a_message (mlp, NULL, msgid, null_context, &pos, NULL);
 
       /* Here c is the last read character: EOF or '\n'.  */
       if (c == EOF)

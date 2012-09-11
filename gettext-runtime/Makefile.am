@@ -1,5 +1,5 @@
 ## Makefile for the gettext-runtime directory of GNU gettext
-## Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -22,8 +22,14 @@ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-tools/m4 -I ../autoconf-lib-link/m4 -I ../
 
 MAKEINFO = env LANG= LC_MESSAGES= LC_ALL= LANGUAGE= @MAKEINFO@
 
-SUBDIRS =      doc intl intl-java intl-csharp lib @SUBDIR_libasprintf@ src po man m4
-DIST_SUBDIRS = doc intl intl-java intl-csharp lib libasprintf          src po man m4
+# The list of subdirectories depends on whether --disable-libasprintf or
+# --disable-glocale was specified.
+if ENABLE_LIBASPRINTF
+SUBDIR_libasprintf = libasprintf
+else
+SUBDIR_libasprintf =
+endif
+SUBDIRS = doc intl intl-java intl-csharp lib $(SUBDIR_libasprintf) src po man m4 tests
 
 EXTRA_DIST = BUGS
 
@@ -50,6 +56,7 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_ALLOCA$$/#define HAVE_ALLOCA 1/' \
 	     -e 's/#undef HAVE_DLFCN_H$$/#define HAVE_DLFCN_H 1/' \
 	     -e 's/#undef HAVE_ERRNO_DECL$$/#define HAVE_ERRNO_DECL 1/' \
+	     -e 's/#undef HAVE_FWPRINTF$$/#define HAVE_FWPRINTF 1/' \
 	     -e 's/#undef HAVE_GETCWD$$/#define HAVE_GETCWD 1/' \
 	     -e 's/#undef HAVE_GETEGID$$/#define HAVE_GETEGID 1/' \
 	     -e 's/#undef HAVE_GETEUID$$/#define HAVE_GETEUID 1/' \
@@ -61,15 +68,12 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_LANGINFO_CODESET$$/#define HAVE_LANGINFO_CODESET 1/' \
 	     -e 's/#undef HAVE_LC_MESSAGES$$/#define HAVE_LC_MESSAGES 1/' \
 	     -e 's/#undef HAVE_LIMITS_H$$/#define HAVE_LIMITS_H 1/' \
-	     -e 's/#undef HAVE_LOCALE_H$$/#define HAVE_LOCALE_H 1/' \
 	     -e 's/#undef HAVE_LONG_DOUBLE$$/#define HAVE_LONG_DOUBLE 1/' \
 	     -e 's/#undef HAVE_LONG_LONG$$/#define HAVE_LONG_LONG 1/' \
-	     -e 's/#undef HAVE_MALLOC_H$$/#define HAVE_MALLOC_H 1/' \
 	     -e 's/#undef HAVE_MEMMOVE$$/#define HAVE_MEMMOVE 1/' \
 	     -e 's/#undef HAVE_MEMORY_H$$/#define HAVE_MEMORY_H 1/' \
 	     -e 's/#undef HAVE_MMAP$$/#define HAVE_MMAP 1/' \
 	     -e 's/#undef HAVE_MUNMAP$$/#define HAVE_MUNMAP 1/' \
-	     -e 's/#undef HAVE_NL_TYPES_H$$/#define HAVE_NL_TYPES_H 1/' \
 	     -e 's/#undef HAVE_POSIX_PRINTF$$/#define HAVE_POSIX_PRINTF 1/' \
 	     -e 's/#undef HAVE_PTRDIFF_T$$/#define HAVE_PTRDIFF_T 1/' \
 	     -e 's/#undef HAVE_PUTENV$$/#define HAVE_PUTENV 1/' \
@@ -84,6 +88,7 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_STRERROR$$/#define HAVE_STRERROR 1/' \
 	     -e 's/#undef HAVE_STRINGS_H$$/#define HAVE_STRINGS_H 1/' \
 	     -e 's/#undef HAVE_STRING_H$$/#define HAVE_STRING_H 1/' \
+	     -e 's/#undef HAVE_STRSTR$$/#define HAVE_STRSTR 1/' \
 	     -e 's/#undef HAVE_STRTOUL$$/#define HAVE_STRTOUL 1/' \
 	     -e 's/#undef HAVE_SYS_PARAM_H$$/#define HAVE_SYS_PARAM_H 1/' \
 	     -e 's/#undef HAVE_SYS_STAT_H$$/#define HAVE_SYS_STAT_H 1/' \
@@ -91,7 +96,6 @@ config.h_vms: config.h.in ../version.sh
 	     -e 's/#undef HAVE_UNISTD_H$$/#define HAVE_UNISTD_H 1/' \
 	     -e 's/#undef HAVE_UNSETENV$$/#define HAVE_UNSETENV 1/' \
 	     -e 's/#undef HAVE_UNSIGNED_LONG_LONG$$/#define HAVE_UNSIGNED_LONG_LONG 1/' \
-	     -e 's/#undef HAVE_VPRINTF$$/#define HAVE_VPRINTF 1/' \
 	     -e 's/#undef HAVE_WCHAR_T$$/#define HAVE_WCHAR_T 1/' \
 	     -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
 	     -e 's/#undef HAVE_WINT_T$$/#define HAVE_WINT_T 1/' \
@@ -110,7 +114,8 @@ config.h_vms: config.h.in ../version.sh
 # KEEP_CRTL_SETLOCALE tells it to not override the native locale support.
 
 intl/libgnuintl.h_vms: intl/libgnuintl.h.in
-	sed -e 's,@''HAVE_POSIX_PRINTF''@,1,g ' \
+	sed -e '/IN_LIBGLOCALE/d' \
+	    -e 's,@''HAVE_POSIX_PRINTF''@,1,g ' \
 	    -e 's,@''HAVE_ASPRINTF''@,0,g' \
 	    -e 's,@''HAVE_SNPRINTF''@,0,g' \
 	    -e 's,@''HAVE_WPRINTF''@,1,g' \
@@ -132,10 +137,10 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef HAVE_DECL__SNWPRINTF$$/#define HAVE_DECL__SNWPRINTF 1/' \
 	    -e 's/#undef HAVE_ENVIRON_DECL$$/#define HAVE_ENVIRON_DECL 1/' \
 	    -e 's/#undef HAVE_ERRNO_DECL$$/#define HAVE_ERRNO_DECL 1/' \
+	    -e 's/#undef HAVE_FWPRINTF$$/#define HAVE_FWPRINTF 1/' \
 	    -e 's/#undef HAVE_GETCWD$$/#define HAVE_GETCWD 1/' \
 	    -e 's/#undef HAVE_ICONV$$/#define HAVE_ICONV 1/' \
 	    -e 's/#undef HAVE_LIMITS_H$$/#define HAVE_LIMITS_H 1/' \
-	    -e 's/#undef HAVE_LOCALE_H$$/#define HAVE_LOCALE_H 1/' \
 	    -e 's/#undef HAVE_LONG_DOUBLE$$/#define HAVE_LONG_DOUBLE 1/' \
 	    -e 's/#undef HAVE_MEMMOVE$$/#define HAVE_MEMMOVE 1/' \
 	    -e 's/#undef HAVE_PTRDIFF_T$$/#define HAVE_PTRDIFF_T 1/' \
@@ -147,10 +152,10 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef HAVE_STRDUP$$/#define HAVE_STRDUP 1/' \
 	    -e 's/#undef HAVE_STRERROR$$/#define HAVE_STRERROR 1/' \
 	    -e 's/#undef HAVE_STRING_H$$/#define HAVE_STRING_H 1/' \
+	    -e 's/#undef HAVE_STRSTR$$/#define HAVE_STRSTR 1/' \
 	    -e 's/#undef HAVE_STRTOUL$$/#define HAVE_STRTOUL 1/' \
 	    -e 's/#undef HAVE_SYS_STAT_H$$/#define HAVE_SYS_STAT_H 1/' \
 	    -e 's/#undef HAVE_SYS_TYPES_H$$/#define HAVE_SYS_TYPES_H 1/' \
-	    -e 's/#undef HAVE_VPRINTF$$/#define HAVE_VPRINTF 1/' \
 	    -e 's/#undef HAVE_WCHAR_T$$/#define HAVE_WCHAR_T 1/' \
 	    -e 's/#undef HAVE_WCSLEN$$/#define HAVE_WCSLEN 1/' \
 	    -e 's/#undef HAVE_WINT_T$$/#define HAVE_WINT_T 1/' \
@@ -161,6 +166,7 @@ config.h.msvc: config.h.in ../version.sh
 	    -e 's/#undef STACK_DIRECTION$$/#define STACK_DIRECTION -1/' \
 	    -e 's/#undef STDC_HEADERS$$/#define STDC_HEADERS 1/' \
 	    -e 's/#undef USE_UNLOCKED_IO$$/#define USE_UNLOCKED_IO 1/' \
+	    -e 's/#undef USE_WIN32_THREADS$$/#define USE_WIN32_THREADS 1/' \
 	    -e 's/#undef __GETOPT_PREFIX$$/#define __GETOPT_PREFIX/' \
 	    -e 's/#undef inline$$/#define inline __inline/' \
 	    -e 's/#undef ssize_t$$/#define ssize_t int/' \
@@ -171,14 +177,16 @@ config.h.msvc: config.h.in ../version.sh
 	  < $(srcdir)/config.h.in > $@
 
 intl/libgnuintl.h.msvc-static: intl/libgnuintl.h.in
-	sed -e 's,@''HAVE_POSIX_PRINTF''@,0,g ' \
+	sed -e '/IN_LIBGLOCALE/d' \
+	    -e 's,@''HAVE_POSIX_PRINTF''@,0,g ' \
 	    -e 's,@''HAVE_ASPRINTF''@,0,g' \
 	    -e 's,@''HAVE_SNPRINTF''@,0,g' \
 	    -e 's,@''HAVE_WPRINTF''@,1,g' \
 	  < $(srcdir)/intl/libgnuintl.h.in > $@
 
 intl/libgnuintl.h.msvc-shared: intl/libgnuintl.h.in windows/dllexport.h
-	sed -e 's,@''HAVE_POSIX_PRINTF''@,0,g ' \
+	sed -e '/IN_LIBGLOCALE/d' \
+	    -e 's,@''HAVE_POSIX_PRINTF''@,0,g ' \
 	    -e 's,@''HAVE_ASPRINTF''@,0,g' \
 	    -e 's,@''HAVE_SNPRINTF''@,0,g' \
 	    -e 's,@''HAVE_WPRINTF''@,1,g' \

@@ -1,3 +1,18 @@
+2006-07-21  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.15 released.
+
+2006-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* lib-link.m4 (AC_LIB_LINKFLAGS_FROM_LIBS): New macro.
+
+2005-08-27  Bruno Haible  <bruno@clisp.org>
+
+	Support for lib vs. lib64 distinction on biarch platforms.
+	* lib-prefix.m4 (AC_LIB_PREPARE_MULTILIB): New macro.
+	(AC_LIB_PREFIX): Require it. Use $acl_libdirstem instead of 'lib'.
+	* lib-link.m4 (AC_LIB_LINKFLAGS_BODY): Likewise.
+
 2006-06-21  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.14.6 released.

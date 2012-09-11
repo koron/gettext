@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools/lib subdirectory of GNU gettext
-## Copyright (C) 1995-1998, 2000-2005 Free Software Foundation, Inc.
+## Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 EXTRA_DIST =
 BUILT_SOURCES =
-MOSTLYCLEANFILES =
+MOSTLYCLEANFILES = core *.stackdump
 CLEANFILES =
 DISTCLEANFILES =
 SUFFIXES =
@@ -39,7 +39,9 @@ libgettextlib_la_SOURCES = \
   binary-io.h \
   c-ctype.h c-ctype.c \
   c-strcase.h c-strcasecmp.c c-strncasecmp.c \
+  c-strcasestr.h c-strcasestr.c \
   classpath.h classpath.c \
+  clean-temp.h clean-temp.c \
   closeout.h closeout.c \
   copy-file.h copy-file.c \
   csharpcomp.h csharpcomp.c \
@@ -55,8 +57,10 @@ libgettextlib_la_SOURCES = \
   fwriteerror.h fwriteerror.c \
   gcd.h gcd.c \
   hash.h hash.c \
+  iconvstring.h iconvstring.c \
   javacomp.h javacomp.c \
   javaexec.h javaexec.c \
+  javaversion.h javaversion.c \
   linebreak.h linebreak.c lbrkprop.h utf8-ucs4.h utf16-ucs4.h \
   mbswidth.h mbswidth.c \
   minmax.h \
@@ -65,6 +69,7 @@ libgettextlib_la_SOURCES = \
   pathname.h concatpath.c \
   pipe.h pipe.c w32spawn.h \
   progname.h progname.c progreloc.c \
+  propername.h propername.c \
   quote.h quote.c \
   quotearg.h quotearg.c \
   safe-read.h safe-read.c \
@@ -79,7 +84,8 @@ libgettextlib_la_SOURCES = \
   xerror.h xerror.c \
   xreadlink.h xreadlink.c \
   xsetenv.h xsetenv.c \
-  xsize.h
+  xsize.h \
+  xvasprintf.h xvasprintf.c xasprintf.c
 
 # Sources that are compiled only on platforms that lack the functions.
 
@@ -99,7 +105,6 @@ LIBADD_SOURCE = \
   setenv.h setenv.c unsetenv.c \
   stpcpy.h stpcpy.c \
   stpncpy.h stpncpy.c \
-  strcase.h strcasecmp.c strncasecmp.c \
   strcspn.c \
   strerror.c \
   strpbrk.h strpbrk.c \
@@ -118,10 +123,16 @@ UNUSED_SOURCE = \
 libgettextlib_la_LIBADD = @LTLIBOBJS@
 
 # Need @LTLIBINTL@ because many source files use gettext().
-# Need @LTLIBICONV@ because linebreak.c uses iconv().
+# Need @LTLIBICONV@ because linebreak.c and iconvstring.c use iconv().
 libgettextlib_la_LDFLAGS = \
   -release @VERSION@ \
-  @LTLIBINTL@ @LTLIBICONV@ -lc -no-undefined
+  @LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@
+
+# Tell the mingw or Cygwin linker which symbols to export.
+if WOE32DLL
+libgettextlib_la_SOURCES += ../woe32dll/gettextlib-exports.c
+libgettextlib_la_LDFLAGS += -Wl,--export-all-symbols
+endif
 
 # No need to install libgettextlib.a, except on AIX.
 install-exec-local: install-libLTLIBRARIES install-exec-clean
@@ -136,9 +147,12 @@ install-exec-clean:
 gettextsrcdir = $(datadir)/gettext
 gettextsrc_DATA = gettext.h
 
+pkgdatadir = $(datadir)/gettext
+pkgdata_DATA = javaversion.class
+EXTRA_DIST += javaversion.java javaversion.class
+
 # Files installed for the examples.
 
-docdir = @docdir@
 examplesbuildauxdir = $(docdir)/examples/build-aux
 examplesbuildaux_DATA = \
   javacomp.sh.in javaexec.sh.in \
@@ -155,31 +169,57 @@ EXTRA_DIST += \
 
 AM_CPPFLAGS = -I. -I$(srcdir) -I.. -I../intl -I$(top_srcdir)/intl
 
-DEFS = -DEXEEXT=\"$(EXEEXT)\" -DDEPENDS_ON_LIBINTL=1 -DDEPENDS_ON_LIBICONV=1 @DEFS@
+DEFS = \
+  -DPKGDATADIR=\"$(pkgdatadir)\" \
+  -DEXEEXT=\"$(EXEEXT)\" -DDEPENDS_ON_LIBINTL=1 -DDEPENDS_ON_LIBICONV=1 @DEFS@
 
 
 # >>> gnulib module stdbool.
+BUILT_SOURCES += $(STDBOOL_H)
 EXTRA_DIST += stdbool_.h
 
 # The following is needed in order to create an <stdbool.h> when the system
 # doesn't have one that works.
-all-local $(libgettextlib_la_OBJECTS): @STDBOOL_H@
 stdbool.h: stdbool_.h
 	sed -e 's/@''HAVE__BOOL''@/@HAVE__BOOL@/g' < $(srcdir)/stdbool_.h > stdbool.h
 MOSTLYCLEANFILES += stdbool.h
 # <<< gnulib module stdbool.
 
 
+# >>> gnulib module unistd.
+BUILT_SOURCES += $(UNISTD_H)
+
+# We need the following in order to create an empty placeholder for
+# <unistd.h> when the system doesn't have one.
+unistd.h:
+	echo '/* Empty placeholder for $@.  */' >$@
+MOSTLYCLEANFILES += unistd.h
+# <<< gnulib module unistd.
+
+
 # >>> gnulib module alloca.
+BUILT_SOURCES += $(ALLOCA_H)
 EXTRA_DIST += alloca_.h
 
 # The following is needed in order to create an <alloca.h> when the system
 # doesn't have one that works with the given compiler.
-all-local $(libgettextlib_la_OBJECTS): @ALLOCA_H@
 alloca.h: alloca_.h
 	cp $(srcdir)/alloca_.h alloca.h
 MOSTLYCLEANFILES += alloca.h
 # <<< gnulib module alloca.
+
+
+# >>> gnulib module byteswap.
+BUILT_SOURCES += $(BYTESWAP_H)
+EXTRA_DIST += byteswap_.h
+
+# We need the following in order to create <byteswap.h> when the system
+# doesn't have one.
+byteswap.h: byteswap_.h
+	cp $(srcdir)/byteswap_.h $@-t
+	mv $@-t $@
+MOSTLYCLEANFILES += byteswap.h
+# <<< gnulib module byteswap.
 
 
 # >>> gnulib module fnmatch.
@@ -188,7 +228,6 @@ EXTRA_DIST += fnmatch_.h fnmatch_loop.c
 
 # The following is needed in order to create an <fnmatch.h> when the system
 # doesn't have one that works.
-all-local $(libgettextlib_la_OBJECTS): @FNMATCH_H@
 fnmatch.h: fnmatch_.h
 	cp $(srcdir)/fnmatch_.h fnmatch.h
 MOSTLYCLEANFILES += fnmatch.h
@@ -201,7 +240,6 @@ EXTRA_DIST += getopt_.h getopt_int.h
 
 # The following is needed in order to create a <getopt.h> when the system
 # doesn't have one that works.
-all-local $(libgettextlib_la_OBJECTS): @GETOPT_H@
 getopt.h: getopt_.h
 	cp $(srcdir)/getopt_.h getopt.h
 MOSTLYCLEANFILES += getopt.h
@@ -225,7 +263,7 @@ all-local: charset.alias ref-add.sed ref-del.sed
 charset_alias = $(DESTDIR)$(libdir)/charset.alias
 charset_tmp = $(DESTDIR)$(libdir)/charset.tmp
 install-exec-local: all-local
-	test @GLIBC21@ != no || $(mkinstalldirs) $(DESTDIR)$(libdir)
+	test @GLIBC21@ != no || $(mkdir_p) $(DESTDIR)$(libdir)
 	if test -f $(charset_alias); then \
 	  sed -f ref-add.sed $(charset_alias) > $(charset_tmp) ; \
 	  $(INSTALL_DATA) $(charset_tmp) $(charset_alias) ; \

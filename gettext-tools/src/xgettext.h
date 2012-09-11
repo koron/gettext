@@ -1,5 +1,5 @@
 /* xgettext common functions.
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
    Written by Peter Miller <millerp@canb.auug.org.au>
    and Bruno Haible <haible@clisp.cons.org>, 2001.
 
@@ -20,6 +20,7 @@
 #ifndef _XGETTEXT_H
 #define _XGETTEXT_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -47,9 +48,36 @@ extern int xgettext_omit_header;
 extern bool substring_match;
 
 
-/* Split keyword spec into keyword, argnum1, argnum2.  */
+/* Calling convention for a given keyword.  */
+struct callshape
+{
+  int argnum1; /* argument number to use for msgid */
+  int argnum2; /* argument number to use for msgid_plural */
+  int argnumc; /* argument number to use for msgctxt */
+  bool argnum1_glib_context; /* argument argnum1 has the syntax "ctxt|msgid" */
+  bool argnum2_glib_context; /* argument argnum2 has the syntax "ctxt|msgid" */
+  int argtotal; /* total number of arguments */
+  string_list_ty xcomments; /* auto-extracted comments */
+};
+
+/* Split keyword spec into keyword, argnum1, argnum2, argnumc.  */
 extern void split_keywordspec (const char *spec, const char **endp,
-			       int *argnum1p, int *argnum2p);
+			       struct callshape *shapep);
+
+/* Set of alternative calling conventions for a given keyword.  */
+struct callshapes
+{
+  const char *keyword;          /* the keyword, not NUL terminated */
+  size_t keyword_len;           /* the keyword's length */
+  size_t nshapes;
+  struct callshape shapes[1];   /* actually nshapes elements */
+};
+
+/* Insert a (keyword, callshape) pair into a hash table mapping keyword to
+   'struct callshapes *'.  */
+extern void insert_keyword_callshape (hash_table *table,
+				      const char *keyword, size_t keyword_len,
+				      const struct callshape *shape);
 
 
 /* Context representing some flags.  */
@@ -141,13 +169,6 @@ extern char *from_current_source_encoding (const char *string,
 extern message_list_ty *exclude;
 
 
-/* Comment handling: There is a list of automatic comments that may be appended
-   to the next message.  Used by remember_a_message().  */
-extern void xgettext_comment_add (const char *str);
-extern const char *xgettext_comment (size_t n);
-extern void xgettext_comment_reset (void);
-
-
 /* Comment handling for backends which support combining adjacent strings
    even across lines.
    In these backends we cannot use the xgettext_comment* functions directly,
@@ -196,24 +217,92 @@ drop_reference (refcounted_string_list_ty *rslp)
 extern refcounted_string_list_ty *savable_comment;
 extern void savable_comment_add (const char *str);
 extern void savable_comment_reset (void);
-extern void savable_comment_to_xgettext_comment (refcounted_string_list_ty *rslp);
 
 
 /* Add a message to the list of extracted messages.
-   string must be malloc()ed string; its ownership is passed to the callee.
-   pos->file_name must be allocated with indefinite extent.  */
+   msgctxt must be either NULL or a malloc()ed string; its ownership is passed
+   to the callee.
+   MSGID must be a malloc()ed string; its ownership is passed to the callee.
+   POS->file_name must be allocated with indefinite extent.
+   COMMENT may be savable_comment, or it may be a saved copy of savable_comment
+   (then add_reference must be used when saving it, and drop_reference while
+   dropping it).  Clear savable_comment.  */
 extern message_ty *remember_a_message (message_list_ty *mlp,
-				       char *string,
+				       char *msgctxt,
+				       char *msgid,
 				       flag_context_ty context,
-				       lex_pos_ty *pos);
+				       lex_pos_ty *pos,
+				       refcounted_string_list_ty *comment);
 /* Add an msgid_plural to a message previously returned by
    remember_a_message.
-   string must be malloc()ed string; its ownership is passed to the callee.
-   pos->file_name must be allocated with indefinite extent.  */
+   STRING must be a malloc()ed string; its ownership is passed to the callee.
+   POS->file_name must be allocated with indefinite extent.
+   COMMENT may be savable_comment, or it may be a saved copy of savable_comment
+   (then add_reference must be used when saving it, and drop_reference while
+   dropping it).  Clear savable_comment.  */
 extern void remember_a_message_plural (message_ty *mp,
 				       char *string,
 				       flag_context_ty context,
-				       lex_pos_ty *pos);
+				       lex_pos_ty *pos,
+				       refcounted_string_list_ty *comment);
+
+
+/* Represents the progressive parsing of an argument list w.r.t. a single
+   'struct callshape'.  */
+struct partial_call
+{
+  int argnumc;                  /* number of context argument, 0 when seen */
+  int argnum1;                  /* number of singular argument, 0 when seen */
+  int argnum2;                  /* number of plural argument, 0 when seen */
+  bool argnum1_glib_context;    /* argument argnum1 has the syntax "ctxt|msgid" */
+  bool argnum2_glib_context;    /* argument argnum2 has the syntax "ctxt|msgid" */
+  int argtotal;                 /* total number of arguments, 0 if unspecified */
+  string_list_ty xcomments;     /* auto-extracted comments */
+  char *msgctxt;                /* context - owned string, or NULL */
+  lex_pos_ty msgctxt_pos;
+  char *msgid;                  /* msgid - owned string, or NULL */
+  flag_context_ty msgid_context;
+  lex_pos_ty msgid_pos;
+  refcounted_string_list_ty *msgid_comment;
+  char *msgid_plural;           /* msgid_plural - owned string, or NULL */
+  flag_context_ty msgid_plural_context;
+  lex_pos_ty msgid_plural_pos;
+};
+
+/* Represents the progressive parsing of an argument list w.r.t. an entire
+   'struct callshapes'.  */
+struct arglist_parser
+{
+  message_list_ty *mlp;         /* list where the message shall be added */
+  const char *keyword;          /* the keyword, not NUL terminated */
+  size_t keyword_len;           /* the keyword's length */
+  size_t nalternatives;         /* number of partial_call alternatives */
+  struct partial_call alternative[1]; /* partial_call alternatives */
+};
+
+/* Creates a fresh arglist_parser recognizing calls.
+   You can pass shapes = NULL for a parser not recognizing any calls.  */
+extern struct arglist_parser * arglist_parser_alloc (message_list_ty *mlp,
+						     const struct callshapes *shapes);
+/* Clones an arglist_parser.  */
+extern struct arglist_parser * arglist_parser_clone (struct arglist_parser *ap);
+/* Adds a string argument to an arglist_parser.  ARGNUM must be > 0.
+   STRING must be malloc()ed string; its ownership is passed to the callee.
+   FILE_NAME must be allocated with indefinite extent.
+   COMMENT may be savable_comment, or it may be a saved copy of savable_comment
+   (then add_reference must be used when saving it, and drop_reference while
+   dropping it).  Clear savable_comment.  */
+extern void arglist_parser_remember (struct arglist_parser *ap,
+				     int argnum, char *string,
+				     flag_context_ty context,
+				     char *file_name, size_t line_number,
+				     refcounted_string_list_ty *comment);
+/* Tests whether an arglist_parser has is not waiting for more arguments after
+   argument ARGNUM.  */
+extern bool arglist_parser_decidedp (struct arglist_parser *ap, int argnum);
+/* Terminates the processing of an arglist_parser after argument ARGNUM and
+   deletes it.  */
+extern void arglist_parser_done (struct arglist_parser *ap, int argnum);
 
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /* Message list character set conversion.
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 #ifndef _MSGL_ICONV_H
 #define _MSGL_ICONV_H
 
+#include <stdbool.h>
 #if HAVE_ICONV
 #include <iconv.h>
 #endif
@@ -32,15 +33,28 @@ extern "C" {
 
 
 #if HAVE_ICONV
+
+/* A context, used for accurate error messages.  */
+struct conversion_context
+{
+  const char *from_code;     /* canonicalized encoding name for input */
+  const char *to_code;       /* canonicalized encoding name for output */
+  const char *from_filename; /* file name where the input comes from */
+  const message_ty *message; /* message being converted, or NULL */
+};
+
 /* Converts the STRING through the conversion descriptor CD.  */
-extern char *convert_string (iconv_t cd, const char *string);
+extern char *convert_string (iconv_t cd, const char *string,
+			     const struct conversion_context* context);
+
 #endif
 
 /* Converts the message list MLP to the (already canonicalized) encoding
    CANON_TO_CODE.  The (already canonicalized) encoding before conversion
    can be passed as CANON_FROM_CODE; if NULL is passed instead, the
-   encoding is looked up in the header entry.  */
-extern void
+   encoding is looked up in the header entry.  Returns true if and only if
+   some msgctxt or msgid changed due to the conversion.  */
+extern bool
        iconv_message_list (message_list_ty *mlp,
 			   const char *canon_from_code,
 			   const char *canon_to_code,

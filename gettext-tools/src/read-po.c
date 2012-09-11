@@ -1,5 +1,5 @@
 /* Reading PO files.
-   Copyright (C) 1995-1998, 2000-2003 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2003, 2005 Free Software Foundation, Inc.
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
    This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 
 #include "open-po.h"
 #include "po-charset.h"
+#include "po-xerror.h"
 #include "xalloc.h"
 #include "gettext.h"
 
@@ -50,6 +51,7 @@ call_set_domain (struct default_po_reader_ty *this, char *name)
 
 static inline void
 call_add_message (struct default_po_reader_ty *this,
+		  char *msgctxt,
 		  char *msgid, lex_pos_ty *msgid_pos, char *msgid_plural,
 		  char *msgstr, size_t msgstr_len, lex_pos_ty *msgstr_pos,
 		  bool force_fuzzy, bool obsolete)
@@ -58,7 +60,8 @@ call_add_message (struct default_po_reader_ty *this,
     (default_po_reader_class_ty *) this->methods;
 
   if (methods->add_message)
-    methods->add_message (this, msgid, msgid_pos, msgid_plural,
+    methods->add_message (this, msgctxt,
+			  msgid, msgid_pos, msgid_plural,
 			  msgstr, msgstr_len, msgstr_pos,
 			  force_fuzzy, obsolete);
 }
@@ -224,9 +227,10 @@ default_directive_domain (abstract_po_reader_ty *that, char *name)
 }
 
 
-/* Process 'msgid'/'msgstr' pair from .po file.  */
+/* Process ['msgctxt'/]'msgid'/'msgstr' pair from .po file.  */
 void
 default_directive_message (abstract_po_reader_ty *that,
+			   char *msgctxt,
 			   char *msgid,
 			   lex_pos_ty *msgid_pos,
 			   char *msgid_plural,
@@ -236,7 +240,7 @@ default_directive_message (abstract_po_reader_ty *that,
 {
   default_po_reader_ty *this = (default_po_reader_ty *) that;
 
-  call_add_message (this, msgid, msgid_pos, msgid_plural,
+  call_add_message (this, msgctxt, msgid, msgid_pos, msgid_plural,
 		    msgstr, msgstr_len, msgstr_pos, force_fuzzy, obsolete);
 
   /* Prepare for next message.  */
@@ -324,6 +328,7 @@ default_set_domain (default_po_reader_ty *this, char *name)
 
 void
 default_add_message (default_po_reader_ty *this,
+		     char *msgctxt,
 		     char *msgid,
 		     lex_pos_ty *msgid_pos,
 		     char *msgid_plural,
@@ -342,7 +347,7 @@ default_add_message (default_po_reader_ty *this,
     mp = NULL;
   else
     /* See if this message ID has been seen before.  */
-    mp = message_list_search (this->mlp, msgid);
+    mp = message_list_search (this->mlp, msgctxt, msgid);
 
   if (mp)
     {
@@ -354,14 +359,18 @@ default_add_message (default_po_reader_ty *this,
 	     translations are equal or different.  This is for consistency
 	     with msgmerge, msgcat and others.  The user can use the
 	     msguniq program to get rid of duplicates.  */
-	  po_gram_error_at_line (msgid_pos, _("duplicate message definition"));
-	  po_gram_error_at_line (&mp->pos, _("\
-...this is the location of the first definition"));
+	  po_xerror2 (PO_SEVERITY_ERROR,
+		      NULL, msgid_pos->file_name, msgid_pos->line_number,
+		      (size_t)(-1), false, _("duplicate message definition"),
+		      mp, NULL, 0, 0, false,
+		      _("this is the location of the first definition"));
 	}
       /* We don't need the just constructed entries' parameter string
 	 (allocated in po-gram-gen.y).  */
       free (msgstr);
       free (msgid);
+      if (msgctxt != NULL)
+	free (msgctxt);
 
       /* Add the accumulated comments to the message.  */
       default_copy_comment_state (this, mp);
@@ -372,7 +381,8 @@ default_add_message (default_po_reader_ty *this,
 	 Obsolete message go into the list at least for duplicate checking.
 	 It's the caller's responsibility to ignore obsolete messages when
 	 appropriate.  */
-      mp = message_alloc (msgid, msgid_plural, msgstr, msgstr_len, msgstr_pos);
+      mp = message_alloc (msgctxt, msgid, msgid_plural, msgstr, msgstr_len,
+			  msgstr_pos);
       mp->obsolete = obsolete;
       default_copy_comment_state (this, mp);
       if (force_fuzzy)

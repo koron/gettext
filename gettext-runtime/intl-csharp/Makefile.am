@@ -23,11 +23,8 @@ CLEANFILES =
 
 RM = rm -f
 
-docdir = @docdir@
-htmldir = $(docdir)
-
 CSHARPCOMP = $(SHELL) ../lib/csharpcomp.sh
-CSHARPCOMPFLAGS = -O -g
+CSHARPCOMPFLAGS = @CSHARPCOMPFLAGS@
 
 
 all-local: all-dll all-doc
@@ -51,13 +48,13 @@ CLEANFILES += GNU.Gettext.dll GNU.Gettext.dll.mdb
 
 install-dll: install-dll-@BUILDCSHARP@
 install-dll-no:
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(mkdir_p) $(DESTDIR)$(libdir)
 install-dll-yes: all-dll-yes
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(mkdir_p) $(DESTDIR)$(libdir)
 	$(INSTALL_DATA) GNU.Gettext.dll $(DESTDIR)$(libdir)/GNU.Gettext.dll
 
 installdirs-dll:
-	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	$(mkdir_p) $(DESTDIR)$(libdir)
 
 uninstall-dll:
 	$(RM) $(DESTDIR)$(libdir)/GNU.Gettext.dll
@@ -87,14 +84,14 @@ DOC_FILES = \
 EXTRA_DIST += $(DOC_FILES)
 
 install-doc: all-doc
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)/csharpdoc
+	$(mkdir_p) $(DESTDIR)$(htmldir)/csharpdoc
 	@for f in $(DOC_FILES); do \
 	  echo "$(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(htmldir)/$$f"; \
 	  $(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(htmldir)/$$f; \
 	done
 
 installdirs-doc:
-	$(mkinstalldirs) $(DESTDIR)$(htmldir)/csharpdoc
+	$(mkdir_p) $(DESTDIR)$(htmldir)/csharpdoc
 
 uninstall-doc:
 	@for f in $(DOC_FILES); do \

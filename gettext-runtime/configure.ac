@@ -1,5 +1,5 @@
 dnl Configuration for the gettext-runtime directory of GNU gettext
-dnl Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -26,18 +26,18 @@ AM_INIT_AUTOMAKE(gettext-runtime, $VERSION_NUMBER)
 AM_CONFIG_HEADER(config.h)
 
 dnl Installation directories.
-AC_SUBST([docdir], ['${datadir}/doc/gettext'])
-dnl Prefer modern Filesystem Hierarchy Standard over antiquated GNU standards.
-test "$mandir" != '${prefix}/man' || mandir='${datadir}/man'
+test "$docdir" != '${datarootdir}/doc/${PACKAGE}' || docdir='${datarootdir}/doc/gettext'
 
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_YACC
 
-gt_JAVACOMP
+gt_JAVA_CHOICE
+
+gt_JAVACOMP([1.3], [1.1])
 AC_CHECK_PROG(JAR, jar, jar)
-if test -n "$HAVE_JAVACOMP" && test -n "$JAR"; then
+if test -n "$HAVE_JAVACOMP" && test -n "$JAR" && test "$JAVA_CHOICE" != no; then
   BUILDJAVA=yes
 else
   BUILDJAVA=no
@@ -55,9 +55,6 @@ AC_SUBST(BUILDCSHARP)
 dnl Check for host type.
 AC_CANONICAL_HOST
 
-dnl Checks for UNIX variants that set DEFS,
-AC_ISC_POSIX
-
 dnl Checks for compiler output filename suffixes.
 AC_OBJEXT
 AC_EXEEXT
@@ -67,12 +64,17 @@ AC_GNU_SOURCE
 gl_USE_SYSTEM_EXTENSIONS
 
 dnl Check for build configuration.
+gl_WOE32_DLL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
 AC_RELOCATABLE
 
 dnl Checks for libraries.
+
+dnl These are the only lines required to internationalize the package.
+dnl (OK, not quite, the AC_CONFIG_FILES has also some parts.)
+AM_GNU_GETTEXT(use-libtool, need-ngettext)
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(string.h)
@@ -83,8 +85,7 @@ AC_TYPE_SIZE_T
 
 dnl Checks for library functions.
 gl_ALLOCSA
-AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([setlocale strerror])
+AC_CHECK_FUNCS([setlocale strerror strstr])
 AC_REPLACE_FUNCS([atexit memmove])
 gl_GETOPT
 gt_FUNC_SETENV
@@ -97,14 +98,10 @@ gl_FUNC_READLINK
 gl_XREADLINK
 gl_CANONICALIZE
 
-dnl These are the only lines required to internationalize the package.
-dnl (OK, not quite, the AC_CONFIG_FILES has also some parts.)
-AM_GNU_GETTEXT(use-libtool, need-ngettext)
-
 dnl Put some default definitions into config.h.
 AH_BOTTOM([
 /* On Windows, variables that may be in a DLL must be marked specially.  */
-#if defined _MSC_VER && defined _DLL
+#if (defined _MSC_VER && defined _DLL)
 # define DLL_VARIABLE __declspec (dllimport)
 #else
 # define DLL_VARIABLE
@@ -127,6 +124,14 @@ AC_SUBST(CROSS_COMPILING)
 dnl Checks for optional programs for the tests/lang-* tests.
 gt_PROG_ANSI_CXX
 
+dnl Checks for special libraries for the tests/test-lock test.
+dnl On some systems, sched_yield is in librt, rather than in libpthread.
+LIBSCHED=
+if test $gl_threads_api = posix; then
+  AC_CHECK_LIB(rt, sched_yield, [LIBSCHED=-lrt])
+fi
+AC_SUBST([LIBSCHED])
+
 dnl Determine whether to build libasprintf.
 AC_ARG_ENABLE(libasprintf,
   [  --disable-libasprintf   do not build libasprintf],
@@ -139,7 +144,7 @@ AC_ARG_ENABLE(libasprintf,
 if test "$CXX" = ":"; then
   SUBDIR_libasprintf=
 fi
-AC_SUBST(SUBDIR_libasprintf)
+AM_CONDITIONAL([ENABLE_LIBASPRINTF], [test -n "$SUBDIR_libasprintf"])
 
 AC_CONFIG_SUBDIRS(libasprintf)
 
@@ -169,5 +174,7 @@ AC_CONFIG_FILES([man/Makefile],
 AC_CONFIG_FILES([man/x-to-1])
 
 AC_CONFIG_FILES([m4/Makefile])
+
+AC_CONFIG_FILES([tests/Makefile])
 
 AC_OUTPUT

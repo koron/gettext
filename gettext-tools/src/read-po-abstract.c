@@ -1,5 +1,5 @@
 /* Reading PO files, abstract class.
-   Copyright (C) 1995-1996, 1998, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1996, 1998, 2000-2006 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
@@ -32,6 +32,8 @@
 #include "read-properties.h"
 #include "read-stringtable.h"
 #include "xalloc.h"
+#include "xvasprintf.h"
+#include "po-xerror.h"
 #include "gettext.h"
 
 /* Local variables.  */
@@ -91,6 +93,7 @@ call_directive_domain (abstract_po_reader_ty *pop, char *name)
 
 static inline void
 call_directive_message (abstract_po_reader_ty *pop,
+			char *msgctxt,
 			char *msgid,
 			lex_pos_ty *msgid_pos,
 			char *msgid_plural,
@@ -99,7 +102,8 @@ call_directive_message (abstract_po_reader_ty *pop,
 			bool force_fuzzy, bool obsolete)
 {
   if (pop->methods->directive_message)
-    pop->methods->directive_message (pop, msgid, msgid_pos, msgid_plural,
+    pop->methods->directive_message (pop, msgctxt,
+				     msgid, msgid_pos, msgid_plural,
 				     msgstr, msgstr_len, msgstr_pos,
 				     force_fuzzy, obsolete);
 }
@@ -187,10 +191,12 @@ po_scan (abstract_po_reader_ty *pop, FILE *fp,
     }
 
   if (error_message_count > 0)
-    po_error (EXIT_FAILURE, 0,
-	      ngettext ("found %d fatal error", "found %d fatal errors",
-			error_message_count),
-	      error_message_count);
+    po_xerror (PO_SEVERITY_FATAL_ERROR, NULL,
+	       /*real_filename*/ NULL, (size_t)(-1), (size_t)(-1), false,
+	       xasprintf (ngettext ("found %d fatal error",
+				    "found %d fatal errors",
+				    error_message_count),
+			  error_message_count));
   error_message_count = 0;
 }
 
@@ -212,12 +218,14 @@ po_callback_domain (char *name)
 /* This function is called by po_gram_lex() whenever a message has been
    seen.  */
 void
-po_callback_message (char *msgid, lex_pos_ty *msgid_pos, char *msgid_plural,
+po_callback_message (char *msgctxt,
+		     char *msgid, lex_pos_ty *msgid_pos, char *msgid_plural,
 		     char *msgstr, size_t msgstr_len, lex_pos_ty *msgstr_pos,
 		     bool force_fuzzy, bool obsolete)
 {
   /* assert(callback_arg); */
-  call_directive_message (callback_arg, msgid, msgid_pos, msgid_plural,
+  call_directive_message (callback_arg, msgctxt,
+			  msgid, msgid_pos, msgid_plural,
 			  msgstr, msgstr_len, msgstr_pos,
 			  force_fuzzy, obsolete);
 }
