@@ -1,3 +1,25 @@
+2010-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.18.1 released.
+
+2010-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (ARCHIVE_FORMAT): If neither --with-git nor --with-cvs
+	is specified, use the git format only if the 'git' program exists.
+
+2010-06-03  Bruno Haible  <bruno@clisp.org>
+
+	Deprecate the --with-cvs option.
+	* configure.ac: Document options --without-git, --with-cvs.
+	(ARCHIVE_FORMAT): Use cvs only when explicitly asked for.
+
+2010-05-24  Bruno Haible  <bruno@clisp.org>
+
+	Use the newest regex module from gnulib.
+	* configure.ac: Invoke grgl_EARLY and grgl_INIT. Don't invoke
+	gt_LIBGREP.
+	* Makefile.am (ACLOCAL_AMFLAGS): Add -I libgrep/gnulib-m4.
+
 2010-05-09  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.18 released.

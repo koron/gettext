@@ -671,6 +671,8 @@ with_included_glib
 with_libglib_20_prefix
 with_included_libcroco
 with_libcroco_06_prefix
+with_included_libunistring
+with_libunistring_prefix
 with_included_libxml
 with_libxml2_prefix
 enable_openmp
@@ -684,8 +686,8 @@ with_included_regex
 with_libexpat_prefix
 with_lispdir
 with_emacs
-with_cvs
 with_git
+with_cvs
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1370,6 +1372,9 @@ Optional Packages:
   --with-included-libcroco  use the libcroco included here
   --with-libcroco-0.6-prefix[=DIR]  search for PACKLIBS in DIR/include and DIR/lib
   --without-libcroco-0.6-prefix     don't search for PACKLIBS in includedir and libdir
+  --with-included-libunistring  use the libunistring parts included here
+  --with-libunistring-prefix[=DIR]  search for PACKLIBS in DIR/include and DIR/lib
+  --without-libunistring-prefix     don't search for PACKLIBS in includedir and libdir
   --with-included-libxml  use the libxml2 included here
   --with-libxml2-prefix[=DIR]  search for PACKLIBS in DIR/include and DIR/lib
   --without-libxml2-prefix     don't search for PACKLIBS in includedir and libdir
@@ -1381,15 +1386,17 @@ Optional Packages:
   --without-libxcurses-prefix     don't search for PACKLIBS in includedir and libdir
   --with-libcurses-prefix[=DIR]  search for PACKLIBS in DIR/include and DIR/lib
   --without-libcurses-prefix     don't search for PACKLIBS in includedir and libdir
-  --without-included-regex don't compile regex; this is the default on
-                          systems with version 2 of the GNU C library
-                          (use with caution on other system)
+  --without-included-regex
+                          don't compile regex; this is the default on systems
+                          with recent-enough versions of the GNU C Library
+                          (use with caution on other systems).
   --with-libexpat-prefix[=DIR]  search for PACKLIBS in DIR/include and DIR/lib
   --without-libexpat-prefix     don't search for PACKLIBS in includedir and libdir
   --with-lispdir          override the default lisp directory
   --without-emacs         do not use Emacs, don't install po-mode
-  --without-cvs           don't use cvs to compress the infrastructure archive
-  --with-git              use git to compress the infrastructure archive
+  --without-git           don't use git to compress the infrastructure archive
+  --with-cvs              use cvs to compress the infrastructure archive
+                          (deprecated)
 
 Some influential environment variables:
   CC          C compiler command
@@ -2759,6 +2766,30 @@ if test "${with_libglib_20_prefix+set}" = set; then :
 fi
 
 
+# Check whether --with-included-libunistring was given.
+if test "${with_included_libunistring+set}" = set; then :
+  withval=$with_included_libunistring;
+fi
+
+
+# Check whether --with-libunistring-prefix was given.
+if test "${with_libunistring_prefix+set}" = set; then :
+  withval=$with_libunistring_prefix;
+fi
+
+
+# Check whether --with-libunistring-prefix was given.
+if test "${with_libunistring_prefix+set}" = set; then :
+  withval=$with_libunistring_prefix;
+fi
+
+
+# Check whether --with-libunistring-prefix was given.
+if test "${with_libunistring_prefix+set}" = set; then :
+  withval=$with_libunistring_prefix;
+fi
+
+
 # Check whether --with-included-libxml was given.
 if test "${with_included_libxml+set}" = set; then :
   withval=$with_included_libxml;
@@ -2841,15 +2872,15 @@ if test "${with_emacs+set}" = set; then :
 fi
 
 
-# Check whether --with-cvs was given.
-if test "${with_cvs+set}" = set; then :
-  withval=$with_cvs;
-fi
-
-
 # Check whether --with-git was given.
 if test "${with_git+set}" = set; then :
   withval=$with_git;
+fi
+
+
+# Check whether --with-cvs was given.
+if test "${with_cvs+set}" = set; then :
+  withval=$with_cvs;
 fi
 
 

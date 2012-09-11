@@ -1,3 +1,33 @@
+2010-06-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.18.1 released.
+
+2010-06-03  Bruno Haible  <bruno@clisp.org>
+
+	xgettext: Recognize language of files ending in .perl.
+	* x-perl.h (EXTENSIONS_PERL): Recognize .perl.
+	Suggested by Ævar Arnfjörð Bjarmason <avarab@gmail.com>.
+
+2010-06-03  Bruno Haible  <bruno@clisp.org>
+
+	urlget: Don't attempt to run the Java program if we don't install it.
+	* Makefile.am (USEJAVA): New variable.
+	(DEFS): Define USEJAVA.
+	* urlget.c (fetch): Don't try to use Java is USEJAVA is 0.
+
+2010-05-19  Bruno Haible  <bruno@clisp.org>
+
+	Link with libunistring, if it exists.
+	* Makefile.am (LDADD, libgettextsrc_la_LDFLAGS): Add LTLIBUNISTRING.
+
+2010-05-18  Bruno Haible  <bruno@clisp.org>
+
+	Correct program dependencies.
+	* Makefile.am (OTHERPROGDEPENDENCIES): New variable.
+	(recode_sr_latin_LDADD): Remove redundant variable.
+	(recode_sr_latin_DEPENDENCIES): Use OTHERPROGDEPENDENCIES.
+	(hostname_DEPENDENCIES, urlget_DEPENDENCIES): New variables.
+
 2010-05-09  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.18 released.

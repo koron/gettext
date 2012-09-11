@@ -63,6 +63,7 @@ AC_DEFUN([gtpo_EARLY],
   # Code from module include_next:
   # Code from module inline:
   # Code from module intprops:
+  # Code from module libunistring-optional:
   # Code from module localcharset:
   # Code from module lock:
   # Code from module malloc-posix:
@@ -221,6 +222,8 @@ AC_DEFUN([gtpo_INIT],
   # Code from module inline:
   gl_INLINE
   # Code from module intprops:
+  # Code from module libunistring-optional:
+  gl_LIBUNISTRING_OPTIONAL
   # Code from module localcharset:
   gl_LOCALCHARSET
   LOCALCHARSET_TESTS_ENVIRONMENT="CHARSETALIASDIR=\"\$(top_builddir)/$gl_source_base\""
@@ -334,33 +337,51 @@ AC_DEFUN([gtpo_INIT],
   # Code from module tls:
   gl_TLS
   # Code from module uniconv/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniconv.h])
   # Code from module uniconv/u8-conv-from-enc:
+  gl_LIBUNISTRING_MODULE([0.9], [uniconv/u8-conv-from-enc])
   # Code from module unilbrk/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [unilbrk.h])
   # Code from module unilbrk/tables:
   AC_REQUIRE([AC_C_INLINE])
   # Code from module unilbrk/u8-possible-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/u8-possible-linebreaks])
   # Code from module unilbrk/u8-width-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/u8-width-linebreaks])
   # Code from module unilbrk/ulc-common:
   # Code from module unilbrk/ulc-width-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/ulc-width-linebreaks])
   # Code from module unistd:
   gl_UNISTD_H
   # Code from module unistr/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9.2], [unistr.h])
   # Code from module unistr/u16-mbtouc:
   gl_MODULE_INDICATOR([unistr/u16-mbtouc])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u16-mbtouc])
   # Code from module unistr/u8-check:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-check])
   # Code from module unistr/u8-mblen:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mblen])
   # Code from module unistr/u8-mbtouc:
   gl_MODULE_INDICATOR([unistr/u8-mbtouc])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtouc])
   # Code from module unistr/u8-mbtouc-unsafe:
   gl_MODULE_INDICATOR([unistr/u8-mbtouc-unsafe])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtouc-unsafe])
   # Code from module unistr/u8-mbtoucr:
   gl_MODULE_INDICATOR([unistr/u8-mbtoucr])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtoucr])
   # Code from module unistr/u8-prev:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-prev])
   # Code from module unistr/u8-uctomb:
   gl_MODULE_INDICATOR([unistr/u8-uctomb])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-uctomb])
   # Code from module unitypes:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [unitypes.h])
   # Code from module uniwidth/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniwidth.h])
   # Code from module uniwidth/width:
+  gl_LIBUNISTRING_MODULE([0.9], [uniwidth/width])
   # Code from module unlocked-io:
   gl_FUNC_GLIBC_UNLOCKED_IO
   # Code from module unused-parameter:
@@ -592,6 +613,7 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/iconv_open.c
   lib/iconveh.h
   lib/intprops.h
+  lib/libunistring.valgrind
   lib/localcharset.c
   lib/localcharset.h
   lib/malloc.c
@@ -647,9 +669,9 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/strstr.c
   lib/sys_stat.in.h
   lib/time.in.h
-  lib/uniconv.h
+  lib/uniconv.in.h
   lib/uniconv/u8-conv-from-enc.c
-  lib/unilbrk.h
+  lib/unilbrk.in.h
   lib/unilbrk/lbrkprop1.h
   lib/unilbrk/lbrkprop2.h
   lib/unilbrk/lbrktables.c
@@ -660,7 +682,7 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/unilbrk/ulc-common.h
   lib/unilbrk/ulc-width-linebreaks.c
   lib/unistd.in.h
-  lib/unistr.h
+  lib/unistr.in.h
   lib/unistr/u16-mbtouc-aux.c
   lib/unistr/u16-mbtouc.c
   lib/unistr/u8-check.c
@@ -673,8 +695,8 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/unistr/u8-prev.c
   lib/unistr/u8-uctomb-aux.c
   lib/unistr/u8-uctomb.c
-  lib/unitypes.h
-  lib/uniwidth.h
+  lib/unitypes.in.h
+  lib/uniwidth.in.h
   lib/uniwidth/cjk.h
   lib/uniwidth/width.c
   lib/unlocked-io.h
@@ -700,7 +722,9 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/xvasprintf.c
   lib/xvasprintf.h
   m4/00gnulib.m4
+  m4/absolute-header.m4
   m4/alloca.m4
+  m4/asm-underscore.m4
   m4/codeset.m4
   m4/dos.m4
   m4/eealloc.m4
@@ -725,6 +749,9 @@ AC_DEFUN([gtpo_FILE_LIST], [
   m4/lib-ld.m4
   m4/lib-link.m4
   m4/lib-prefix.m4
+  m4/libunistring-base.m4
+  m4/libunistring-optional.m4
+  m4/libunistring.m4
   m4/localcharset.m4
   m4/locale-fr.m4
   m4/locale-ja.m4

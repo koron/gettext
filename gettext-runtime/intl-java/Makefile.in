@@ -38,6 +38,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in ChangeLog
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
+	$(top_srcdir)/gnulib-m4/asm-underscore.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/canonicalize.m4 \
 	$(top_srcdir)/gnulib-m4/csharp.m4 \
@@ -60,6 +61,7 @@ am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/lib-ld.m4 \
 	$(top_srcdir)/gnulib-m4/lib-link.m4 \
 	$(top_srcdir)/gnulib-m4/lib-prefix.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-base.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
 	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
 	$(top_srcdir)/gnulib-m4/locale-ja.m4 \
@@ -152,6 +154,7 @@ AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 APPLE_UNIVERSAL_BUILD = @APPLE_UNIVERSAL_BUILD@
 AR = @AR@
 AS = @AS@
+ASM_SYMBOL_PREFIX = @ASM_SYMBOL_PREFIX@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -570,6 +573,8 @@ LIBS = @LIBS@
 LIBSCHED = @LIBSCHED@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
+LIBUNISTRING_UNIWIDTH_H = @LIBUNISTRING_UNIWIDTH_H@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LOCALCHARSET_TESTS_ENVIRONMENT = @LOCALCHARSET_TESTS_ENVIRONMENT@
@@ -634,6 +639,7 @@ PERL = @PERL@
 POSUB = @POSUB@
 PRAGMA_SYSTEM_HEADER = @PRAGMA_SYSTEM_HEADER@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTHREAD_H_DEFINES_STRUCT_TIMESPEC = @PTHREAD_H_DEFINES_STRUCT_TIMESPEC@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RC = @RC@

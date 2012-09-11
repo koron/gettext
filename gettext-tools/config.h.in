@@ -115,6 +115,9 @@
    whether the gnulib module sigpipe shall be considered present. */
 #undef GNULIB_SIGPIPE
 
+/* Define to 1 when the gnulib module btowc should be tested. */
+#undef GNULIB_TEST_BTOWC
+
 /* Define to 1 when the gnulib module canonicalize_file_name should be tested.
    */
 #undef GNULIB_TEST_CANONICALIZE_FILE_NAME
@@ -178,6 +181,9 @@
 
 /* Define to 1 when the gnulib module mkdtemp should be tested. */
 #undef GNULIB_TEST_MKDTEMP
+
+/* Define to 1 when the gnulib module nl_langinfo should be tested. */
+#undef GNULIB_TEST_NL_LANGINFO
 
 /* Define to 1 when the gnulib module open should be tested. */
 #undef GNULIB_TEST_OPEN
@@ -289,6 +295,9 @@
 
 /* Define to 1 when the gnulib module vsnprintf should be tested. */
 #undef GNULIB_TEST_VSNPRINTF
+
+/* Define to 1 when the gnulib module wcrtomb should be tested. */
+#undef GNULIB_TEST_WCRTOMB
 
 /* Define to 1 when the gnulib module wctob should be tested. */
 #undef GNULIB_TEST_WCTOB
@@ -719,6 +728,9 @@
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
 
+/* Define to 1 if you have the <langinfo.h> header file. */
+#undef HAVE_LANGINFO_H
+
 /* Define if your <locale.h> file defines LC_MESSAGES. */
 #undef HAVE_LC_MESSAGES
 
@@ -728,6 +740,12 @@
 
 /* Define if you have the libexpat library. */
 #undef HAVE_LIBEXPAT
+
+/* Define to 1 if you have the <libintl.h> header file. */
+#undef HAVE_LIBINTL_H
+
+/* Define if you have the libunistring library. */
+#undef HAVE_LIBUNISTRING
 
 /* Define to 1 if you have the <libxml2/libxml/xmlexports.h> header file. */
 #undef HAVE_LIBXML2_LIBXML_XMLEXPORTS_H
@@ -825,6 +843,9 @@
 
 /* Define to 1 if you have the `newlocale' function. */
 #undef HAVE_NEWLOCALE
+
+/* Define to 1 if you have the `nl_langinfo' function. */
+#undef HAVE_NL_LANGINFO
 
 /* Define to 1 if libc includes obstacks. */
 #undef HAVE_OBSTACK
@@ -1093,6 +1114,9 @@
 
 /* Define to 1 if mkstemps is declared even after undefining macros. */
 #undef HAVE_RAW_DECL_MKSTEMPS
+
+/* Define to 1 if nl_langinfo is declared even after undefining macros. */
+#undef HAVE_RAW_DECL_NL_LANGINFO
 
 /* Define to 1 if openat is declared even after undefining macros. */
 #undef HAVE_RAW_DECL_OPENAT
@@ -1681,6 +1705,9 @@
 /* Define to 1 if you have the `wcrtomb' function. */
 #undef HAVE_WCRTOMB
 
+/* Define to 1 if you have the `wcscoll' function. */
+#undef HAVE_WCSCOLL
+
 /* Define to 1 if you have the `wcslen' function. */
 #undef HAVE_WCSLEN
 
@@ -1844,6 +1871,9 @@
    slash */
 #undef REPLACE_FUNC_STAT_FILE
 
+/* Define if nl_langinfo exists but is overridden by gnulib. */
+#undef REPLACE_NL_LANGINFO
+
 /* Define this to 1 if strerror is broken. */
 #undef REPLACE_STRERROR
 
@@ -1886,6 +1916,10 @@
 
 /* Define to 1 if strerror_r returns char *. */
 #undef STRERROR_R_CHAR_P
+
+/* Define to the prefix of C symbols at the assembler and linker level, either
+   an underscore or empty. */
+#undef USER_LABEL_PREFIX
 
 /* Define to nonzero if you want access control list support. */
 #undef USE_ACL
@@ -1970,6 +2004,9 @@
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #undef _POSIX_SOURCE
 
+/* Define if you want regoff_t to be at least as wide POSIX requires. */
+#undef _REGEX_LARGE_OFFSETS
+
 /* Define to 500 only on HP-UX. */
 #undef _XOPEN_SOURCE
 
@@ -2052,6 +2089,51 @@
    doesn't define it. */
 #undef ptrdiff_t
 
+/* Define to rpl_re_comp if the replacement should be used. */
+#undef re_comp
+
+/* Define to rpl_re_compile_fastmap if the replacement should be used. */
+#undef re_compile_fastmap
+
+/* Define to rpl_re_compile_pattern if the replacement should be used. */
+#undef re_compile_pattern
+
+/* Define to rpl_re_exec if the replacement should be used. */
+#undef re_exec
+
+/* Define to rpl_re_match if the replacement should be used. */
+#undef re_match
+
+/* Define to rpl_re_match_2 if the replacement should be used. */
+#undef re_match_2
+
+/* Define to rpl_re_search if the replacement should be used. */
+#undef re_search
+
+/* Define to rpl_re_search_2 if the replacement should be used. */
+#undef re_search_2
+
+/* Define to rpl_re_set_registers if the replacement should be used. */
+#undef re_set_registers
+
+/* Define to rpl_re_set_syntax if the replacement should be used. */
+#undef re_set_syntax
+
+/* Define to rpl_re_syntax_options if the replacement should be used. */
+#undef re_syntax_options
+
+/* Define to rpl_regcomp if the replacement should be used. */
+#undef regcomp
+
+/* Define to rpl_regerror if the replacement should be used. */
+#undef regerror
+
+/* Define to rpl_regexec if the replacement should be used. */
+#undef regexec
+
+/* Define to rpl_regfree if the replacement should be used. */
+#undef regfree
+
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
@@ -2101,9 +2183,6 @@
 
 /* Define as `fork' if `vfork' does not work. */
 #undef vfork
-
-/* Define to wcscmp if the function wcscoll does not exist. */
-#undef wcscoll
 
 
 #define __libc_lock_t                   gl_lock_t

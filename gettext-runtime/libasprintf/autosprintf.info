@@ -1,4 +1,4 @@
-This is autosprintf.info, produced by makeinfo version 4.9 from
+This is autosprintf.info, produced by makeinfo version 4.13 from
 autosprintf.texi.
 
 INFO-DIR-SECTION C++ libraries
@@ -126,9 +126,9 @@ variable that it provides.
 
 
 Tag Table:
-Node: Top1347
-Node: Introduction1707
-Node: Class autosprintf2858
-Node: Using autosprintf3868
+Node: Top1348
+Node: Introduction1708
+Node: Class autosprintf2859
+Node: Using autosprintf3869
 
 End Tag Table

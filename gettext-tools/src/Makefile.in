@@ -53,11 +53,18 @@ DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/libgettextpo/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/btowc.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/langinfo_h.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/nl_langinfo.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/regex.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/wcrtomb.m4 \
 	$(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/absolute-header.m4 \
 	$(top_srcdir)/gnulib-m4/acl.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
 	$(top_srcdir)/gnulib-m4/argmatch.m4 \
+	$(top_srcdir)/gnulib-m4/asm-underscore.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/backupfile.m4 \
 	$(top_srcdir)/gnulib-m4/bison-i18n.m4 \
@@ -96,7 +103,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/gl_list.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-comp.m4 \
-	$(top_srcdir)/gnulib-m4/hard-locale.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_h.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_open.m4 \
 	$(top_srcdir)/gnulib-m4/include_next.m4 \
@@ -110,6 +116,9 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/lib-prefix.m4 \
 	$(top_srcdir)/gnulib-m4/libcroco.m4 \
 	$(top_srcdir)/gnulib-m4/libglib.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-base.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-optional.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring.m4 \
 	$(top_srcdir)/gnulib-m4/libxml.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
 	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
@@ -252,7 +261,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/../gettext-runtime/m4/wint_t.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/xsize.m4 \
 	$(top_srcdir)/m4/exported.m4 $(top_srcdir)/m4/hostname.m4 \
-	$(top_srcdir)/m4/libgrep.m4 $(top_srcdir)/m4/regex.m4 \
 	$(top_srcdir)/m4/setlocale.m4 $(top_srcdir)/m4/siginfo.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -338,9 +346,8 @@ PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_hostname_OBJECTS = hostname-hostname.$(OBJEXT)
 hostname_OBJECTS = $(am_hostname_OBJECTS)
 hostname_LDADD = $(LDADD)
-@WOE32_TRUE@am__DEPENDENCIES_1 = gettext.res
-hostname_DEPENDENCIES = ../gnulib-lib/libgettextlib.la \
-	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_1 =
+@WOE32_TRUE@am__DEPENDENCIES_2 = gettext.res
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
@@ -417,7 +424,6 @@ am__msgmerge_SOURCES_DIST = msgmerge.c msgl-fsearch.c lang-table.c \
 @WOE32DLL_TRUE@	msgmerge-lang-table.$(OBJEXT) \
 @WOE32DLL_TRUE@	msgmerge-plural-count.$(OBJEXT)
 msgmerge_OBJECTS = $(am_msgmerge_OBJECTS)
-am__DEPENDENCIES_2 =
 am_msgunfmt_OBJECTS = msgunfmt-msgunfmt.$(OBJEXT) \
 	msgunfmt-read-mo.$(OBJEXT) msgunfmt-read-java.$(OBJEXT) \
 	msgunfmt-read-csharp.$(OBJEXT) \
@@ -434,6 +440,7 @@ am_recode_sr_latin_OBJECTS =  \
 	recode_sr_latin-recode-sr-latin.$(OBJEXT) \
 	recode_sr_latin-filter-sr-latin.$(OBJEXT)
 recode_sr_latin_OBJECTS = $(am_recode_sr_latin_OBJECTS)
+recode_sr_latin_LDADD = $(LDADD)
 recode_sr_latin_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(recode_sr_latin_LDFLAGS) $(LDFLAGS) \
@@ -441,8 +448,6 @@ recode_sr_latin_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_urlget_OBJECTS = urlget-urlget.$(OBJEXT)
 urlget_OBJECTS = $(am_urlget_OBJECTS)
 urlget_LDADD = $(LDADD)
-urlget_DEPENDENCIES = ../gnulib-lib/libgettextlib.la \
-	$(am__DEPENDENCIES_1)
 urlget_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(urlget_LDFLAGS) $(LDFLAGS) -o $@
@@ -568,6 +573,7 @@ APPLE_UNIVERSAL_BUILD = @APPLE_UNIVERSAL_BUILD@
 AR = @AR@
 ARCHIVE_FORMAT = @ARCHIVE_FORMAT@
 AS = @AS@
+ASM_SYMBOL_PREFIX = @ASM_SYMBOL_PREFIX@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -608,6 +614,7 @@ DATADIRNAME = @DATADIRNAME@
 DEFS = \
   -DLOCALEDIR=\"$(localedir)\" -DBISON_LOCALEDIR=\"$(BISON_LOCALEDIR)\" \
   -DLOCALE_ALIAS_PATH=\"$(aliaspath)\" \
+  -DUSEJAVA=$(USEJAVA) \
   -DUSEJEXE=$(USEJEXE) \
   -DGETTEXTJEXEDIR=\"$(pkglibdir)\" \
   -DGETTEXTJAR=\"$(jardir)/gettext.jar\" \
@@ -748,6 +755,7 @@ GNULIB_MKSTEMP = @GNULIB_MKSTEMP@
 GNULIB_MKSTEMPS = @GNULIB_MKSTEMPS@
 GNULIB_MKTIME = @GNULIB_MKTIME@
 GNULIB_NANOSLEEP = @GNULIB_NANOSLEEP@
+GNULIB_NL_LANGINFO = @GNULIB_NL_LANGINFO@
 GNULIB_OBSTACK_PRINTF = @GNULIB_OBSTACK_PRINTF@
 GNULIB_OBSTACK_PRINTF_POSIX = @GNULIB_OBSTACK_PRINTF_POSIX@
 GNULIB_OPEN = @GNULIB_OPEN@
@@ -943,9 +951,13 @@ HAVE_JRE = @HAVE_JRE@
 HAVE_JRE_IN_PATH = @HAVE_JRE_IN_PATH@
 HAVE_JVIEW = @HAVE_JVIEW@
 HAVE_JVIEW_IN_PATH = @HAVE_JVIEW_IN_PATH@
+HAVE_LANGINFO_CODESET = @HAVE_LANGINFO_CODESET@
+HAVE_LANGINFO_ERA = @HAVE_LANGINFO_ERA@
+HAVE_LANGINFO_H = @HAVE_LANGINFO_H@
 HAVE_LCHMOD = @HAVE_LCHMOD@
 HAVE_LCHOWN = @HAVE_LCHOWN@
 HAVE_LIBEXPAT = @HAVE_LIBEXPAT@
+HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
 HAVE_LINK = @HAVE_LINK@
 HAVE_LINKAT = @HAVE_LINKAT@
 HAVE_LOCALTIME_R = @HAVE_LOCALTIME_R@
@@ -976,6 +988,7 @@ HAVE_MONO = @HAVE_MONO@
 HAVE_MONO_IN_PATH = @HAVE_MONO_IN_PATH@
 HAVE_NANOSLEEP = @HAVE_NANOSLEEP@
 HAVE_NEWLOCALE = @HAVE_NEWLOCALE@
+HAVE_NL_LANGINFO = @HAVE_NL_LANGINFO@
 HAVE_OPENAT = @HAVE_OPENAT@
 HAVE_OS_H = @HAVE_OS_H@
 HAVE_PIPE2 = @HAVE_PIPE2@
@@ -1089,7 +1102,8 @@ LIBEXPAT = @LIBEXPAT@
 LIBEXPAT_PREFIX = @LIBEXPAT_PREFIX@
 LIBGLIB = @LIBGLIB@
 LIBGLIB_H = @LIBGLIB_H@
-LIBGREPOBJS = @LIBGREPOBJS@
+LIBGREP_LIBDEPS = @LIBGREP_LIBDEPS@
+LIBGREP_LTLIBDEPS = @LIBGREP_LTLIBDEPS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
@@ -1101,6 +1115,14 @@ LIBTERMINFO = @LIBTERMINFO@
 LIBTESTS_LIBDEPS = @LIBTESTS_LIBDEPS@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBUNISTRING = @LIBUNISTRING@
+LIBUNISTRING_PREFIX = @LIBUNISTRING_PREFIX@
+LIBUNISTRING_UNICONV_H = @LIBUNISTRING_UNICONV_H@
+LIBUNISTRING_UNILBRK_H = @LIBUNISTRING_UNILBRK_H@
+LIBUNISTRING_UNINAME_H = @LIBUNISTRING_UNINAME_H@
+LIBUNISTRING_UNISTR_H = @LIBUNISTRING_UNISTR_H@
+LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
+LIBUNISTRING_UNIWIDTH_H = @LIBUNISTRING_UNIWIDTH_H@
 LIBXML = @LIBXML@
 LIBXML_H = @LIBXML_H@
 LIB_ACL = @LIB_ACL@
@@ -1123,6 +1145,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBPTH = @LTLIBPTH@
 LTLIBTERMINFO = @LTLIBTERMINFO@
 LTLIBTHREAD = @LTLIBTHREAD@
+LTLIBUNISTRING = @LTLIBUNISTRING@
 LTLIBXML = @LTLIBXML@
 LTNOUNDEF = @LTNOUNDEF@
 MAKEINFO = @MAKEINFO@
@@ -1138,6 +1161,7 @@ NEXT_AS_FIRST_DIRECTIVE_FCNTL_H = @NEXT_AS_FIRST_DIRECTIVE_FCNTL_H@
 NEXT_AS_FIRST_DIRECTIVE_FLOAT_H = @NEXT_AS_FIRST_DIRECTIVE_FLOAT_H@
 NEXT_AS_FIRST_DIRECTIVE_GETOPT_H = @NEXT_AS_FIRST_DIRECTIVE_GETOPT_H@
 NEXT_AS_FIRST_DIRECTIVE_ICONV_H = @NEXT_AS_FIRST_DIRECTIVE_ICONV_H@
+NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H = @NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H@
 NEXT_AS_FIRST_DIRECTIVE_LOCALE_H = @NEXT_AS_FIRST_DIRECTIVE_LOCALE_H@
 NEXT_AS_FIRST_DIRECTIVE_SCHED_H = @NEXT_AS_FIRST_DIRECTIVE_SCHED_H@
 NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H = @NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H@
@@ -1162,6 +1186,7 @@ NEXT_FCNTL_H = @NEXT_FCNTL_H@
 NEXT_FLOAT_H = @NEXT_FLOAT_H@
 NEXT_GETOPT_H = @NEXT_GETOPT_H@
 NEXT_ICONV_H = @NEXT_ICONV_H@
+NEXT_LANGINFO_H = @NEXT_LANGINFO_H@
 NEXT_LOCALE_H = @NEXT_LOCALE_H@
 NEXT_SCHED_H = @NEXT_SCHED_H@
 NEXT_SIGNAL_H = @NEXT_SIGNAL_H@
@@ -1201,6 +1226,7 @@ PERL = @PERL@
 POSUB = @POSUB@
 PRAGMA_SYSTEM_HEADER = @PRAGMA_SYSTEM_HEADER@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTHREAD_H_DEFINES_STRUCT_TIMESPEC = @PTHREAD_H_DEFINES_STRUCT_TIMESPEC@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RC = @RC@
@@ -1266,6 +1292,7 @@ REPLACE_MKNOD = @REPLACE_MKNOD@
 REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
 REPLACE_MKTIME = @REPLACE_MKTIME@
 REPLACE_NANOSLEEP = @REPLACE_NANOSLEEP@
+REPLACE_NL_LANGINFO = @REPLACE_NL_LANGINFO@
 REPLACE_NULL = @REPLACE_NULL@
 REPLACE_OBSTACK_PRINTF = @REPLACE_OBSTACK_PRINTF@
 REPLACE_OPEN = @REPLACE_OPEN@
@@ -1387,6 +1414,11 @@ gl_LTLIBOBJS = @gl_LTLIBOBJS@
 gltests_LIBOBJS = @gltests_LIBOBJS@
 gltests_LTLIBOBJS = @gltests_LTLIBOBJS@
 gltests_WITNESS = @gltests_WITNESS@
+grgl_LIBOBJS = @grgl_LIBOBJS@
+grgl_LTLIBOBJS = @grgl_LTLIBOBJS@
+grgltests_LIBOBJS = @grgltests_LIBOBJS@
+grgltests_LTLIBOBJS = @grgltests_LTLIBOBJS@
+grgltests_WITNESS = @grgltests_WITNESS@
 gtpo_LIBOBJS = @gtpo_LIBOBJS@
 gtpo_LTLIBOBJS = @gtpo_LTLIBOBJS@
 gtpotests_LIBOBJS = @gtpotests_LIBOBJS@
@@ -1471,7 +1503,8 @@ AM_CPPFLAGS = \
 
 # Ensure that <stdint.h> defines SIZE_MAX in C++ mode, like it does in C mode.
 AM_CXXFLAGS = -D__STDC_LIMIT_MACROS
-LDADD = ../gnulib-lib/libgettextlib.la @LTLIBINTL@ $(WOE32_LDADD)
+LDADD = ../gnulib-lib/libgettextlib.la $(LTLIBUNISTRING) @LTLIBINTL@ $(WOE32_LDADD)
+OTHERPROGDEPENDENCIES = ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
 JAVACOMP = $(SHELL) ../javacomp.sh
 CSHARPCOMP = $(SHELL) ../csharpcomp.sh
 
@@ -1573,12 +1606,15 @@ urlget_SOURCES = urlget.c
 
 # How to build libgettextsrc.la.
 # Need ../gnulib-lib/libgettextlib.la.
+# Need $(LTLIBUNISTRING) because ulc_width_linebreaks, uc_width, etc. may be
+# taken from libunistring, when the configure option --with-libunistring-prefix
+# was given.
 # Need @LTLIBINTL@ because many source files use gettext().
 # Need @LTLIBICONV@ because po-charset.c, po-lex.c, msgl-iconv.c, write-po.c
 # use iconv().
 libgettextsrc_la_LDFLAGS = -release @VERSION@ \
-	../gnulib-lib/libgettextlib.la @LTLIBINTL@ @LTLIBICONV@ -lc \
-	@LTNOUNDEF@ $(am__append_2)
+	../gnulib-lib/libgettextlib.la $(LTLIBUNISTRING) @LTLIBINTL@ \
+	@LTLIBICONV@ -lc @LTNOUNDEF@ $(am__append_2)
 
 # Compile-time flags for particular source files.
 msgmerge_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
@@ -1603,7 +1639,6 @@ msgfilter_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
 msggrep_LDADD = $(LIBGREP) libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
 msginit_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
 msguniq_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
-recode_sr_latin_LDADD = ../gnulib-lib/libgettextlib.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
 
 # Specify when to relink the programs.
 msgcmp_DEPENDENCIES = libgettextsrc.la ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
@@ -1621,7 +1656,9 @@ msgfilter_DEPENDENCIES = libgettextsrc.la ../gnulib-lib/libgettextlib.la $(WOE32
 msggrep_DEPENDENCIES = $(LIBGREP) libgettextsrc.la ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
 msginit_DEPENDENCIES = libgettextsrc.la ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
 msguniq_DEPENDENCIES = libgettextsrc.la ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
-recode_sr_latin_DEPENDENCIES = ../gnulib-lib/libgettextlib.la $(WOE32_LDADD)
+recode_sr_latin_DEPENDENCIES = $(OTHERPROGDEPENDENCIES)
+hostname_DEPENDENCIES = $(OTHERPROGDEPENDENCIES)
+urlget_DEPENDENCIES = $(OTHERPROGDEPENDENCIES)
 
 # Specify installation directory, for --enable-relocatable.
 msgcmp_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
@@ -1779,6 +1816,11 @@ BUILT_SOURCES = \
 
 
 # Special rules for Java compilation.
+USEJAVA = $(USEJAVA_@BUILDJAVAEXE@)
+USEJAVA_yes = 1
+USEJAVA_no = $(USEJAVA_no_@BUILDJAVA@)
+USEJAVA_no_yes = 1
+USEJAVA_no_no = 0
 USEJEXE = $(USEJEXE_@BUILDJAVAEXE@)
 USEJEXE_yes = 1
 USEJEXE_no = 0

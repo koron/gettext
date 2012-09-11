@@ -307,8 +307,11 @@ AC_DEFUN([gl_INIT],
   # Code from module unistd:
   gl_UNISTD_H
   # Code from module unitypes:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [unitypes.h])
   # Code from module uniwidth/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniwidth.h])
   # Code from module uniwidth/width:
+  gl_LIBUNISTRING_MODULE([0.9], [uniwidth/width])
   # Code from module unlocked-io:
   gl_FUNC_GLIBC_UNLOCKED_IO
   # Code from module verify:
@@ -562,8 +565,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/trim.c
   lib/trim.h
   lib/unistd.in.h
-  lib/unitypes.h
-  lib/uniwidth.h
+  lib/unitypes.in.h
+  lib/uniwidth.in.h
   lib/uniwidth/cjk.h
   lib/uniwidth/width.c
   lib/unlocked-io.h
@@ -580,6 +583,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xstriconv.h
   m4/00gnulib.m4
   m4/alloca.m4
+  m4/asm-underscore.m4
   m4/atexit.m4
   m4/canonicalize.m4
   m4/codeset.m4
@@ -605,6 +609,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-ld.m4
   m4/lib-link.m4
   m4/lib-prefix.m4
+  m4/libunistring-base.m4
   m4/localcharset.m4
   m4/locale-fr.m4
   m4/locale-ja.m4

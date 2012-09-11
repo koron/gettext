@@ -145,6 +145,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module javaversion:
   # Code from module libcroco:
   # Code from module libglib:
+  # Code from module libunistring-optional:
   # Code from module libxml:
   # Code from module linkedhash-list:
   # Code from module linkedhash-list-tests:
@@ -214,7 +215,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module putenv:
   # Code from module quote:
   # Code from module quotearg:
-  # Code from module quotearg-tests:
+  # Code from module quotearg-simple:
+  # Code from module quotearg-simple-tests:
   # Code from module rawmemchr:
   # Code from module rawmemchr-tests:
   # Code from module read-file:
@@ -568,6 +570,8 @@ AC_DEFUN([gl_INIT],
   gl_LIBCROCO
   # Code from module libglib:
   gl_LIBGLIB
+  # Code from module libunistring-optional:
+  gl_LIBUNISTRING_OPTIONAL
   # Code from module libxml:
   gl_LIBXML
   # Code from module linkedhash-list:
@@ -735,6 +739,7 @@ AC_DEFUN([gl_INIT],
   gl_QUOTE
   # Code from module quotearg:
   gl_QUOTEARG
+  # Code from module quotearg-simple:
   # Code from module rawmemchr:
   gl_FUNC_RAWMEMCHR
   gl_STRING_MODULE_INDICATOR([rawmemchr])
@@ -893,37 +898,57 @@ AC_DEFUN([gl_INIT],
   gt_TMPDIR
   # Code from module trim:
   # Code from module uniconv/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniconv.h])
   # Code from module uniconv/u8-conv-from-enc:
+  gl_LIBUNISTRING_MODULE([0.9], [uniconv/u8-conv-from-enc])
   # Code from module unilbrk/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [unilbrk.h])
   # Code from module unilbrk/tables:
   AC_REQUIRE([AC_C_INLINE])
   # Code from module unilbrk/u8-possible-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/u8-possible-linebreaks])
   # Code from module unilbrk/u8-width-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/u8-width-linebreaks])
   # Code from module unilbrk/ulc-common:
   # Code from module unilbrk/ulc-width-linebreaks:
+  gl_LIBUNISTRING_MODULE([0.9], [unilbrk/ulc-width-linebreaks])
   # Code from module uniname/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniname.h])
   # Code from module uniname/uniname:
+  gl_LIBUNISTRING_MODULE([0.9], [uniname/uniname])
   # Code from module unistd:
   gl_UNISTD_H
   # Code from module unistd-safer:
   gl_UNISTD_SAFER
   # Code from module unistr/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9.2], [unistr.h])
   # Code from module unistr/u16-mbtouc:
   gl_MODULE_INDICATOR([unistr/u16-mbtouc])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u16-mbtouc])
   # Code from module unistr/u8-check:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-check])
   # Code from module unistr/u8-mblen:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mblen])
   # Code from module unistr/u8-mbtouc:
   gl_MODULE_INDICATOR([unistr/u8-mbtouc])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtouc])
   # Code from module unistr/u8-mbtouc-unsafe:
   gl_MODULE_INDICATOR([unistr/u8-mbtouc-unsafe])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtouc-unsafe])
   # Code from module unistr/u8-mbtoucr:
   gl_MODULE_INDICATOR([unistr/u8-mbtoucr])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-mbtoucr])
   # Code from module unistr/u8-prev:
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-prev])
   # Code from module unistr/u8-uctomb:
   gl_MODULE_INDICATOR([unistr/u8-uctomb])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-uctomb])
   # Code from module unitypes:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [unitypes.h])
   # Code from module uniwidth/base:
+  gl_LIBUNISTRING_LIBHEADER([0.9], [uniwidth.h])
   # Code from module uniwidth/width:
+  gl_LIBUNISTRING_MODULE([0.9], [uniwidth/width])
   # Code from module unlocked-io:
   gl_FUNC_GLIBC_UNLOCKED_IO
   # Code from module unsetenv:
@@ -1048,8 +1073,6 @@ changequote([, ])dnl
   AM_CONDITIONAL([POSIX_SPAWN_PORTED], [test $posix_spawn_ported = yes])
   gl_FUNC_PUTENV
   gl_STDLIB_MODULE_INDICATOR([putenv])
-  gt_LOCALE_FR
-  gt_LOCALE_FR_UTF8
   gl_FUNC_READ_FILE
   gt_TYPE_WCHAR_T
   gt_TYPE_WINT_T
@@ -1061,9 +1084,11 @@ changequote([, ])dnl
   gl_UNISTD_MODULE_INDICATOR([symlink])
   AC_CHECK_FUNCS_ONCE([shutdown])
   gl_THREAD
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-cmp])
   gl_FUNC_MMAP_ANON
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
+  gl_LIBUNISTRING_MODULE([0.9], [unistr/u8-strlen])
   gl_FUNC_WCTOB
   gl_WCHAR_MODULE_INDICATOR([wctob])
   gl_YIELD
@@ -1380,6 +1405,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/libcroco/cr-utils.h
   lib/libcroco/libcroco-config.h
   lib/libcroco/libcroco.h
+  lib/libunistring.valgrind
   lib/libxml/COPYING
   lib/libxml/DOCBparser.c
   lib/libxml/DOCBparser.in.h
@@ -1619,9 +1645,9 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/tputs.c
   lib/trim.c
   lib/trim.h
-  lib/uniconv.h
+  lib/uniconv.in.h
   lib/uniconv/u8-conv-from-enc.c
-  lib/unilbrk.h
+  lib/unilbrk.in.h
   lib/unilbrk/lbrkprop1.h
   lib/unilbrk/lbrkprop2.h
   lib/unilbrk/lbrktables.c
@@ -1631,14 +1657,14 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/unilbrk/ulc-common.c
   lib/unilbrk/ulc-common.h
   lib/unilbrk/ulc-width-linebreaks.c
-  lib/uniname.h
+  lib/uniname.in.h
   lib/uniname/gen-uninames.lisp
   lib/uniname/uniname.c
   lib/uniname/uninames.h
   lib/unistd--.h
   lib/unistd-safer.h
   lib/unistd.in.h
-  lib/unistr.h
+  lib/unistr.in.h
   lib/unistr/u16-mbtouc-aux.c
   lib/unistr/u16-mbtouc.c
   lib/unistr/u8-check.c
@@ -1651,8 +1677,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/unistr/u8-prev.c
   lib/unistr/u8-uctomb-aux.c
   lib/unistr/u8-uctomb.c
-  lib/unitypes.h
-  lib/uniwidth.h
+  lib/unitypes.in.h
+  lib/uniwidth.in.h
   lib/uniwidth/cjk.h
   lib/uniwidth/width.c
   lib/unlocked-io.h
@@ -1694,6 +1720,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/acl.m4
   m4/alloca.m4
   m4/argmatch.m4
+  m4/asm-underscore.m4
   m4/atexit.m4
   m4/backupfile.m4
   m4/bison-i18n.m4
@@ -1736,7 +1763,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
-  m4/hard-locale.m4
   m4/iconv.m4
   m4/iconv_h.m4
   m4/iconv_open.m4
@@ -1759,6 +1785,9 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/lib-prefix.m4
   m4/libcroco.m4
   m4/libglib.m4
+  m4/libunistring-base.m4
+  m4/libunistring-optional.m4
+  m4/libunistring.m4
   m4/libxml.m4
   m4/localcharset.m4
   m4/locale-fr.m4
@@ -1881,8 +1910,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/xvasprintf.m4
   m4/yield.m4
   tests/init.sh
-  tests/locale/fr/LC_MESSAGES/test-quotearg.mo
-  tests/locale/fr/LC_MESSAGES/test-quotearg.po
   tests/macros.h
   tests/signature.h
   tests/test-alignof.c
@@ -1979,8 +2006,8 @@ AC_DEFUN([gl_FILE_LIST], [
   tests/test-posix_spawn1.in.sh
   tests/test-posix_spawn2.c
   tests/test-posix_spawn2.in.sh
-  tests/test-quotearg.c
-  tests/test-quotearg.sh
+  tests/test-quotearg-simple.c
+  tests/test-quotearg.h
   tests/test-rawmemchr.c
   tests/test-read-file.c
   tests/test-readlink.c

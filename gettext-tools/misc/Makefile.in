@@ -43,11 +43,18 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/libgettextpo/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/btowc.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/langinfo_h.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/nl_langinfo.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/regex.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/wcrtomb.m4 \
 	$(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/absolute-header.m4 \
 	$(top_srcdir)/gnulib-m4/acl.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
 	$(top_srcdir)/gnulib-m4/argmatch.m4 \
+	$(top_srcdir)/gnulib-m4/asm-underscore.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/backupfile.m4 \
 	$(top_srcdir)/gnulib-m4/bison-i18n.m4 \
@@ -86,7 +93,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/gl_list.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-comp.m4 \
-	$(top_srcdir)/gnulib-m4/hard-locale.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_h.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_open.m4 \
 	$(top_srcdir)/gnulib-m4/include_next.m4 \
@@ -100,6 +106,9 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/lib-prefix.m4 \
 	$(top_srcdir)/gnulib-m4/libcroco.m4 \
 	$(top_srcdir)/gnulib-m4/libglib.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-base.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-optional.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring.m4 \
 	$(top_srcdir)/gnulib-m4/libxml.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
 	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
@@ -242,7 +251,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/../gettext-runtime/m4/wint_t.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/xsize.m4 \
 	$(top_srcdir)/m4/exported.m4 $(top_srcdir)/m4/hostname.m4 \
-	$(top_srcdir)/m4/libgrep.m4 $(top_srcdir)/m4/regex.m4 \
 	$(top_srcdir)/m4/setlocale.m4 $(top_srcdir)/m4/siginfo.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -300,6 +308,7 @@ APPLE_UNIVERSAL_BUILD = @APPLE_UNIVERSAL_BUILD@
 AR = @AR@
 ARCHIVE_FORMAT = @ARCHIVE_FORMAT@
 AS = @AS@
+ASM_SYMBOL_PREFIX = @ASM_SYMBOL_PREFIX@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -471,6 +480,7 @@ GNULIB_MKSTEMP = @GNULIB_MKSTEMP@
 GNULIB_MKSTEMPS = @GNULIB_MKSTEMPS@
 GNULIB_MKTIME = @GNULIB_MKTIME@
 GNULIB_NANOSLEEP = @GNULIB_NANOSLEEP@
+GNULIB_NL_LANGINFO = @GNULIB_NL_LANGINFO@
 GNULIB_OBSTACK_PRINTF = @GNULIB_OBSTACK_PRINTF@
 GNULIB_OBSTACK_PRINTF_POSIX = @GNULIB_OBSTACK_PRINTF_POSIX@
 GNULIB_OPEN = @GNULIB_OPEN@
@@ -666,9 +676,13 @@ HAVE_JRE = @HAVE_JRE@
 HAVE_JRE_IN_PATH = @HAVE_JRE_IN_PATH@
 HAVE_JVIEW = @HAVE_JVIEW@
 HAVE_JVIEW_IN_PATH = @HAVE_JVIEW_IN_PATH@
+HAVE_LANGINFO_CODESET = @HAVE_LANGINFO_CODESET@
+HAVE_LANGINFO_ERA = @HAVE_LANGINFO_ERA@
+HAVE_LANGINFO_H = @HAVE_LANGINFO_H@
 HAVE_LCHMOD = @HAVE_LCHMOD@
 HAVE_LCHOWN = @HAVE_LCHOWN@
 HAVE_LIBEXPAT = @HAVE_LIBEXPAT@
+HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
 HAVE_LINK = @HAVE_LINK@
 HAVE_LINKAT = @HAVE_LINKAT@
 HAVE_LOCALTIME_R = @HAVE_LOCALTIME_R@
@@ -699,6 +713,7 @@ HAVE_MONO = @HAVE_MONO@
 HAVE_MONO_IN_PATH = @HAVE_MONO_IN_PATH@
 HAVE_NANOSLEEP = @HAVE_NANOSLEEP@
 HAVE_NEWLOCALE = @HAVE_NEWLOCALE@
+HAVE_NL_LANGINFO = @HAVE_NL_LANGINFO@
 HAVE_OPENAT = @HAVE_OPENAT@
 HAVE_OS_H = @HAVE_OS_H@
 HAVE_PIPE2 = @HAVE_PIPE2@
@@ -812,7 +827,8 @@ LIBEXPAT = @LIBEXPAT@
 LIBEXPAT_PREFIX = @LIBEXPAT_PREFIX@
 LIBGLIB = @LIBGLIB@
 LIBGLIB_H = @LIBGLIB_H@
-LIBGREPOBJS = @LIBGREPOBJS@
+LIBGREP_LIBDEPS = @LIBGREP_LIBDEPS@
+LIBGREP_LTLIBDEPS = @LIBGREP_LTLIBDEPS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
@@ -824,6 +840,14 @@ LIBTERMINFO = @LIBTERMINFO@
 LIBTESTS_LIBDEPS = @LIBTESTS_LIBDEPS@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBUNISTRING = @LIBUNISTRING@
+LIBUNISTRING_PREFIX = @LIBUNISTRING_PREFIX@
+LIBUNISTRING_UNICONV_H = @LIBUNISTRING_UNICONV_H@
+LIBUNISTRING_UNILBRK_H = @LIBUNISTRING_UNILBRK_H@
+LIBUNISTRING_UNINAME_H = @LIBUNISTRING_UNINAME_H@
+LIBUNISTRING_UNISTR_H = @LIBUNISTRING_UNISTR_H@
+LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
+LIBUNISTRING_UNIWIDTH_H = @LIBUNISTRING_UNIWIDTH_H@
 LIBXML = @LIBXML@
 LIBXML_H = @LIBXML_H@
 LIB_ACL = @LIB_ACL@
@@ -846,6 +870,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBPTH = @LTLIBPTH@
 LTLIBTERMINFO = @LTLIBTERMINFO@
 LTLIBTHREAD = @LTLIBTHREAD@
+LTLIBUNISTRING = @LTLIBUNISTRING@
 LTLIBXML = @LTLIBXML@
 LTNOUNDEF = @LTNOUNDEF@
 MAKEINFO = @MAKEINFO@
@@ -861,6 +886,7 @@ NEXT_AS_FIRST_DIRECTIVE_FCNTL_H = @NEXT_AS_FIRST_DIRECTIVE_FCNTL_H@
 NEXT_AS_FIRST_DIRECTIVE_FLOAT_H = @NEXT_AS_FIRST_DIRECTIVE_FLOAT_H@
 NEXT_AS_FIRST_DIRECTIVE_GETOPT_H = @NEXT_AS_FIRST_DIRECTIVE_GETOPT_H@
 NEXT_AS_FIRST_DIRECTIVE_ICONV_H = @NEXT_AS_FIRST_DIRECTIVE_ICONV_H@
+NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H = @NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H@
 NEXT_AS_FIRST_DIRECTIVE_LOCALE_H = @NEXT_AS_FIRST_DIRECTIVE_LOCALE_H@
 NEXT_AS_FIRST_DIRECTIVE_SCHED_H = @NEXT_AS_FIRST_DIRECTIVE_SCHED_H@
 NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H = @NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H@
@@ -885,6 +911,7 @@ NEXT_FCNTL_H = @NEXT_FCNTL_H@
 NEXT_FLOAT_H = @NEXT_FLOAT_H@
 NEXT_GETOPT_H = @NEXT_GETOPT_H@
 NEXT_ICONV_H = @NEXT_ICONV_H@
+NEXT_LANGINFO_H = @NEXT_LANGINFO_H@
 NEXT_LOCALE_H = @NEXT_LOCALE_H@
 NEXT_SCHED_H = @NEXT_SCHED_H@
 NEXT_SIGNAL_H = @NEXT_SIGNAL_H@
@@ -924,6 +951,7 @@ PERL = @PERL@
 POSUB = @POSUB@
 PRAGMA_SYSTEM_HEADER = @PRAGMA_SYSTEM_HEADER@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTHREAD_H_DEFINES_STRUCT_TIMESPEC = @PTHREAD_H_DEFINES_STRUCT_TIMESPEC@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RC = @RC@
@@ -987,6 +1015,7 @@ REPLACE_MKNOD = @REPLACE_MKNOD@
 REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
 REPLACE_MKTIME = @REPLACE_MKTIME@
 REPLACE_NANOSLEEP = @REPLACE_NANOSLEEP@
+REPLACE_NL_LANGINFO = @REPLACE_NL_LANGINFO@
 REPLACE_NULL = @REPLACE_NULL@
 REPLACE_OBSTACK_PRINTF = @REPLACE_OBSTACK_PRINTF@
 REPLACE_OPEN = @REPLACE_OPEN@
@@ -1108,6 +1137,11 @@ gl_LTLIBOBJS = @gl_LTLIBOBJS@
 gltests_LIBOBJS = @gltests_LIBOBJS@
 gltests_LTLIBOBJS = @gltests_LTLIBOBJS@
 gltests_WITNESS = @gltests_WITNESS@
+grgl_LIBOBJS = @grgl_LIBOBJS@
+grgl_LTLIBOBJS = @grgl_LTLIBOBJS@
+grgltests_LIBOBJS = @grgltests_LIBOBJS@
+grgltests_LTLIBOBJS = @grgltests_LTLIBOBJS@
+grgltests_WITNESS = @grgltests_WITNESS@
 gtpo_LIBOBJS = @gtpo_LIBOBJS@
 gtpo_LTLIBOBJS = @gtpo_LTLIBOBJS@
 gtpotests_LIBOBJS = @gtpotests_LIBOBJS@
@@ -1145,8 +1179,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.2 gnits
-EXTRA_DIST = add-to-archive cvsuser.c archive.cvs.tar.gz $(lisp_LISP)
-CLEANFILES = archive.dir.tar.gz archive.git.tar.gz
+EXTRA_DIST = add-to-archive cvsuser.c archive.dir.tar.gz $(lisp_LISP)
+CLEANFILES = archive.cvs.tar.gz archive.git.tar.gz
 DISTCLEANFILES = gettextize autopoint convert-archive
 
 # Scripts for maintainers.
@@ -1482,33 +1516,33 @@ uninstall-am: uninstall-binSCRIPTS uninstall-gettextsrcDATA \
 	uninstall-lispLISP
 
 
-# The archive.cvs.tar.gz is not in the CVS. Alpha-testers must use the one from
+# The archive.dir.tar.gz is not in the CVS. Alpha-testers must use the one from
 # an already installed release.
-archive.cvs.tar.gz:
-	if test -f $(gettextsrcdir)/archive.cvs.tar.gz; then \
-	  cp -p $(gettextsrcdir)/archive.cvs.tar.gz $@; \
+archive.dir.tar.gz:
+	if test -f $(gettextsrcdir)/archive.dir.tar.gz; then \
+	  cp -p $(gettextsrcdir)/archive.dir.tar.gz $@; \
 	else \
-	  echo "archive.cvs.tar.gz is not under version control. Please copy the archive.cvs.tar.gz from an already installed release to gettext-tools/misc/." 1>&2; \
+	  echo "archive.dir.tar.gz is not under version control. Please copy the archive.dir.tar.gz from an already installed release to gettext-tools/misc/." 1>&2; \
 	  exit 1; \
 	fi
 
-# The archive.dir.tar.gz is generated from archive.cvs.tar.gz.
-archive.dir.tar.gz: archive.cvs.tar.gz
-	if test -f archive.cvs.tar.gz; then \
-	  inputfile=archive.cvs.tar.gz; \
+# The archive.git.tar.gz is generated from archive.dir.tar.gz.
+archive.git.tar.gz: archive.dir.tar.gz
+	if test -f archive.dir.tar.gz; then \
+	  inputfile=archive.dir.tar.gz; \
 	else \
-	  inputfile='$(srcdir)'/archive.cvs.tar.gz; \
+	  inputfile='$(srcdir)'/archive.dir.tar.gz; \
 	fi; \
-	./convert-archive cvs dir "$$inputfile" $@
+	./convert-archive dir git "$$inputfile" $@
 
-# The archive.git.tar.gz is generated from archive.cvs.tar.gz.
-archive.git.tar.gz: archive.cvs.tar.gz
-	if test -f archive.cvs.tar.gz; then \
-	  inputfile=archive.cvs.tar.gz; \
+# The archive.cvs.tar.gz is generated from archive.dir.tar.gz.
+archive.cvs.tar.gz: archive.dir.tar.gz
+	if test -f archive.dir.tar.gz; then \
+	  inputfile=archive.dir.tar.gz; \
 	else \
-	  inputfile='$(srcdir)'/archive.cvs.tar.gz; \
+	  inputfile='$(srcdir)'/archive.dir.tar.gz; \
 	fi; \
-	./convert-archive cvs git "$$inputfile" $@
+	./convert-archive dir cvs "$$inputfile" $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

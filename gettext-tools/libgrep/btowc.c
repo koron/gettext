@@ -1,6 +1,6 @@
-/* Determine whether a locale is hard.
-
-   Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
+/* Convert unibyte character to wide character.
+   Copyright (C) 2008, 2010 Free Software Foundation, Inc.
+   Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,11 +15,25 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef HARD_LOCALE_H_
-# define HARD_LOCALE_H_ 1
+#include <config.h>
 
-# include <stdbool.h>
+/* Specification.  */
+#include <wchar.h>
 
-bool hard_locale (int);
+#include <stdio.h>
+#include <stdlib.h>
 
-#endif /* HARD_LOCALE_H_ */
+wint_t
+btowc (int c)
+{
+  if (c != EOF)
+    {
+      char buf[1];
+      wchar_t wc;
+
+      buf[0] = c;
+      if (mbtowc (&wc, buf, 1) >= 0)
+        return wc;
+    }
+  return WEOF;
+}

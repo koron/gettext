@@ -71,21 +71,21 @@ TESTS = test-file-has-acl.sh test-set-mode-acl.sh test-copy-acl.sh \
 	test-mbsstr2.sh test-mbsstr3.sh test-memchr$(EXEEXT) \
 	test-open$(EXEEXT) test-pipe-filter-ii1.sh \
 	test-pipe-filter-ii2.sh test-pipe.sh test-pipe2$(EXEEXT) \
-	$(am__EXEEXT_1) test-quotearg.sh test-rawmemchr$(EXEEXT) \
-	test-read-file$(EXEEXT) test-readlink$(EXEEXT) \
-	test-rmdir$(EXEEXT) test-sched$(EXEEXT) test-setenv$(EXEEXT) \
-	test-sigaction$(EXEEXT) test-signal$(EXEEXT) test-sigpipe.sh \
-	test-snprintf$(EXEEXT) test-spawn$(EXEEXT) test-stat$(EXEEXT) \
-	test-stdbool$(EXEEXT) test-stddef$(EXEEXT) \
-	test-stdint$(EXEEXT) test-stdio$(EXEEXT) test-stdlib$(EXEEXT) \
-	test-strchrnul$(EXEEXT) test-strerror$(EXEEXT) \
-	test-striconv$(EXEEXT) test-striconveh$(EXEEXT) \
-	test-striconveha$(EXEEXT) test-string$(EXEEXT) \
-	test-strstr$(EXEEXT) test-symlink$(EXEEXT) \
-	test-sys_select$(EXEEXT) test-sys_socket$(EXEEXT) \
-	test-sys_stat$(EXEEXT) test-sys_time$(EXEEXT) \
-	test-sys_wait$(EXEEXT) test-term-ostream-xterm \
-	test-time$(EXEEXT) test-tls$(EXEEXT) \
+	$(am__EXEEXT_1) test-quotearg-simple$(EXEEXT) \
+	test-rawmemchr$(EXEEXT) test-read-file$(EXEEXT) \
+	test-readlink$(EXEEXT) test-rmdir$(EXEEXT) test-sched$(EXEEXT) \
+	test-setenv$(EXEEXT) test-sigaction$(EXEEXT) \
+	test-signal$(EXEEXT) test-sigpipe.sh test-snprintf$(EXEEXT) \
+	test-spawn$(EXEEXT) test-stat$(EXEEXT) test-stdbool$(EXEEXT) \
+	test-stddef$(EXEEXT) test-stdint$(EXEEXT) test-stdio$(EXEEXT) \
+	test-stdlib$(EXEEXT) test-strchrnul$(EXEEXT) \
+	test-strerror$(EXEEXT) test-striconv$(EXEEXT) \
+	test-striconveh$(EXEEXT) test-striconveha$(EXEEXT) \
+	test-string$(EXEEXT) test-strstr$(EXEEXT) \
+	test-symlink$(EXEEXT) test-sys_select$(EXEEXT) \
+	test-sys_socket$(EXEEXT) test-sys_stat$(EXEEXT) \
+	test-sys_time$(EXEEXT) test-sys_wait$(EXEEXT) \
+	test-term-ostream-xterm test-time$(EXEEXT) test-tls$(EXEEXT) \
 	test-u8-conv-from-enc$(EXEEXT) \
 	test-u8-possible-linebreaks$(EXEEXT) \
 	test-u8-width-linebreaks$(EXEEXT) \
@@ -131,23 +131,23 @@ check_PROGRAMS = test-file-has-acl$(EXEEXT) test-set-mode-acl$(EXEEXT) \
 	test-pipe-filter-ii1$(EXEEXT) \
 	test-pipe-filter-ii2-main$(EXEEXT) \
 	test-pipe-filter-ii2-child$(EXEEXT) test-pipe$(EXEEXT) \
-	test-pipe2$(EXEEXT) $(am__EXEEXT_1) test-quotearg$(EXEEXT) \
-	test-rawmemchr$(EXEEXT) test-read-file$(EXEEXT) \
-	test-readlink$(EXEEXT) test-rmdir$(EXEEXT) test-sched$(EXEEXT) \
-	test-setenv$(EXEEXT) test-sigaction$(EXEEXT) \
-	test-signal$(EXEEXT) test-sigpipe$(EXEEXT) \
-	test-snprintf$(EXEEXT) test-spawn$(EXEEXT) test-stat$(EXEEXT) \
-	test-stdbool$(EXEEXT) test-stddef$(EXEEXT) \
-	test-stdint$(EXEEXT) test-stdio$(EXEEXT) test-stdlib$(EXEEXT) \
-	test-strchrnul$(EXEEXT) test-strerror$(EXEEXT) \
-	test-striconv$(EXEEXT) test-striconveh$(EXEEXT) \
-	test-striconveha$(EXEEXT) test-string$(EXEEXT) \
-	test-strstr$(EXEEXT) test-symlink$(EXEEXT) \
-	test-sys_select$(EXEEXT) test-sys_socket$(EXEEXT) \
-	test-sys_stat$(EXEEXT) test-sys_time$(EXEEXT) \
-	test-sys_wait$(EXEEXT) test-term-ostream$(EXEEXT) \
-	test-time$(EXEEXT) test-tls$(EXEEXT) \
-	test-u8-conv-from-enc$(EXEEXT) \
+	test-pipe2$(EXEEXT) $(am__EXEEXT_1) \
+	test-quotearg-simple$(EXEEXT) test-rawmemchr$(EXEEXT) \
+	test-read-file$(EXEEXT) test-readlink$(EXEEXT) \
+	test-rmdir$(EXEEXT) test-sched$(EXEEXT) test-setenv$(EXEEXT) \
+	test-sigaction$(EXEEXT) test-signal$(EXEEXT) \
+	test-sigpipe$(EXEEXT) test-snprintf$(EXEEXT) \
+	test-spawn$(EXEEXT) test-stat$(EXEEXT) test-stdbool$(EXEEXT) \
+	test-stddef$(EXEEXT) test-stdint$(EXEEXT) test-stdio$(EXEEXT) \
+	test-stdlib$(EXEEXT) test-strchrnul$(EXEEXT) \
+	test-strerror$(EXEEXT) test-striconv$(EXEEXT) \
+	test-striconveh$(EXEEXT) test-striconveha$(EXEEXT) \
+	test-string$(EXEEXT) test-strstr$(EXEEXT) \
+	test-symlink$(EXEEXT) test-sys_select$(EXEEXT) \
+	test-sys_socket$(EXEEXT) test-sys_stat$(EXEEXT) \
+	test-sys_time$(EXEEXT) test-sys_wait$(EXEEXT) \
+	test-term-ostream$(EXEEXT) test-time$(EXEEXT) \
+	test-tls$(EXEEXT) test-u8-conv-from-enc$(EXEEXT) \
 	test-u8-possible-linebreaks$(EXEEXT) \
 	test-u8-width-linebreaks$(EXEEXT) \
 	test-ulc-width-linebreaks$(EXEEXT) test-uninames$(EXEEXT) \
@@ -171,15 +171,24 @@ check_PROGRAMS = test-file-has-acl$(EXEEXT) test-set-mode-acl$(EXEEXT) \
 @POSIX_SPAWN_PORTED_TRUE@	test-posix_spawn1.sh-t \
 @POSIX_SPAWN_PORTED_TRUE@	test-posix_spawn2.sh \
 @POSIX_SPAWN_PORTED_TRUE@	test-posix_spawn2.sh-t
+@LIBUNISTRING_COMPILE_UNISTR_U8_CMP_TRUE@am__append_5 = unistr/u8-cmp.c
+@LIBUNISTRING_COMPILE_UNISTR_U8_STRLEN_TRUE@am__append_6 = unistr/u8-strlen.c
 subdir = gnulib-tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/libgettextpo/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/btowc.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/langinfo_h.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/nl_langinfo.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/regex.m4 \
+	$(top_srcdir)/libgrep/gnulib-m4/wcrtomb.m4 \
 	$(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/absolute-header.m4 \
 	$(top_srcdir)/gnulib-m4/acl.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
 	$(top_srcdir)/gnulib-m4/argmatch.m4 \
+	$(top_srcdir)/gnulib-m4/asm-underscore.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/backupfile.m4 \
 	$(top_srcdir)/gnulib-m4/bison-i18n.m4 \
@@ -218,7 +227,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/gl_list.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-comp.m4 \
-	$(top_srcdir)/gnulib-m4/hard-locale.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_h.m4 \
 	$(top_srcdir)/gnulib-m4/iconv_open.m4 \
 	$(top_srcdir)/gnulib-m4/include_next.m4 \
@@ -232,6 +240,9 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/lib-prefix.m4 \
 	$(top_srcdir)/gnulib-m4/libcroco.m4 \
 	$(top_srcdir)/gnulib-m4/libglib.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-base.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-optional.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring.m4 \
 	$(top_srcdir)/gnulib-m4/libxml.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
 	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
@@ -374,7 +385,6 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/../gettext-runtime/m4/wint_t.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/xsize.m4 \
 	$(top_srcdir)/m4/exported.m4 $(top_srcdir)/m4/hostname.m4 \
-	$(top_srcdir)/m4/libgrep.m4 $(top_srcdir)/m4/regex.m4 \
 	$(top_srcdir)/m4/setlocale.m4 $(top_srcdir)/m4/siginfo.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -393,9 +403,14 @@ am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
 am__v_at_0 = @
 libtests_a_AR = $(AR) $(ARFLAGS)
 am__DEPENDENCIES_1 =
+am__libtests_a_SOURCES_DIST = ignore-value.h glthread/thread.h \
+	glthread/thread.c unistr/u8-cmp.c unistr/u8-strlen.c \
+	glthread/yield.h
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libtests_a_OBJECTS = glthread/thread.$(OBJEXT) \
-	unistr/u8-cmp.$(OBJEXT) unistr/u8-strlen.$(OBJEXT)
+@LIBUNISTRING_COMPILE_UNISTR_U8_CMP_TRUE@am__objects_1 = unistr/u8-cmp.$(OBJEXT)
+@LIBUNISTRING_COMPILE_UNISTR_U8_STRLEN_TRUE@am__objects_2 = unistr/u8-strlen.$(OBJEXT)
+am_libtests_a_OBJECTS = glthread/thread.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2)
 libtests_a_OBJECTS = $(am_libtests_a_OBJECTS)
 @POSIX_SPAWN_PORTED_TRUE@am__EXEEXT_1 = test-posix_spawn1$(EXEEXT) \
 @POSIX_SPAWN_PORTED_TRUE@	test-posix_spawn2$(EXEEXT)
@@ -678,9 +693,9 @@ test_posix_spawn2_LDADD = $(LDADD)
 test_posix_spawn2_DEPENDENCIES = libtests.a \
 	../gnulib-lib/libgettextlib.la libtests.a \
 	$(am__DEPENDENCIES_1)
-test_quotearg_SOURCES = test-quotearg.c
-test_quotearg_OBJECTS = test-quotearg.$(OBJEXT)
-test_quotearg_DEPENDENCIES = $(am__DEPENDENCIES_2)
+test_quotearg_simple_SOURCES = test-quotearg-simple.c
+test_quotearg_simple_OBJECTS = test-quotearg-simple.$(OBJEXT)
+test_quotearg_simple_DEPENDENCIES = $(am__DEPENDENCIES_2)
 test_rawmemchr_SOURCES = test-rawmemchr.c
 test_rawmemchr_OBJECTS = test-rawmemchr.$(OBJEXT)
 test_rawmemchr_LDADD = $(LDADD)
@@ -852,100 +867,79 @@ test_tls_OBJECTS = test-tls.$(OBJEXT)
 test_tls_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_test_u16_mbtouc_OBJECTS = unistr/test-u16-mbtouc.$(OBJEXT)
 test_u16_mbtouc_OBJECTS = $(am_test_u16_mbtouc_OBJECTS)
-test_u16_mbtouc_LDADD = $(LDADD)
-test_u16_mbtouc_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u16_mbtouc_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_check_OBJECTS = unistr/test-u8-check.$(OBJEXT)
 test_u8_check_OBJECTS = $(am_test_u8_check_OBJECTS)
-test_u8_check_LDADD = $(LDADD)
-test_u8_check_DEPENDENCIES = libtests.a ../gnulib-lib/libgettextlib.la \
-	libtests.a $(am__DEPENDENCIES_1)
+test_u8_check_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_u8_cmp_OBJECTS = unistr/test-u8-cmp.$(OBJEXT)
 test_u8_cmp_OBJECTS = $(am_test_u8_cmp_OBJECTS)
-test_u8_cmp_LDADD = $(LDADD)
-test_u8_cmp_DEPENDENCIES = libtests.a ../gnulib-lib/libgettextlib.la \
-	libtests.a $(am__DEPENDENCIES_1)
+test_u8_cmp_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
 am_test_u8_conv_from_enc_OBJECTS =  \
 	uniconv/test-u8-conv-from-enc.$(OBJEXT)
 test_u8_conv_from_enc_OBJECTS = $(am_test_u8_conv_from_enc_OBJECTS)
-test_u8_conv_from_enc_DEPENDENCIES = $(am__DEPENDENCIES_2)
+test_u8_conv_from_enc_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_u8_mblen_OBJECTS = unistr/test-u8-mblen.$(OBJEXT)
 test_u8_mblen_OBJECTS = $(am_test_u8_mblen_OBJECTS)
-test_u8_mblen_LDADD = $(LDADD)
-test_u8_mblen_DEPENDENCIES = libtests.a ../gnulib-lib/libgettextlib.la \
-	libtests.a $(am__DEPENDENCIES_1)
+test_u8_mblen_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_u8_mbtouc_OBJECTS = unistr/test-u8-mbtouc.$(OBJEXT)
 test_u8_mbtouc_OBJECTS = $(am_test_u8_mbtouc_OBJECTS)
-test_u8_mbtouc_LDADD = $(LDADD)
-test_u8_mbtouc_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_mbtouc_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_mbtouc_unsafe_OBJECTS =  \
 	unistr/test-u8-mbtouc-unsafe.$(OBJEXT)
 test_u8_mbtouc_unsafe_OBJECTS = $(am_test_u8_mbtouc_unsafe_OBJECTS)
-test_u8_mbtouc_unsafe_LDADD = $(LDADD)
-test_u8_mbtouc_unsafe_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_mbtouc_unsafe_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_mbtoucr_OBJECTS = unistr/test-u8-mbtoucr.$(OBJEXT)
 test_u8_mbtoucr_OBJECTS = $(am_test_u8_mbtoucr_OBJECTS)
-test_u8_mbtoucr_LDADD = $(LDADD)
-test_u8_mbtoucr_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_mbtoucr_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_possible_linebreaks_OBJECTS =  \
 	unilbrk/test-u8-possible-linebreaks.$(OBJEXT)
 test_u8_possible_linebreaks_OBJECTS =  \
 	$(am_test_u8_possible_linebreaks_OBJECTS)
-test_u8_possible_linebreaks_LDADD = $(LDADD)
-test_u8_possible_linebreaks_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_possible_linebreaks_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_prev_OBJECTS = unistr/test-u8-prev.$(OBJEXT)
 test_u8_prev_OBJECTS = $(am_test_u8_prev_OBJECTS)
-test_u8_prev_LDADD = $(LDADD)
-test_u8_prev_DEPENDENCIES = libtests.a ../gnulib-lib/libgettextlib.la \
-	libtests.a $(am__DEPENDENCIES_1)
+test_u8_prev_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_u8_strlen_OBJECTS = unistr/test-u8-strlen.$(OBJEXT)
 test_u8_strlen_OBJECTS = $(am_test_u8_strlen_OBJECTS)
-test_u8_strlen_LDADD = $(LDADD)
-test_u8_strlen_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_strlen_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_uctomb_OBJECTS = unistr/test-u8-uctomb.$(OBJEXT)
 test_u8_uctomb_OBJECTS = $(am_test_u8_uctomb_OBJECTS)
-test_u8_uctomb_LDADD = $(LDADD)
-test_u8_uctomb_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_uctomb_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_u8_width_linebreaks_OBJECTS =  \
 	unilbrk/test-u8-width-linebreaks.$(OBJEXT)
 test_u8_width_linebreaks_OBJECTS =  \
 	$(am_test_u8_width_linebreaks_OBJECTS)
-test_u8_width_linebreaks_LDADD = $(LDADD)
-test_u8_width_linebreaks_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_u8_width_linebreaks_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_uc_width_OBJECTS = uniwidth/test-uc_width.$(OBJEXT)
 test_uc_width_OBJECTS = $(am_test_uc_width_OBJECTS)
-test_uc_width_LDADD = $(LDADD)
-test_uc_width_DEPENDENCIES = libtests.a ../gnulib-lib/libgettextlib.la \
-	libtests.a $(am__DEPENDENCIES_1)
+test_uc_width_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_uc_width2_OBJECTS = uniwidth/test-uc_width2.$(OBJEXT)
 test_uc_width2_OBJECTS = $(am_test_uc_width2_OBJECTS)
-test_uc_width2_LDADD = $(LDADD)
-test_uc_width2_DEPENDENCIES = libtests.a \
-	../gnulib-lib/libgettextlib.la libtests.a \
+test_uc_width2_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	$(am__DEPENDENCIES_1)
 am_test_ulc_width_linebreaks_OBJECTS =  \
 	unilbrk/test-ulc-width-linebreaks.$(OBJEXT)
 test_ulc_width_linebreaks_OBJECTS =  \
 	$(am_test_ulc_width_linebreaks_OBJECTS)
-test_ulc_width_linebreaks_DEPENDENCIES = $(am__DEPENDENCIES_2)
+test_ulc_width_linebreaks_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 am_test_uninames_OBJECTS = uniname/test-uninames.$(OBJEXT)
 test_uninames_OBJECTS = $(am_test_uninames_OBJECTS)
-test_uninames_DEPENDENCIES = $(am__DEPENDENCIES_2)
+test_uninames_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_1)
 test_unistd_SOURCES = test-unistd.c
 test_unistd_OBJECTS = test-unistd.$(OBJEXT)
 test_unistd_LDADD = $(LDADD)
@@ -1040,7 +1034,7 @@ SOURCES = $(libtests_a_SOURCES) $(EXTRA_libtests_a_SOURCES) \
 	test-mbsstr3.c test-memchr.c test-open.c test-pipe.c \
 	test-pipe-filter-ii1.c test-pipe-filter-ii2-child.c \
 	test-pipe-filter-ii2-main.c test-pipe2.c test-posix_spawn1.c \
-	test-posix_spawn2.c test-quotearg.c test-rawmemchr.c \
+	test-posix_spawn2.c test-quotearg-simple.c test-rawmemchr.c \
 	test-read-file.c test-readlink.c test-rmdir.c test-sameacls.c \
 	test-sched.c test-set-mode-acl.c test-setenv.c \
 	test-sigaction.c test-signal.c test-sigpipe.c test-snprintf.c \
@@ -1063,10 +1057,10 @@ SOURCES = $(libtests_a_SOURCES) $(EXTRA_libtests_a_SOURCES) \
 	test-vasnprintf.c test-vasprintf.c test-verify.c \
 	test-vsnprintf.c test-wchar.c test-wctype.c test-wcwidth.c \
 	test-xalloc-die.c test-xvasprintf.c
-DIST_SOURCES = $(libtests_a_SOURCES) $(EXTRA_libtests_a_SOURCES) \
-	test-alignof.c test-alloca-opt.c test-areadlink.c \
-	test-argmatch.c test-array_list.c test-atexit.c \
-	test-binary-io.c test-byteswap.c test-c-ctype.c \
+DIST_SOURCES = $(am__libtests_a_SOURCES_DIST) \
+	$(EXTRA_libtests_a_SOURCES) test-alignof.c test-alloca-opt.c \
+	test-areadlink.c test-argmatch.c test-array_list.c \
+	test-atexit.c test-binary-io.c test-byteswap.c test-c-ctype.c \
 	test-c-strcasecmp.c test-c-strcasestr.c test-c-strncasecmp.c \
 	test-c-strstr.c test-canonicalize-lgpl.c test-cloexec.c \
 	test-copy-acl.c test-copy-file.c test-dup-safer.c test-dup2.c \
@@ -1080,7 +1074,7 @@ DIST_SOURCES = $(libtests_a_SOURCES) $(EXTRA_libtests_a_SOURCES) \
 	test-mbsstr3.c test-memchr.c test-open.c test-pipe.c \
 	test-pipe-filter-ii1.c test-pipe-filter-ii2-child.c \
 	test-pipe-filter-ii2-main.c test-pipe2.c test-posix_spawn1.c \
-	test-posix_spawn2.c test-quotearg.c test-rawmemchr.c \
+	test-posix_spawn2.c test-quotearg-simple.c test-rawmemchr.c \
 	test-read-file.c test-readlink.c test-rmdir.c test-sameacls.c \
 	test-sched.c test-set-mode-acl.c test-setenv.c \
 	test-sigaction.c test-signal.c test-sigpipe.c test-snprintf.c \
@@ -1169,6 +1163,7 @@ APPLE_UNIVERSAL_BUILD = @APPLE_UNIVERSAL_BUILD@
 AR = @AR@
 ARCHIVE_FORMAT = @ARCHIVE_FORMAT@
 AS = @AS@
+ASM_SYMBOL_PREFIX = @ASM_SYMBOL_PREFIX@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -1340,6 +1335,7 @@ GNULIB_MKSTEMP = @GNULIB_MKSTEMP@
 GNULIB_MKSTEMPS = @GNULIB_MKSTEMPS@
 GNULIB_MKTIME = @GNULIB_MKTIME@
 GNULIB_NANOSLEEP = @GNULIB_NANOSLEEP@
+GNULIB_NL_LANGINFO = @GNULIB_NL_LANGINFO@
 GNULIB_OBSTACK_PRINTF = @GNULIB_OBSTACK_PRINTF@
 GNULIB_OBSTACK_PRINTF_POSIX = @GNULIB_OBSTACK_PRINTF_POSIX@
 GNULIB_OPEN = @GNULIB_OPEN@
@@ -1535,9 +1531,13 @@ HAVE_JRE = @HAVE_JRE@
 HAVE_JRE_IN_PATH = @HAVE_JRE_IN_PATH@
 HAVE_JVIEW = @HAVE_JVIEW@
 HAVE_JVIEW_IN_PATH = @HAVE_JVIEW_IN_PATH@
+HAVE_LANGINFO_CODESET = @HAVE_LANGINFO_CODESET@
+HAVE_LANGINFO_ERA = @HAVE_LANGINFO_ERA@
+HAVE_LANGINFO_H = @HAVE_LANGINFO_H@
 HAVE_LCHMOD = @HAVE_LCHMOD@
 HAVE_LCHOWN = @HAVE_LCHOWN@
 HAVE_LIBEXPAT = @HAVE_LIBEXPAT@
+HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
 HAVE_LINK = @HAVE_LINK@
 HAVE_LINKAT = @HAVE_LINKAT@
 HAVE_LOCALTIME_R = @HAVE_LOCALTIME_R@
@@ -1568,6 +1568,7 @@ HAVE_MONO = @HAVE_MONO@
 HAVE_MONO_IN_PATH = @HAVE_MONO_IN_PATH@
 HAVE_NANOSLEEP = @HAVE_NANOSLEEP@
 HAVE_NEWLOCALE = @HAVE_NEWLOCALE@
+HAVE_NL_LANGINFO = @HAVE_NL_LANGINFO@
 HAVE_OPENAT = @HAVE_OPENAT@
 HAVE_OS_H = @HAVE_OS_H@
 HAVE_PIPE2 = @HAVE_PIPE2@
@@ -1681,7 +1682,8 @@ LIBEXPAT = @LIBEXPAT@
 LIBEXPAT_PREFIX = @LIBEXPAT_PREFIX@
 LIBGLIB = @LIBGLIB@
 LIBGLIB_H = @LIBGLIB_H@
-LIBGREPOBJS = @LIBGREPOBJS@
+LIBGREP_LIBDEPS = @LIBGREP_LIBDEPS@
+LIBGREP_LTLIBDEPS = @LIBGREP_LTLIBDEPS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
@@ -1693,6 +1695,14 @@ LIBTERMINFO = @LIBTERMINFO@
 LIBTESTS_LIBDEPS = @LIBTESTS_LIBDEPS@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBUNISTRING = @LIBUNISTRING@
+LIBUNISTRING_PREFIX = @LIBUNISTRING_PREFIX@
+LIBUNISTRING_UNICONV_H = @LIBUNISTRING_UNICONV_H@
+LIBUNISTRING_UNILBRK_H = @LIBUNISTRING_UNILBRK_H@
+LIBUNISTRING_UNINAME_H = @LIBUNISTRING_UNINAME_H@
+LIBUNISTRING_UNISTR_H = @LIBUNISTRING_UNISTR_H@
+LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
+LIBUNISTRING_UNIWIDTH_H = @LIBUNISTRING_UNIWIDTH_H@
 LIBXML = @LIBXML@
 LIBXML_H = @LIBXML_H@
 LIB_ACL = @LIB_ACL@
@@ -1715,6 +1725,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBPTH = @LTLIBPTH@
 LTLIBTERMINFO = @LTLIBTERMINFO@
 LTLIBTHREAD = @LTLIBTHREAD@
+LTLIBUNISTRING = @LTLIBUNISTRING@
 LTLIBXML = @LTLIBXML@
 LTNOUNDEF = @LTNOUNDEF@
 MAKEINFO = @MAKEINFO@
@@ -1730,6 +1741,7 @@ NEXT_AS_FIRST_DIRECTIVE_FCNTL_H = @NEXT_AS_FIRST_DIRECTIVE_FCNTL_H@
 NEXT_AS_FIRST_DIRECTIVE_FLOAT_H = @NEXT_AS_FIRST_DIRECTIVE_FLOAT_H@
 NEXT_AS_FIRST_DIRECTIVE_GETOPT_H = @NEXT_AS_FIRST_DIRECTIVE_GETOPT_H@
 NEXT_AS_FIRST_DIRECTIVE_ICONV_H = @NEXT_AS_FIRST_DIRECTIVE_ICONV_H@
+NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H = @NEXT_AS_FIRST_DIRECTIVE_LANGINFO_H@
 NEXT_AS_FIRST_DIRECTIVE_LOCALE_H = @NEXT_AS_FIRST_DIRECTIVE_LOCALE_H@
 NEXT_AS_FIRST_DIRECTIVE_SCHED_H = @NEXT_AS_FIRST_DIRECTIVE_SCHED_H@
 NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H = @NEXT_AS_FIRST_DIRECTIVE_SIGNAL_H@
@@ -1754,6 +1766,7 @@ NEXT_FCNTL_H = @NEXT_FCNTL_H@
 NEXT_FLOAT_H = @NEXT_FLOAT_H@
 NEXT_GETOPT_H = @NEXT_GETOPT_H@
 NEXT_ICONV_H = @NEXT_ICONV_H@
+NEXT_LANGINFO_H = @NEXT_LANGINFO_H@
 NEXT_LOCALE_H = @NEXT_LOCALE_H@
 NEXT_SCHED_H = @NEXT_SCHED_H@
 NEXT_SIGNAL_H = @NEXT_SIGNAL_H@
@@ -1793,6 +1806,7 @@ PERL = @PERL@
 POSUB = @POSUB@
 PRAGMA_SYSTEM_HEADER = @PRAGMA_SYSTEM_HEADER@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTHREAD_H_DEFINES_STRUCT_TIMESPEC = @PTHREAD_H_DEFINES_STRUCT_TIMESPEC@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RC = @RC@
@@ -1856,6 +1870,7 @@ REPLACE_MKNOD = @REPLACE_MKNOD@
 REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
 REPLACE_MKTIME = @REPLACE_MKTIME@
 REPLACE_NANOSLEEP = @REPLACE_NANOSLEEP@
+REPLACE_NL_LANGINFO = @REPLACE_NL_LANGINFO@
 REPLACE_NULL = @REPLACE_NULL@
 REPLACE_OBSTACK_PRINTF = @REPLACE_OBSTACK_PRINTF@
 REPLACE_OPEN = @REPLACE_OPEN@
@@ -1977,6 +1992,11 @@ gl_LTLIBOBJS = @gl_LTLIBOBJS@
 gltests_LIBOBJS = @gltests_LIBOBJS@
 gltests_LTLIBOBJS = @gltests_LTLIBOBJS@
 gltests_WITNESS = @gltests_WITNESS@
+grgl_LIBOBJS = @grgl_LIBOBJS@
+grgl_LTLIBOBJS = @grgl_LTLIBOBJS@
+grgltests_LIBOBJS = @grgltests_LIBOBJS@
+grgltests_LTLIBOBJS = @grgltests_LTLIBOBJS@
+grgltests_WITNESS = @grgltests_WITNESS@
 gtpo_LIBOBJS = @gtpo_LIBOBJS@
 gtpo_LTLIBOBJS = @gtpo_LTLIBOBJS@
 gtpotests_LIBOBJS = @gtpotests_LIBOBJS@
@@ -2026,8 +2046,7 @@ TESTS_ENVIRONMENT = EXEEXT='@EXEEXT@' srcdir='$(srcdir)' \
 	LOCALE_FR_UTF8='@LOCALE_FR_UTF8@' LOCALE_JA='@LOCALE_JA@' \
 	LOCALE_ZH_CN='@LOCALE_ZH_CN@' \
 	LOCALE_FR_UTF8='@LOCALE_FR_UTF8@' \
-	LOCALE_ZH_CN='@LOCALE_ZH_CN@' LOCALE_FR='@LOCALE_FR@' \
-	LOCALE_FR_UTF8='@LOCALE_FR_UTF8@' srcdir='$(srcdir)' \
+	LOCALE_ZH_CN='@LOCALE_ZH_CN@' srcdir='$(srcdir)' \
 	MAKE='$(MAKE)'
 noinst_HEADERS = 
 noinst_LIBRARIES = 
@@ -2074,14 +2093,12 @@ EXTRA_DIST = test-file-has-acl.sh test-set-mode-acl.sh \
 	macros.h test-pipe.sh test-pipe.c macros.h test-pipe2.c \
 	signature.h macros.h test-posix_spawn1.c \
 	test-posix_spawn1.in.sh test-posix_spawn2.c \
-	test-posix_spawn2.in.sh signature.h putenv.c test-quotearg.sh \
-	test-quotearg.c macros.h \
-	locale/fr/LC_MESSAGES/test-quotearg.po \
-	locale/fr/LC_MESSAGES/test-quotearg.mo test-rawmemchr.c \
-	signature.h macros.h read-file.c read-file.h test-read-file.c \
-	test-readlink.h test-readlink.c signature.h macros.h \
-	test-rmdir.h test-rmdir.c signature.h macros.h same-inode.h \
-	test-sched.c test-setenv.c signature.h macros.h \
+	test-posix_spawn2.in.sh signature.h putenv.c \
+	test-quotearg-simple.c test-quotearg.h macros.h \
+	test-rawmemchr.c signature.h macros.h read-file.c read-file.h \
+	test-read-file.c test-readlink.h test-readlink.c signature.h \
+	macros.h test-rmdir.h test-rmdir.c signature.h macros.h \
+	same-inode.h test-sched.c test-setenv.c signature.h macros.h \
 	test-sigaction.c signature.h macros.h test-signal.c \
 	test-sigpipe.c test-sigpipe.sh test-snprintf.c signature.h \
 	macros.h test-spawn.c test-stat.h test-stat.c signature.h \
@@ -2160,15 +2177,14 @@ MOSTLYCLEANDIRS =
 CLEANFILES = 
 DISTCLEANFILES = 
 MAINTAINERCLEANFILES = 
-AM_CPPFLAGS = \
-  -D@gltests_WITNESS@=1 \
-  -I. -I$(srcdir) \
-  -I.. -I$(srcdir)/.. \
-  -I../gnulib-lib -I$(srcdir)/../gnulib-lib
 
+# Ensure that test-quotearg.c finds libintl.h.
+AM_CPPFLAGS = -D@gltests_WITNESS@=1 -I. -I$(srcdir) -I.. \
+	-I$(srcdir)/.. -I../gnulib-lib -I$(srcdir)/../gnulib-lib \
+	-I../intl
 LDADD = libtests.a ../gnulib-lib/libgettextlib.la libtests.a $(LIBTESTS_LIBDEPS)
 libtests_a_SOURCES = ignore-value.h glthread/thread.h \
-	glthread/thread.c unistr/u8-cmp.c unistr/u8-strlen.c \
+	glthread/thread.c $(am__append_5) $(am__append_6) \
 	glthread/yield.h
 libtests_a_LIBADD = $(gltests_LIBOBJS)
 libtests_a_DEPENDENCIES = $(gltests_LIBOBJS)
@@ -2191,32 +2207,46 @@ test_lock_LDADD = $(LDADD) @LIBMULTITHREAD@ @YIELD_LIB@
 test_pipe_filter_ii1_LDADD = $(LDADD) @LIBINTL@
 test_pipe_filter_ii2_main_LDADD = $(LDADD) @LIBINTL@
 test_pipe_LDADD = $(LDADD) @LIBINTL@
-test_quotearg_LDADD = $(LDADD) @LIBINTL@
+test_quotearg_simple_LDADD = $(LDADD) @LIBINTL@
 test_striconv_LDADD = $(LDADD) @LIBICONV@
 test_striconveh_LDADD = $(LDADD) @LIBICONV@
 test_striconveha_LDADD = $(LDADD) @LIBICONV@
 test_term_ostream_LDADD = $(LIBTERMCAP) $(LDADD)
 test_tls_LDADD = $(LDADD) @LIBMULTITHREAD@ @YIELD_LIB@
 test_u8_conv_from_enc_SOURCES = uniconv/test-u8-conv-from-enc.c
-test_u8_conv_from_enc_LDADD = $(LDADD) @LIBICONV@
+test_u8_conv_from_enc_LDADD = $(LDADD) $(LIBUNISTRING) @LIBICONV@
 test_u8_possible_linebreaks_SOURCES = unilbrk/test-u8-possible-linebreaks.c
+test_u8_possible_linebreaks_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_width_linebreaks_SOURCES = unilbrk/test-u8-width-linebreaks.c
+test_u8_width_linebreaks_LDADD = $(LDADD) $(LIBUNISTRING)
 test_ulc_width_linebreaks_SOURCES = unilbrk/test-ulc-width-linebreaks.c
-test_ulc_width_linebreaks_LDADD = $(LDADD) @LIBICONV@
+test_ulc_width_linebreaks_LDADD = $(LDADD) $(LIBUNISTRING) @LIBICONV@
 test_uninames_SOURCES = uniname/test-uninames.c
-test_uninames_LDADD = $(LDADD) @LIBINTL@
+test_uninames_LDADD = $(LDADD) $(LIBUNISTRING) @LIBINTL@
 test_u16_mbtouc_SOURCES = unistr/test-u16-mbtouc.c
+test_u16_mbtouc_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_check_SOURCES = unistr/test-u8-check.c
+test_u8_check_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_cmp_SOURCES = unistr/test-u8-cmp.c
+test_u8_cmp_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_mblen_SOURCES = unistr/test-u8-mblen.c
+test_u8_mblen_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_mbtouc_SOURCES = unistr/test-u8-mbtouc.c
+test_u8_mbtouc_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_mbtouc_unsafe_SOURCES = unistr/test-u8-mbtouc-unsafe.c
+test_u8_mbtouc_unsafe_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_mbtoucr_SOURCES = unistr/test-u8-mbtoucr.c
+test_u8_mbtoucr_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_prev_SOURCES = unistr/test-u8-prev.c
+test_u8_prev_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_strlen_SOURCES = unistr/test-u8-strlen.c
+test_u8_strlen_LDADD = $(LDADD) $(LIBUNISTRING)
 test_u8_uctomb_SOURCES = unistr/test-u8-uctomb.c
+test_u8_uctomb_LDADD = $(LDADD) $(LIBUNISTRING)
 test_uc_width_SOURCES = uniwidth/test-uc_width.c
+test_uc_width_LDADD = $(LDADD) $(LIBUNISTRING)
 test_uc_width2_SOURCES = uniwidth/test-uc_width2.c
+test_uc_width2_LDADD = $(LDADD) $(LIBUNISTRING)
 UNUSED_PARAMETER_H = unused-parameter.h
 WARN_ON_USE_H = warn-on-use.h
 test_xalloc_die_LDADD = $(LDADD) @LIBINTL@
@@ -2467,9 +2497,9 @@ test-posix_spawn1$(EXEEXT): $(test_posix_spawn1_OBJECTS) $(test_posix_spawn1_DEP
 test-posix_spawn2$(EXEEXT): $(test_posix_spawn2_OBJECTS) $(test_posix_spawn2_DEPENDENCIES) 
 	@rm -f test-posix_spawn2$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_posix_spawn2_OBJECTS) $(test_posix_spawn2_LDADD) $(LIBS)
-test-quotearg$(EXEEXT): $(test_quotearg_OBJECTS) $(test_quotearg_DEPENDENCIES) 
-	@rm -f test-quotearg$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_quotearg_OBJECTS) $(test_quotearg_LDADD) $(LIBS)
+test-quotearg-simple$(EXEEXT): $(test_quotearg_simple_OBJECTS) $(test_quotearg_simple_DEPENDENCIES) 
+	@rm -f test-quotearg-simple$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_quotearg_simple_OBJECTS) $(test_quotearg_simple_LDADD) $(LIBS)
 test-rawmemchr$(EXEEXT): $(test_rawmemchr_OBJECTS) $(test_rawmemchr_DEPENDENCIES) 
 	@rm -f test-rawmemchr$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_rawmemchr_OBJECTS) $(test_rawmemchr_LDADD) $(LIBS)
@@ -2803,7 +2833,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-pipe2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-posix_spawn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-posix_spawn2.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-quotearg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-quotearg-simple.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-rawmemchr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-read-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-readlink.Po@am__quote@

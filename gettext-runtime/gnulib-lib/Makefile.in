@@ -47,12 +47,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@LIBUNISTRING_COMPILE_UNIWIDTH_WIDTH_TRUE@am__append_1 = uniwidth/width.c
 subdir = gnulib-lib
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
+	$(top_srcdir)/gnulib-m4/asm-underscore.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/canonicalize.m4 \
 	$(top_srcdir)/gnulib-m4/csharp.m4 \
@@ -75,6 +77,7 @@ am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/00gnulib.m4 \
 	$(top_srcdir)/gnulib-m4/lib-ld.m4 \
 	$(top_srcdir)/gnulib-m4/lib-link.m4 \
 	$(top_srcdir)/gnulib-m4/lib-prefix.m4 \
+	$(top_srcdir)/gnulib-m4/libunistring-base.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
 	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
 	$(top_srcdir)/gnulib-m4/locale-ja.m4 \
@@ -160,14 +163,23 @@ am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
 am__v_at_0 = @
 libgrt_a_AR = $(AR) $(ARFLAGS)
 am__DEPENDENCIES_1 =
+am__libgrt_a_SOURCES_DIST = areadlink.c basename.h basename.c \
+	c-ctype.h c-ctype.c c-strcase.h c-strcasecmp.c c-strncasecmp.c \
+	closeout.h closeout.c fwriteerror.h fwriteerror.c gettext.h \
+	localcharset.h localcharset.c malloca.c mbchar.c mbiter.h \
+	mbslen.c mbsstr.c mbuiter.h progname.h progname.c propername.h \
+	propername.c striconv.h striconv.c strnlen1.h strnlen1.c \
+	trim.c uniwidth/width.c verify.h xalloc.h xmalloc.c xstrdup.c \
+	xreadlink.c xstriconv.h xstriconv.c
 am__dirstamp = $(am__leading_dot)dirstamp
+@LIBUNISTRING_COMPILE_UNIWIDTH_WIDTH_TRUE@am__objects_1 = uniwidth/width.$(OBJEXT)
 am_libgrt_a_OBJECTS = areadlink.$(OBJEXT) basename.$(OBJEXT) \
 	c-ctype.$(OBJEXT) c-strcasecmp.$(OBJEXT) \
 	c-strncasecmp.$(OBJEXT) closeout.$(OBJEXT) \
 	fwriteerror.$(OBJEXT) localcharset.$(OBJEXT) malloca.$(OBJEXT) \
 	mbchar.$(OBJEXT) mbslen.$(OBJEXT) mbsstr.$(OBJEXT) \
 	progname.$(OBJEXT) propername.$(OBJEXT) striconv.$(OBJEXT) \
-	strnlen1.$(OBJEXT) trim.$(OBJEXT) uniwidth/width.$(OBJEXT) \
+	strnlen1.$(OBJEXT) trim.$(OBJEXT) $(am__objects_1) \
 	xmalloc.$(OBJEXT) xstrdup.$(OBJEXT) xreadlink.$(OBJEXT) \
 	xstriconv.$(OBJEXT)
 libgrt_a_OBJECTS = $(am_libgrt_a_OBJECTS)
@@ -198,7 +210,7 @@ AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgrt_a_SOURCES) $(EXTRA_libgrt_a_SOURCES)
-DIST_SOURCES = $(libgrt_a_SOURCES) $(EXTRA_libgrt_a_SOURCES)
+DIST_SOURCES = $(am__libgrt_a_SOURCES_DIST) $(EXTRA_libgrt_a_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -249,6 +261,7 @@ AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 APPLE_UNIVERSAL_BUILD = @APPLE_UNIVERSAL_BUILD@
 AR = @AR@
 AS = @AS@
+ASM_SYMBOL_PREFIX = @ASM_SYMBOL_PREFIX@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -667,6 +680,8 @@ LIBS = @LIBS@
 LIBSCHED = @LIBSCHED@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
+LIBUNISTRING_UNIWIDTH_H = @LIBUNISTRING_UNIWIDTH_H@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LOCALCHARSET_TESTS_ENVIRONMENT = @LOCALCHARSET_TESTS_ENVIRONMENT@
@@ -731,6 +746,7 @@ PERL = @PERL@
 POSUB = @POSUB@
 PRAGMA_SYSTEM_HEADER = @PRAGMA_SYSTEM_HEADER@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTHREAD_H_DEFINES_STRUCT_TIMESPEC = @PTHREAD_H_DEFINES_STRUCT_TIMESPEC@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RC = @RC@
@@ -957,8 +973,8 @@ EXTRA_DIST = alloca.in.h areadlink.h \
 	sigprocmask.c stat.c stdbool.in.h stddef.in.h stdint.in.h \
 	stdio-write.c stdio.in.h stdlib.in.h streq.h strerror.c \
 	string.in.h strnlen.c strtol.c strtoul.c sys_stat.in.h \
-	time.in.h trim.h unistd.in.h unitypes.h localcharset.h \
-	uniwidth.h uniwidth/cjk.h unlocked-io.h \
+	time.in.h trim.h unistd.in.h unitypes.in.h localcharset.h \
+	uniwidth.in.h uniwidth/cjk.h unlocked-io.h \
 	$(top_srcdir)/../build-aux/warn-on-use.h wchar.in.h \
 	wctype.in.h wcwidth.c xreadlink.h
 
@@ -976,7 +992,8 @@ BUILT_SOURCES = $(ALLOCA_H) arg-nonnull.h c++defs.h configmake.h \
 	iconv_open-hpux.h iconv_open-irix.h iconv_open-osf.h \
 	iconv_open-solaris.h signal.h $(STDBOOL_H) $(STDDEF_H) \
 	$(STDINT_H) stdio.h stdlib.h string.h sys/stat.h time.h \
-	unistd.h warn-on-use.h wchar.h wctype.h
+	unistd.h $(LIBUNISTRING_UNITYPES_H) $(LIBUNISTRING_UNIWIDTH_H) \
+	warn-on-use.h wchar.h wctype.h
 SUFFIXES = .sed .sin
 MOSTLYCLEANFILES = core *.stackdump alloca.h alloca.h-t arg-nonnull.h \
 	arg-nonnull.h-t c++defs.h c++defs.h-t errno.h errno.h-t \
@@ -985,7 +1002,8 @@ MOSTLYCLEANFILES = core *.stackdump alloca.h alloca.h-t arg-nonnull.h \
 	iconv_open-solaris.h-t signal.h signal.h-t stdbool.h \
 	stdbool.h-t stddef.h stddef.h-t stdint.h stdint.h-t stdio.h \
 	stdio.h-t stdlib.h stdlib.h-t string.h string.h-t sys/stat.h \
-	sys/stat.h-t time.h time.h-t unistd.h unistd.h-t warn-on-use.h \
+	sys/stat.h-t time.h time.h-t unistd.h unistd.h-t unitypes.h \
+	unitypes.h-t uniwidth.h uniwidth.h-t warn-on-use.h \
 	warn-on-use.h-t wchar.h wchar.h-t wctype.h wctype.h-t
 MOSTLYCLEANDIRS = sys
 CLEANFILES = configmake.h configmake.h-t charset.alias ref-add.sed \
@@ -1006,7 +1024,7 @@ libgrt_a_SOURCES = areadlink.c basename.h basename.c c-ctype.h \
 	localcharset.h localcharset.c malloca.c mbchar.c mbiter.h \
 	mbslen.c mbsstr.c mbuiter.h progname.h progname.c propername.h \
 	propername.c striconv.h striconv.c strnlen1.h strnlen1.c \
-	trim.c uniwidth/width.c verify.h xalloc.h xmalloc.c xstrdup.c \
+	trim.c $(am__append_1) verify.h xalloc.h xmalloc.c xstrdup.c \
 	xreadlink.c xstriconv.h xstriconv.c
 libgrt_a_LIBADD = $(gl_LIBOBJS)
 libgrt_a_DEPENDENCIES = $(gl_LIBOBJS)
@@ -1800,6 +1818,7 @@ stdio.h: stdio.in.h $(CXXDEFS_H) $(ARG_NONNULL_H) $(WARN_ON_USE_H)
 	      -e 's|@''REPLACE_VPRINTF''@|$(REPLACE_VPRINTF)|g' \
 	      -e 's|@''REPLACE_VSNPRINTF''@|$(REPLACE_VSNPRINTF)|g' \
 	      -e 's|@''REPLACE_VSPRINTF''@|$(REPLACE_VSPRINTF)|g' \
+	      -e 's|@''ASM_SYMBOL_PREFIX''@|$(ASM_SYMBOL_PREFIX)|g' \
 	      -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \
 	      -e '/definition of _GL_ARG_NONNULL/r $(ARG_NONNULL_H)' \
 	      -e '/definition of _GL_WARN_ON_USE/r $(WARN_ON_USE_H)'; \
@@ -2028,6 +2047,7 @@ time.h: time.in.h $(CXXDEFS_H) $(ARG_NONNULL_H) $(WARN_ON_USE_H)
 	      -e 's|@''REPLACE_MKTIME''@|$(REPLACE_MKTIME)|g' \
 	      -e 's|@''REPLACE_NANOSLEEP''@|$(REPLACE_NANOSLEEP)|g' \
 	      -e 's|@''REPLACE_TIMEGM''@|$(REPLACE_TIMEGM)|g' \
+	      -e 's|@''PTHREAD_H_DEFINES_STRUCT_TIMESPEC''@|$(PTHREAD_H_DEFINES_STRUCT_TIMESPEC)|g' \
 	      -e 's|@''SYS_TIME_H_DEFINES_STRUCT_TIMESPEC''@|$(SYS_TIME_H_DEFINES_STRUCT_TIMESPEC)|g' \
 	      -e 's|@''TIME_H_DEFINES_STRUCT_TIMESPEC''@|$(TIME_H_DEFINES_STRUCT_TIMESPEC)|g' \
 	      -e '/definitions of _GL_FUNCDECL_RPL/r $(CXXDEFS_H)' \
@@ -2152,6 +2172,20 @@ unistd.h: unistd.in.h $(CXXDEFS_H) $(ARG_NONNULL_H) $(WARN_ON_USE_H)
 	      -e '/definition of _GL_WARN_ON_USE/r $(WARN_ON_USE_H)'; \
 	} > $@-t && \
 	mv $@-t $@
+
+unitypes.h: unitypes.in.h
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  cat $(srcdir)/unitypes.in.h; \
+	} > $@-t && \
+	mv -f $@-t $@
+
+uniwidth.h: uniwidth.in.h
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+	  cat $(srcdir)/uniwidth.in.h; \
+	} > $@-t && \
+	mv -f $@-t $@
 # The warn-on-use.h that gets inserted into generated .h files is the same as
 # build-aux/warn-on-use.h, except that it has the copyright header cut off.
 warn-on-use.h: $(top_srcdir)/../build-aux/warn-on-use.h

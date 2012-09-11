@@ -10882,7 +10882,7 @@ File: gettext.info,  Node: objc-format,  Next: sh-format,  Prev: c-format,  Up: 
 ---------------------------------
 
    Objective C format strings are like C format strings.  They support
-an additional format directive: "$@", which when executed consumes an
+an additional format directive: "%@", which when executed consumes an
 argument of type `Object *'.
 
 

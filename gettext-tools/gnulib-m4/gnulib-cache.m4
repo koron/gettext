@@ -15,18 +15,20 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=gettext-tools --local-dir=gnulib-local --lib=libgettextlib --source-base=gnulib-lib --m4-base=gnulib-m4 --doc-base=doc --tests-base=gnulib-tests --aux-dir=../build-aux --with-tests --avoid=hash-tests --makefile-name=Makefile.gnulib --libtool --macro-prefix=gl alloca-opt atexit backupfile basename binary-io bison-i18n byteswap c-ctype c-strcase c-strcasestr c-strstr clean-temp closeout copy-file csharpcomp csharpcomp-script csharpexec csharpexec-script error error-progname execute fd-ostream file-ostream filename findprog fnmatch fopen fstrcmp full-write fwriteerror gcd gcj getline getopt-gnu gettext-h gettext-tools-misc hash html-styled-ostream iconv java javacomp javacomp-script javaexec javaexec-script localcharset locale localename lock memmove memset minmax obstack open openmp ostream pipe pipe-filter-ii progname propername relocatable-prog relocatable-script sh-quote sigpipe sigprocmask stdbool stdint stdio stdlib stpcpy stpncpy strcspn strerror strpbrk strtol strtoul styled-ostream sys_select sys_stat sys_time term-styled-ostream unilbrk/ulc-width-linebreaks uniname/uniname unistd unistr/u16-mbtouc unistr/u8-mbtouc unistr/u8-uctomb uniwidth/width unlocked-io vasprintf wait-process write xalloc xconcat-filename xerror xmalloca xsetenv xstriconv xstriconveh xvasprintf
+#   gnulib-tool --import --dir=gettext-tools --local-dir=gnulib-local --lib=libgettextlib --source-base=gnulib-lib --m4-base=gnulib-m4 --doc-base=doc --tests-base=gnulib-tests --aux-dir=../build-aux --with-tests --avoid=hash-tests --makefile-name=Makefile.gnulib --libtool --macro-prefix=gl alloca-opt arg-nonnull atexit backupfile basename binary-io bison-i18n byteswap c++defs c-ctype c-strcase c-strcasestr c-strstr clean-temp closeout copy-file csharpcomp csharpcomp-script csharpexec csharpexec-script error error-progname execute extensions fd-ostream file-ostream filename findprog fnmatch fopen fstrcmp full-write fwriteerror gcd gcj getline getopt-gnu gettext-h gettext-tools-misc hash html-styled-ostream iconv include_next java javacomp javacomp-script javaexec javaexec-script libunistring-optional localcharset locale localename lock malloc-posix mbrtowc mbsinit memmove memset minmax multiarch obstack open openmp ostream pipe pipe-filter-ii progname propername relocatable-prog relocatable-script sh-quote sigpipe sigprocmask ssize_t stdbool stddef stdint stdio stdlib stpcpy stpncpy strcspn streq strerror strpbrk strtol strtoul styled-ostream sys_select sys_stat sys_time term-styled-ostream unilbrk/ulc-width-linebreaks uniname/uniname unistd unistr/u16-mbtouc unistr/u8-mbtouc unistr/u8-uctomb uniwidth/width unlocked-io vasprintf verify wait-process warn-on-use wchar wctype write xalloc xconcat-filename xerror xmalloca xsetenv xstriconv xstriconveh xvasprintf
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([../gnulib-local])
 gl_MODULES([
   alloca-opt
+  arg-nonnull
   atexit
   backupfile
   basename
   binary-io
   bison-i18n
   byteswap
+  c++defs
   c-ctype
   c-strcase
   c-strcasestr
@@ -41,6 +43,7 @@ gl_MODULES([
   error
   error-progname
   execute
+  extensions
   fd-ostream
   file-ostream
   filename
@@ -59,18 +62,24 @@ gl_MODULES([
   hash
   html-styled-ostream
   iconv
+  include_next
   java
   javacomp
   javacomp-script
   javaexec
   javaexec-script
+  libunistring-optional
   localcharset
   locale
   localename
   lock
+  malloc-posix
+  mbrtowc
+  mbsinit
   memmove
   memset
   minmax
+  multiarch
   obstack
   open
   openmp
@@ -84,13 +93,16 @@ gl_MODULES([
   sh-quote
   sigpipe
   sigprocmask
+  ssize_t
   stdbool
+  stddef
   stdint
   stdio
   stdlib
   stpcpy
   stpncpy
   strcspn
+  streq
   strerror
   strpbrk
   strtol
@@ -109,7 +121,11 @@ gl_MODULES([
   uniwidth/width
   unlocked-io
   vasprintf
+  verify
   wait-process
+  warn-on-use
+  wchar
+  wctype
   write
   xalloc
   xconcat-filename
