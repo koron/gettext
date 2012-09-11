@@ -521,11 +521,8 @@ EXTRA_DIST = gettext-po.h.in alloca_.h allocsa.valgrind error.c \
 	relocatable.c relocatable.h stdbool_.h stdint_.h stpcpy.c \
 	stpcpy.h strdup.c strdup.h unlocked-io.h vasprintf.c \
 	vasprintf.h xalloc.h
-
-# Hide symbols that are defined by libgettextpo_la_AUXSOURCES or libgnu.la
-# from the global namespace, by prefixing them with "libgettextpo_".
-BUILT_SOURCES = config.h gettext-po.h $(ALLOCA_H) configmake.h \
-	$(STDBOOL_H) $(STDINT_H)
+BUILT_SOURCES = gettext-po.h $(ALLOCA_H) configmake.h $(STDBOOL_H) \
+	$(STDINT_H)
 MOSTLYCLEANFILES = core *.stackdump config.h config.h-t core \
 	*.stackdump alloca.h alloca.h-t stdbool.h stdbool.h-t stdint.h \
 	stdint.h-t
@@ -1044,7 +1041,11 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-local \
 	uninstall-libLTLIBRARIES uninstall-local \
 	uninstall-nodist_includeHEADERS
 
-config.h:
+
+# Hide symbols that are defined by libgettextpo_la_AUXSOURCES or libgnu.la
+# from the global namespace, by prefixing them with "libgettextpo_".
+all check install: config.h
+config.h: $(BUILT_SOURCES)
 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
 	  : "Avoid double inclusion, to avoid a warning about redefinition of DLL_VARIABLE."; \
 	  echo '#ifndef GTPO_CONFIG_H'; \
@@ -1060,7 +1061,6 @@ config.h:
 	  echo; \
 	  echo '#endif /* GTPO_CONFIG_H */'; \
 	} > config.h && \
-	{ $(MAKE) $(BUILT_SOURCES) || { rm -f config.h; exit 1; }; } && \
 	if test -n "$(HAVE_GLOBAL_SYMBOL_PIPE)"; then \
 	  { \
 	    for f in $(libgettextpo_la_AUXSOURCES) $(libgnu_la_SOURCES) $(libgnu_la_LIBADD); do \

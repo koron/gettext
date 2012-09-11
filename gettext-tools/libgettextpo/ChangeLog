@@ -1,3 +1,22 @@
+2006-11-27  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.16.1 released.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in (po_message_prev_msgctxt, po_message_set_prev_msgctxt,
+	po_message_prev_msgid, po_message_set_prev_msgid,
+	po_message_prev_msgid_plural, po_message_set_prev_msgid_plural): New
+	declarations.
+
+2006-10-28  Bruno Haible  <bruno@clisp.org>
+
+	Fix for parallel makes.
+	* Makefile.am (BUILT_SOURCES): Don't add config.h.
+	(all, check, install): Depend on config.h.
+	(config.h): Depend on the BUILT_SOURCES. Don't invoke make recursively.
+	Reported by Ralf Wildenhues.
+
 2006-10-26  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16 released.
