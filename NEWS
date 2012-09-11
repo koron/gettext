@@ -1,3 +1,83 @@
+Version 0.18 - May 2010
+
+* Runtime behaviour:
+  - On MacOS X and Windows systems, <libintl.h> now extends setlocale() and
+    newlocale() so that their determination of the default locale considers
+    the choice the user has made in the system control panels.
+  - On MacOS X systems, the gettext()/dgettext()/... functions now respect the
+    locale of the current thread, if a thread-specific locale has been set.
+
+* PO file format:
+  There is a new field 'Language' in the header entry.  It denotes the language
+  code (plus optional country code) for the PO file.  This field can be used
+  by automated tools, such as spell checkers.  It is expected to be more
+  reliable than looking at the file name or at the 'Language-Team' field in
+  the header entry.
+  msgmerge, msgcat, msgen have a new option --lang that allows to specify
+  this field.  Additionally, msgmerge fills in this new field by looking at
+  the 'Language-Team' field (if the --lang option is not given).
+
+* xgettext and PO file format:
+  For messages with plural forms, programmers can inform the translators
+  about the range of possible values of the numeric argument, like this:
+    /* xgettext: range: 0..15 */
+  This information 'range: 0..15' is stored in the PO file as a flag attached
+  to the message.  Translators can produce better translations when they know
+  that the numeric argument is small.
+
+* Colorized PO files:
+  msgattrib, msgcomm, msgconv, msgen, msgfilter, msggrep, msginit, msgmerge,
+  msgunfmt, msguniq, xgettext now have options --color and --style, like msgcat
+  has since version 0.17.
+
+* msgmerge is up to 10 times faster when the PO and POT files are large.
+  This speedup was contributed by Ralf Wildenhues.
+
+* msgcmp has a new option -N/--no-fuzzy-matching, like msgmerge has since
+  version 0.12.
+
+* msgfilter now sets environment variables during the invocation of the
+  filter, indicating the msgid and location of the messge being processed.
+
+* xgettext now can extract plural forms from Qt 4 programs. The recommended
+  xgettext command-line options for this case are:
+    --qt --keyword=tr:1,1t --keyword=tr:1,2c,2t --keyword=tr:1,1,2c,3t
+
+* xgettext --language=GCC-source now recognizes also the format strings
+  used in the Fortran front-end of the GCC compiler, and marks them as
+  'gfc-internal-format'.
+
+* autopoint can now be used to update several PO directories all together.
+
+* PO mode changes:
+  - PO files with plural entries are now correctly handled.
+  - Editing a message with previous msgid (in comments) removes these
+    comments.  Contributed by Noritada Kobayashi.
+
+* The po/Makevars file has a new field MSGMERGE_OPTIONS, that can be used
+  to adjust msgmerge's operation.
+
+* The use of the macro AM_GNU_GETTEXT without 'external' argument and the
+  --intl option of the gettextize program are deprecated and will be removed
+  in the next release. Instead of including the intl sources in your package,
+  we suggest making the libintl library an (optional) prerequisite of your
+  package.
+
+* Updated the meaning of 'gcc-internal-format' to match GCC 4.3.
+
+* Installation options:
+  The configure options --without-cvs and --with-git can be used to specify
+  whether 'autopoint' will use the 'cvs' program, or the 'git' program, or
+  none at all. These options allow to trade dependencies against installed
+  package size: If --without-cvs is specified and --with-git is not specified,
+  'autopoint' will not rely on 'cvs' or 'git', but will instead rely on a
+  locally installed a 3 MB large archive.
+
+* Portability:
+  - The msgfilter program now also works on native Woe32 platforms.
+  - Compiled C# message catalogs now also work with 'mono' versions from 2009
+    or newer.
+
 Version 0.17 - November 2007
 
 * License:

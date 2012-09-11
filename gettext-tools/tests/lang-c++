@@ -70,14 +70,17 @@ tmpfiles="$tmpfiles prog.${OBJEXT} prog${EXEEXT}"
 # ${CXXFLAGS} or ${CPPFLAGS}.
 ${CXX} -I.. -I../../gettext-runtime/libasprintf -I$top_srcdir/gnulib-lib -I../intl ${CXXFLAGS} ${CPPFLAGS} -c prog.cc \
   || exit 1
-${LIBTOOL} --quiet --mode=link ${CXX} ${CXXFLAGS} ${LDFLAGS} -o prog prog.${OBJEXT} ../../gettext-runtime/libasprintf/libasprintf.la ../gnulib-lib/libgettextlib.la ${LTLIBINTL} \
+# Remove the -Wl,--disable-auto-import option here that is added by
+# woe32-dll.m4. Cygwin 1.7.2 does not support it in C++ mode: It gives
+# a link error about 'std::cout'.
+${LIBTOOL} --quiet --mode=link --tag=CXX ${CXX} ${CXXFLAGS} `echo "X ${LDFLAGS} " | sed -e 's/^X//' -e 's/ -Wl,--disable-auto-import / /'` -o prog prog.${OBJEXT} ../../gettext-runtime/libasprintf/libasprintf.la ../gnulib-lib/libgettextlib.la ${LTLIBINTL} \
   || exit 1
 
 tmpfiles="$tmpfiles prog.tmp prog.pot"
 : ${XGETTEXT=xgettext}
 ${XGETTEXT} -o prog.tmp --omit-header --no-location -k_ prog.cc
 test $? = 0 || { rm -fr $tmpfiles; exit 1; }
-tr -d '\r' < prog.tmp > prog.pot
+LC_ALL=C tr -d '\r' < prog.tmp > prog.pot
 test $? = 0 || { rm -fr $tmpfiles; exit 1; }
 
 tmpfiles="$tmpfiles prog.ok"
@@ -126,7 +129,7 @@ tmpfiles="$tmpfiles fr.po.tmp fr.po.new"
 : ${MSGMERGE=msgmerge}
 ${MSGMERGE} -q -o fr.po.tmp fr.po prog.pot
 test $? = 0 || { rm -fr $tmpfiles; exit 1; }
-tr -d '\r' < fr.po.tmp > fr.po.new
+LC_ALL=C tr -d '\r' < fr.po.tmp > fr.po.new
 test $? = 0 || { rm -fr $tmpfiles; exit 1; }
 
 : ${DIFF=diff}

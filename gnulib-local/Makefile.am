@@ -1,5 +1,5 @@
 ## Makefile for the gnulib-local directory of GNU gettext
-## Copyright (C) 2006-2007 Free Software Foundation, Inc.
+## Copyright (C) 2006-2008, 2010 Free Software Foundation, Inc.
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 EXTRA_DIST = \
 ChangeLog \
 build-aux/moopp \
-lib/3level.h \
 lib/addext.c \
 lib/alloca.in.h \
 lib/argmatch.h.diff \
@@ -33,7 +32,6 @@ lib/ChangeLog.0 \
 lib/ChangeLog.1 \
 lib/closeout.c \
 lib/closeout.h \
-lib/Combining.txt \
 lib/error.h.diff \
 lib/error-progname.c \
 lib/error-progname.h \
@@ -44,7 +42,6 @@ lib/file-ostream.oo.c \
 lib/file-ostream.oo.h \
 lib/fnmatch.c.diff \
 lib/fnmatch_loop.c.diff \
-lib/gen-lbrkprop.c \
 lib/getopt.in.h.diff \
 lib/gettext.h \
 lib/gl_array_list.h.diff \
@@ -218,7 +215,6 @@ lib/libxml/xpath.in.h \
 lib/libxml/xpathInternals.in.h \
 lib/libxml/xpointer.c \
 lib/libxml/xpointer.in.h \
-lib/linebreak.c.diff \
 lib/memory-ostream.oo.c \
 lib/memory-ostream.oo.h \
 lib/moo.h \
@@ -226,8 +222,6 @@ lib/obstack.h.diff \
 lib/ostream.oo.c \
 lib/ostream.oo.h \
 lib/progname.h.diff \
-lib/propername.c \
-lib/propername.h \
 lib/styled-ostream.oo.c \
 lib/styled-ostream.oo.h \
 lib/term-ostream.oo.c \
@@ -238,7 +232,7 @@ lib/termcap.h \
 lib/terminfo.h \
 lib/tparm.c \
 lib/tputs.c \
-lib/vasprintf.c \
+lib/unistd.in.h.diff \
 lib/xalloc.h \
 lib/xerror.c \
 lib/xerror.h \
@@ -250,7 +244,7 @@ m4/alloca.m4 \
 m4/backupfile.m4 \
 m4/ChangeLog.0 \
 m4/ChangeLog.1 \
-m4/exitfail.m4.diff \
+m4/curses.m4 \
 m4/gcj.m4 \
 m4/hard-locale.m4.diff \
 m4/libcroco.m4 \
@@ -264,17 +258,14 @@ m4/termcap.m4 \
 m4/terminfo.m4 \
 m4/term-ostream.m4 \
 m4/unionwait.m4 \
-m4/vasprintf.m4 \
 modules/backupfile \
 modules/basename \
 modules/closeout \
 modules/error-progname \
-modules/exitfail.diff \
 modules/fd-ostream \
 modules/file-ostream \
 modules/fnmatch.diff \
 modules/gcj \
-modules/gen-lbrkprop \
 modules/gettext-runtime-misc \
 modules/gettext-tools-misc \
 modules/hash \
@@ -289,7 +280,6 @@ modules/memory-ostream \
 modules/moo \
 modules/moo-tests \
 modules/ostream \
-modules/propername \
 modules/quotearg.diff \
 modules/quote.diff \
 modules/styled-ostream \
@@ -300,7 +290,6 @@ modules/terminfo-h \
 modules/term-ostream \
 modules/term-ostream-tests \
 modules/term-styled-ostream \
-modules/vasprintf.diff \
 modules/wait-process.diff \
 modules/xalloc \
 modules/xalloc-die \

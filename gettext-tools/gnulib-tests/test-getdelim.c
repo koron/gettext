@@ -1,5 +1,5 @@
 /* Test of getdelim() function.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007-2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,31 +20,26 @@
 #include <config.h>
 
 #include <stdio.h>
+
+#include "signature.h"
+SIGNATURE_CHECK (getdelim, ssize_t, (char **, size_t *, int, FILE *));
+
 #include <stdlib.h>
 #include <string.h>
 
-#define ASSERT(expr) \
-  do									     \
-    {									     \
-      if (!(expr))							     \
-        {								     \
-          fprintf (stderr, "%s:%d: assertion failed\n", __FILE__, __LINE__); \
-          abort ();							     \
-        }								     \
-    }									     \
-  while (0)
+#include "macros.h"
 
 int
-main (int argc, char **argv)
+main (void)
 {
   FILE *f;
-  char *line = NULL;
-  size_t len = 0;
+  char *line;
+  size_t len;
   ssize_t result;
 
   /* Create test file.  */
   f = fopen ("test-getdelim.txt", "wb");
-  if (!f || fwrite ("anbcnd\0f", 1, 8, f) != 8 || fclose (f) != 0)
+  if (!f || fwrite ("anAnbcnd\0f", 1, 10, f) != 10 || fclose (f) != 0)
     {
       fputs ("Failed to create sample file.\n", stderr);
       remove ("test-getdelim.txt");
@@ -59,13 +54,24 @@ main (int argc, char **argv)
     }
 
   /* Test initial allocation, which must include trailing NUL.  */
+  line = NULL;
+  len = 0;
   result = getdelim (&line, &len, 'n', f);
   ASSERT (result == 2);
   ASSERT (strcmp (line, "an") == 0);
   ASSERT (2 < len);
+  free (line);
+
+  /* Test initial allocation again, with line = NULL and len != 0.  */
+  line = NULL;
+  len = (size_t)(~0) / 4;
+  result = getdelim (&line, &len, 'n', f);
+  ASSERT (result == 2);
+  ASSERT (strcmp (line, "An") == 0);
+  ASSERT (2 < len);
+  free (line);
 
   /* Test growth of buffer.  */
-  free (line);
   line = malloc (1);
   len = 1;
   result = getdelim (&line, &len, 'n', f);

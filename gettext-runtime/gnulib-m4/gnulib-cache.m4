@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2007 Free Software Foundation, Inc.
+# Copyright (C) 2002-2010 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -15,11 +15,34 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=gettext-runtime --local-dir=gnulib-local --lib=libgrt --source-base=gnulib-lib --m4-base=gnulib-m4 --doc-base=doc --aux-dir=../build-aux --no-libtool --macro-prefix=gl atexit basename closeout csharpcomp-script error exit getopt gettext-h gettext-runtime-misc java javacomp-script memmove progname propername relocatable-prog stdbool strtoul unlocked-io xalloc
+#   gnulib-tool --import --dir=gettext-runtime --local-dir=gnulib-local --lib=libgrt --source-base=gnulib-lib --m4-base=gnulib-m4 --doc-base=doc --tests-base=tests --aux-dir=../build-aux --no-libtool --macro-prefix=gl atexit basename closeout csharpcomp-script error getopt-gnu gettext-h gettext-runtime-misc havelib java javacomp-script memmove progname propername relocatable-prog sigpipe stdbool stdio stdlib strtoul unlocked-io xalloc
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([../gnulib-local])
-gl_MODULES([atexit basename closeout csharpcomp-script error exit getopt gettext-h gettext-runtime-misc java javacomp-script memmove progname propername relocatable-prog stdbool strtoul unlocked-io xalloc])
+gl_MODULES([
+  atexit
+  basename
+  closeout
+  csharpcomp-script
+  error
+  getopt-gnu
+  gettext-h
+  gettext-runtime-misc
+  havelib
+  java
+  javacomp-script
+  memmove
+  progname
+  propername
+  relocatable-prog
+  sigpipe
+  stdbool
+  stdio
+  stdlib
+  strtoul
+  unlocked-io
+  xalloc
+])
 gl_AVOID([])
 gl_SOURCE_BASE([gnulib-lib])
 gl_M4_BASE([gnulib-m4])

@@ -1,5 +1,5 @@
 /* Test of <stdint.h> substitute.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006-2010 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #define DO_PEDANTIC 0
 
 #define __STDC_LIMIT_MACROS 1 /* to make it work also in C++ mode */
+#define __STDC_CONSTANT_MACROS 1 /* likewise */
 #include <stdint.h>
 
 #include "verify.h"
@@ -246,10 +247,14 @@ uintmax_t j[2] = { UINTMAX_C (17), UINTMAX_MAX };
 verify (TYPE_MAXIMUM (uintmax_t) == UINTMAX_MAX);
 verify_same_types (UINTMAX_MAX, (uintmax_t) 0 + 0);
 
+/* As of 2007, Sun C and HP-UX 10.20 cc don't support 'long long' constants in
+   the preprocessor.  */
+#if !(defined __SUNPRO_C || (defined __hpux && !defined __GNUC__))
 #if INTMAX_MIN && INTMAX_MAX && UINTMAX_MAX
 /* ok */
 #else
 err or;
+#endif
 #endif
 
 /* 7.18.3. Limits of other integer types */
@@ -350,7 +355,7 @@ verify_same_types (UINTMAX_C (17), (uintmax_t)0 + 0);
 
 
 int
-main ()
+main (void)
 {
   return 0;
 }

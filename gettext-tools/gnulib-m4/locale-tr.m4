@@ -1,5 +1,5 @@
-# locale-tr.m4 serial 3
-dnl Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
+# locale-tr.m4 serial 6
+dnl Copyright (C) 2003, 2005-2010 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -10,7 +10,7 @@ dnl Determine the name of a turkish locale with UTF-8 encoding.
 AC_DEFUN([gt_LOCALE_TR_UTF8],
 [
   AC_REQUIRE([AM_LANGINFO_CODESET])
-  AC_CACHE_CHECK([for a turkish Unicode locale], gt_cv_locale_tr_utf8, [
+  AC_CACHE_CHECK([for a turkish Unicode locale], [gt_cv_locale_tr_utf8], [
     AC_LANG_CONFTEST([AC_LANG_SOURCE([
 changequote(,)dnl
 #include <locale.h>
@@ -25,22 +25,30 @@ char buf[16];
 int main () {
   /* On BeOS, locales are not implemented in libc.  Rather, libintl
      imitates locale dependent behaviour by looking at the environment
-     variables, and all locales use the UTF-8 encoding.  */
-#if !defined(__BEOS__)
+     variables, and all locales use the UTF-8 encoding.  But BeOS does not
+     implement the Turkish upper-/lowercase mappings.  Therefore, let this
+     program return 1 on BeOS.  */
   /* Check whether the given locale name is recognized by the system.  */
   if (setlocale (LC_ALL, "") == NULL) return 1;
-  /* Check whether nl_langinfo(CODESET) is nonempty.
+  /* Check whether nl_langinfo(CODESET) is nonempty and not "ASCII" or "646".
      On MacOS X 10.3.5 (Darwin 7.5) in the tr_TR locale, nl_langinfo(CODESET)
-     is empty, and the behaviour of Tcl 8.4 in this locale is not useful.  */
-# if HAVE_LANGINFO_CODESET
-  if (nl_langinfo (CODESET) [0] == '\0') return 1;
-# endif
-# ifdef __CYGWIN__
+     is empty, and the behaviour of Tcl 8.4 in this locale is not useful.
+     On OpenBSD 4.0, when an unsupported locale is specified, setlocale()
+     succeeds but then nl_langinfo(CODESET) is "646". In this situation,
+     some unit tests fail.  */
+#if HAVE_LANGINFO_CODESET
+  {
+    const char *cs = nl_langinfo (CODESET);
+    if (cs[0] == '\0' || strcmp (cs, "ASCII") == 0 || strcmp (cs, "646") == 0)
+      return 1;
+  }
+#endif
+#ifdef __CYGWIN__
   /* On Cygwin, avoid locale names without encoding suffix, because the
      locale_charset() function relies on the encoding suffix.  Note that
      LC_ALL is set on the command line.  */
   if (strchr (getenv ("LC_ALL"), '.') == NULL) return 1;
-# endif
+#endif
   /* Check whether in the abbreviation of the eighth month, the second
      character (should be U+011F: LATIN SMALL LETTER G WITH BREVE) is
      two bytes long, with UTF-8 encoding.  */
@@ -53,7 +61,6 @@ int main () {
   if (towupper ('i') != 0x0130 || towlower (0x0130) != 'i'
       || towupper(0x0131) != 'I' || towlower ('I') != 0x0131)
     return 1;
-#endif
   return 0;
 }
 changequote([,])dnl

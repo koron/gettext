@@ -1,5 +1,5 @@
 dnl Configuration for the GNU libasprintf library
-dnl Copyright (C) 2002-2006 Free Software Foundation, Inc.
+dnl Copyright (C) 2002-2009 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -16,12 +16,12 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.52)
-AC_INIT
-AC_CONFIG_SRCDIR(vasprintf.c)
-AC_CONFIG_AUX_DIR(../../build-aux)
-AM_INIT_AUTOMAKE(libasprintf, 1.0)
-AM_CONFIG_HEADER(config.h)
+AC_PREREQ([2.59])
+AC_INIT([libasprintf], [1.0])
+AC_CONFIG_SRCDIR([vasprintf.c])
+AC_CONFIG_AUX_DIR([../../build-aux])
+AM_INIT_AUTOMAKE([silent-rules])
+AM_CONFIG_HEADER([config.h])
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -35,10 +35,12 @@ dnl Checks for compiler output filename suffixes.
 AC_OBJEXT
 AC_EXEEXT
 
+dnl Early checks, assembled by gnulib.
+gl_EARLY
+
 dnl Check for build configuration.
 gl_WOE32_DLL
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 case "$host_os" in
   # On Cygwin, without -no-undefined, a warning is emitted and only a static
   # library is built.
@@ -54,8 +56,7 @@ dnl Checks for header files.
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_SIZE_T
-gl_AC_TYPE_LONG_LONG
-gt_TYPE_LONGDOUBLE
+AC_TYPE_LONG_LONG_INT
 gt_TYPE_WCHAR_T
 gt_TYPE_WINT_T
 AC_CHECK_TYPE([ptrdiff_t], ,
@@ -67,29 +68,19 @@ gl_XSIZE
 
 dnl Checks for library functions.
 
-AC_FUNC_ALLOCA
-dnl Define an additional variable used in the Makefile substitution.
-AC_EGREP_CPP([Need own alloca], [
-#if defined __GNUC__ || defined _MSC_VER || !HAVE_ALLOCA_H
-  Need own alloca
-#endif
-  ],
-  ALLOCA_H=alloca.h,
-  ALLOCA_H=)
-AC_SUBST([ALLOCA_H])
-
-AC_CHECK_FUNCS([snprintf vasprintf wcslen])
-AC_CHECK_DECLS([_snprintf])
+gl_INIT
+AC_CHECK_FUNCS([snprintf vasprintf strnlen wcslen wcsnlen mbrtowc wcrtomb])
+dnl Use the _snprintf function only if it is declared (because on NetBSD it
+dnl is defined as a weak alias of snprintf; we prefer to use the latter).
+AC_CHECK_DECLS([_snprintf], , , [#include <stdio.h>])
 gt_PRINTF_POSIX
 
 dnl Check for tools needed for formatting the documentation.
 ac_aux_dir_abs=`cd $ac_aux_dir && pwd`
-AC_PATH_PROG(DVIPS, dvips, $ac_aux_dir_abs/missing dvips)
-AC_PATH_PROG(TEXI2PDF, texi2pdf, $ac_aux_dir_abs/missing texi2pdf)
-AC_PATH_PROG(PERL, perl, $ac_aux_dir_abs/missing perl)
+AC_PATH_PROG([DVIPS], [dvips], [$ac_aux_dir_abs/missing dvips])
+AC_PATH_PROG([TEXI2PDF], [texi2pdf], [$ac_aux_dir_abs/missing texi2pdf])
+AC_PATH_PROG([PERL], [perl], [$ac_aux_dir_abs/missing perl])
 
-AC_CONFIG_FILES([Makefile],
-                [FIX_MAKEFILE_COMPILE
-                 FIX_MAKEFILE_INFO])
+AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT

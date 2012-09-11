@@ -1,11 +1,10 @@
 /* Provide gettimeofday for systems that don't have it or for which it's broken.
 
-   Copyright (C) 2001, 2002, 2003, 2005, 2006, 2007 Free Software
-   Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007, 2009-2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -41,6 +40,12 @@
 static struct tm tm_zero_buffer;
 static struct tm *localtime_buffer_addr = &tm_zero_buffer;
 
+#undef localtime
+extern struct tm *localtime (time_t const *);
+
+#undef gmtime
+extern struct tm *gmtime (time_t const *);
+
 /* This is a wrapper for localtime.  It is used only on systems for which
    gettimeofday clobbers the static buffer used for localtime's result.
 
@@ -50,8 +55,6 @@ static struct tm *localtime_buffer_addr = &tm_zero_buffer;
 struct tm *
 rpl_localtime (time_t const *timep)
 {
-#undef localtime
-  extern struct tm *localtime (time_t const *);
   struct tm *tm = localtime (timep);
 
   if (localtime_buffer_addr == &tm_zero_buffer)
@@ -64,8 +67,6 @@ rpl_localtime (time_t const *timep)
 struct tm *
 rpl_gmtime (time_t const *timep)
 {
-#undef gmtime
-  extern struct tm *gmtime (time_t const *);
   struct tm *tm = gmtime (timep);
 
   if (localtime_buffer_addr == &tm_zero_buffer)
@@ -77,14 +78,15 @@ rpl_gmtime (time_t const *timep)
 #endif /* GETTIMEOFDAY_CLOBBERS_LOCALTIME || TZSET_CLOBBERS_LOCALTIME */
 
 #if TZSET_CLOBBERS_LOCALTIME
+
+#undef tzset
+extern void tzset (void);
+
 /* This is a wrapper for tzset, for systems on which tzset may clobber
    the static buffer used for localtime's result.  */
 void
 rpl_tzset (void)
 {
-#undef tzset
-  extern void tzset (void);
-
   /* Save and restore the contents of the buffer used for localtime's
      result around the call to tzset.  */
   struct tm save = *localtime_buffer_addr;
@@ -98,7 +100,7 @@ rpl_tzset (void)
    causes problems.  */
 
 int
-rpl_gettimeofday (struct timeval *restrict tv, void *restrict tz)
+gettimeofday (struct timeval *restrict tv, void *restrict tz)
 {
 #undef gettimeofday
 #if HAVE_GETTIMEOFDAY
@@ -108,7 +110,7 @@ rpl_gettimeofday (struct timeval *restrict tv, void *restrict tz)
   struct tm save = *localtime_buffer_addr;
 # endif
 
-  int result = gettimeofday (tv, tz);
+  int result = gettimeofday (tv, (struct timezone *) tz);
 
 # if GETTIMEOFDAY_CLOBBERS_LOCALTIME
   *localtime_buffer_addr = save;

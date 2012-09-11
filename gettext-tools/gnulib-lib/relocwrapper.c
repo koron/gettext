@@ -1,5 +1,5 @@
 /* Relocating wrapper program.
-   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007, 2009-2010 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
    This program is free software: you can redistribute it and/or modify
@@ -19,11 +19,11 @@
    relocwrapper
     -> progname
     -> progreloc
-        -> xreadlink
-           -> areadlink
-              -> readlink
+        -> areadlink
+           -> readlink
         -> canonicalize-lgpl
            -> malloca
+           -> readlink
     -> relocatable
     -> setenv
        -> malloca
@@ -53,7 +53,6 @@
 
 #include "progname.h"
 #include "relocatable.h"
-#include "setenv.h"
 #include "c-ctype.h"
 
 /* Return a copy of the filename, with an extra ".bin" at the end.
@@ -67,34 +66,34 @@ add_dotbin (const char *filename)
   if (result != NULL)
     {
       if (sizeof (EXEEXT) > sizeof (""))
-	{
-	  /* EXEEXT handling.  */
-	  const size_t exeext_len = sizeof (EXEEXT) - sizeof ("");
-	  static const char exeext[] = EXEEXT;
-	  if (filename_len > exeext_len)
-	    {
-	      /* Compare using an inlined copy of c_strncasecmp(), because
-		 the filenames may have undergone a case conversion since
-		 they were packaged.  In other words, EXEEXT may be ".exe"
-		 on one system and ".EXE" on another.  */
-	      const char *s1 = filename + filename_len - exeext_len;
-	      const char *s2 = exeext;
-	      for (; *s1 != '\0'; s1++, s2++)
-		{
-		  unsigned char c1 = *s1;
-		  unsigned char c2 = *s2;
-		  if (c_tolower (c1) != c_tolower (c2))
-		    goto simple_append;
-		}
-	      /* Insert ".bin" before EXEEXT or its equivalent.  */
-	      memcpy (result, filename, filename_len - exeext_len);
-	      memcpy (result + filename_len - exeext_len, ".bin", 4);
-	      memcpy (result + filename_len - exeext_len + 4,
-		      filename + filename_len - exeext_len,
-		      exeext_len + 1);
-	      return result;
-	    }
-	}
+        {
+          /* EXEEXT handling.  */
+          const size_t exeext_len = sizeof (EXEEXT) - sizeof ("");
+          static const char exeext[] = EXEEXT;
+          if (filename_len > exeext_len)
+            {
+              /* Compare using an inlined copy of c_strncasecmp(), because
+                 the filenames may have undergone a case conversion since
+                 they were packaged.  In other words, EXEEXT may be ".exe"
+                 on one system and ".EXE" on another.  */
+              const char *s1 = filename + filename_len - exeext_len;
+              const char *s2 = exeext;
+              for (; *s1 != '\0'; s1++, s2++)
+                {
+                  unsigned char c1 = *s1;
+                  unsigned char c2 = *s2;
+                  if (c_tolower (c1) != c_tolower (c2))
+                    goto simple_append;
+                }
+              /* Insert ".bin" before EXEEXT or its equivalent.  */
+              memcpy (result, filename, filename_len - exeext_len);
+              memcpy (result + filename_len - exeext_len, ".bin", 4);
+              memcpy (result + filename_len - exeext_len + 4,
+                      filename + filename_len - exeext_len,
+                      exeext_len + 1);
+              return result;
+            }
+        }
      simple_append:
       /* Simply append ".bin".  */
       memcpy (result, filename, filename_len);
@@ -188,6 +187,6 @@ main (int argc, char *argv[])
   activate_libdirs ();
   execv (argv[0], argv);
   fprintf (stderr, "%s: could not execute %s: %s\n",
-	   program_name, argv[0], strerror (errno));
+           program_name, argv[0], strerror (errno));
   exit (127);
 }

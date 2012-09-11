@@ -154,8 +154,11 @@ msgstr ""
 
 #, c-format
 msgid ""
-"  -c, --add-comments[=TAG]    place comment block with TAG (or those\n"
-"                              preceding keyword lines) in output file\n"
+"  -cTAG, --add-comments=TAG   place comment blocks starting with TAG and\n"
+"                                preceding keyword lines in output file\n"
+"  -c, --add-comments          place all comment blocks preceding keyword "
+"lines\n"
+"                                in output file\n"
 msgstr ""
 
 #, c-format
@@ -176,8 +179,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"  -k, --keyword[=WORD]        additional keyword to be looked for (without\n"
-"                              WORD means not to use default keywords)\n"
+"  -kWORD, --keyword=WORD      look for WORD as an additional keyword\n"
+"  -k, --keyword               do not to use default keywords\n"
 msgstr ""
 
 #, c-format
@@ -226,6 +229,18 @@ msgstr ""
 
 #, c-format
 msgid "Output details:\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"      --color                 use colors and other text attributes always\n"
+"      --color=WHEN            use colors and other text attributes if WHEN.\n"
+"                              WHEN may be 'always', 'never', 'auto', or "
+"'html'.\n"
+msgstr ""
+
+#, c-format
+msgid "      --style=STYLEFILE       specify CSS style rule file for --color\n"
 msgstr ""
 
 #, c-format
@@ -316,14 +331,16 @@ msgstr ""
 
 #, c-format
 msgid ""
-"  -m, --msgstr-prefix[=STRING]  use STRING or \"\" as prefix for msgstr "
-"entries\n"
+"  -m[STRING], --msgstr-prefix[=STRING]  use STRING or \"\" as prefix for "
+"msgstr\n"
+"                                values\n"
 msgstr ""
 
 #, c-format
 msgid ""
-"  -M, --msgstr-suffix[=STRING]  use STRING or \"\" as suffix for msgstr "
-"entries\n"
+"  -M[STRING], --msgstr-suffix[=STRING]  use STRING or \"\" as suffix for "
+"msgstr\n"
+"                                values\n"
 msgstr ""
 
 #, c-format
@@ -346,8 +363,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"A --flag argument doesn't have the <keyword>:<argnum>:[pass-]<flag> syntax: %"
-"s"
+"A --flag argument doesn't have the <keyword>:<argnum>:[pass-]<flag> syntax: "
+"%s"
 msgstr ""
 
 msgid "standard input"
@@ -358,9 +375,18 @@ msgid "error while opening \"%s\" for reading"
 msgstr ""
 
 #, c-format
-msgid ""
-"Non-ASCII string at %s%s.\n"
-"Please specify the source encoding through --from-code.\n"
+msgid "Non-ASCII character at %s%s."
+msgstr ""
+
+#, c-format
+msgid "Non-ASCII comment at or before %s%s."
+msgstr ""
+
+#, c-format
+msgid "Non-ASCII string at %s%s."
+msgstr ""
+
+msgid "Please specify the source encoding through --from-code."
 msgstr ""
 
 #, c-format
@@ -375,8 +401,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Although declared as such, the %s is not a valid %s format string. Reason: %"
-"s\n"
+"Although declared as such, the %s is not a valid %s format string. Reason: "
+"%s\n"
 msgstr ""
 
 #, c-format
@@ -451,6 +477,10 @@ msgid "found %d fatal error"
 msgid_plural "found %d fatal errors"
 msgstr[0] ""
 msgstr[1] ""
+
+#, c-format
+msgid "%s: "
+msgstr ""
 
 #, c-format
 msgid "%d translated message"

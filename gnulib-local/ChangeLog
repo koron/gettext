@@ -1,3 +1,207 @@
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.18 released.
+
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	Avoid test suite failure on mingw.
+	* tests/test-term-ostream-xterm: Convert CR/LF to LF before comparing.
+
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	Export rpl_optind, rpl_optarg from DLL depending on platform.
+	* modules/gettext-tools-misc (AM_CPPFLAGS): Augment by
+	GETTEXTLIB_EXPORTS_FLAGS.
+
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	Avoid compilation error in libgettextpo directory on Solaris 8.
+	* lib/unistd.in.h.diff: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2010-03-28  Bruno Haible  <bruno@clisp.org>
+
+	* modules/closeout (Depends-on): Add stdlib, remove exit.
+	* modules/fd-ostream (Depends-on): Likewise.
+	* modules/html-styled-ostream (Depends-on): Likewise.
+	* modules/iconv-ostream (Depends-on): Likewise.
+	* modules/memory-ostream (Depends-on): Likewise.
+	* modules/term-ostream (Depends-on): Likewise.
+	* modules/xalloc (Depends-on): Likewise.
+
+2010-03-06  Bruno Haible  <bruno@clisp.org>
+
+	* m4/exitfail.m4.diff: Remove file.
+	* modules/exitfail.diff: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove them.
+
+2010-02-19  Bruno Haible  <bruno@clisp.org>
+
+	* modules/wait-process.diff: Remove trailing space.
+
+2010-01-14  Bruno Haible  <bruno@clisp.org>
+
+	Use full 'vasnprintf' module from gnulib. The reduced one did not
+	support NULL arguments.
+	* lib/vasprintf.c: Remove file.
+	* m4/vasprintf.m4: Remove file.
+	* modules/vasprintf.diff: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove them.
+	Reported by LRN at <http://savannah.gnu.org/bugs/?28593>.
+
+2010-01-11  Bruno Haible  <bruno@clisp.org>
+
+	* modules/html-ostream (Depends-on): Remove utf8-ucs4. Instead add
+	unistr/u8-mbtouc.
+
+2009-12-25  Bruno Haible  <bruno@clisp.org>
+
+	* lib/html-ostream.oo.c: Include gl_xlist.h instead of gl_list.h.
+	* modules/html-ostream (Depends-on): Add xlist. Remove list.
+
+2009-12-12  Bruno Haible  <bruno@clisp.org>
+
+	* lib/*.h, lib/*.c: Untabify.
+	* m4/unionwait.m4: Untabify.
+	* tests/*.c: Untabify.
+
+2009-12-12  Bruno Haible  <bruno@clisp.org>
+
+	* lib/fnmatch_loop.c.diff: Update after gnulib changed.
+
+2009-08-15  Bruno Haible  <bruno@clisp.org>
+
+	Stop using gnulib module 'strdup'.
+	* modules/gettext-tools-misc (Files): Remove m4/strdup.m4.
+
+2009-08-10  Bruno Haible  <bruno@clisp.org>
+
+	Avoid gcc warning on Cygwin.
+	* lib/html-ostream.oo.c (html_ostream::write_mem): Change type of local
+	variable 'uc'.
+
+2009-05-23  Bruno Haible  <bruno@clisp.org>
+
+	Avoid gcc warning "cast from pointer to integer of different size".
+	* lib/glibconfig.in.h (GPOINTER_TO_INT, GINT_TO_POINTER): Cast through
+	intptr_t.
+	(GPOINTER_TO_UINT, GUINT_TO_POINTER: Cast through uintptr_t.
+
+2009-05-01  Bruno Haible  <bruno@clisp.org>
+
+	Avoid compiler warnings when redefining macros defined by <libintl.h>.
+	* lib/gettext.h [!ENABLE_NLS] (gettext, dgettext, dcgettext, ngettext,
+	dngettext, dcngettext, textdomain, bindtextdomain,
+	bind_textdomain_codeset): Undefine before redefining.
+
+2009-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* m4/quotearg.m4.diff: Update after gnulib changed.
+
+2008-12-18  Bruno Haible  <bruno@clisp.org>
+
+	* modules/gettext-tools-misc (Files): Add m4/locale-ja.m4.
+
+2008-12-07  Bruno Haible  <bruno@clisp.org>
+
+	Avoid gcc -Wmissing-prototypes warnings.
+	* lib/html-ostream.oo.c: Mark all method implementations as static.
+	* lib/term-ostream.oo.c: Likewise.
+
+2008-12-07  Bruno Haible  <bruno@clisp.org>
+
+	Avoid gcc -Wmissing-prototypes warnings.
+	* build-aux/moopp (func_emit_source_c): Emit a prototype before the
+	synthetized functions.
+
+2008-09-14  Bruno Haible  <bruno@clisp.org>
+
+	* modules/libxml: Use $(mkdir_p) to create the libxml directory.
+	* modules/libglib: Use $(mkdir_p) to create the glib directory.
+	Suggested by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+2008-09-14  Bruno Haible  <bruno@clisp.org>
+
+	* modules/libglib (Depends-on): Add strerror.
+
+2008-08-16  Bruno Haible  <bruno@clisp.org>
+
+	Recognize installed libxml2 version 2.6.x.
+	* m4/libxml.m4 (gl_LIBXML): Determine libxml2_include_dir by looking
+	for <libxml/xmlexports.h> as well.
+	Reported by Steve Trotman <steve_trotman@hotmail.com>
+	via <http://savannah.gnu.org/bugs/?22831>.
+
+2008-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* modules/propername: Remove file, moved to gnulib.
+	* lib/propername.h: Remove file, moved to gnulib.
+	* lib/propername.c: Remove file, moved to gnulib.
+	* Makefile.am (EXTRA_DIST): Remove them.
+
+2008-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* lib/propername.c: Include <stdbool.h>, <ctype.h>, trim.h, mbchar.h,
+	mbuiter.h. Don't include c-strstr.h.
+	(mbsstr_trimmed_wordbounded): New function.
+	(proper_name, proper_name_utf8): Use it instead of mbsstr or c_strstr.
+	* modules/propername (Depends-on): Add stdbool, trim, mbchar, mbuiter.
+	Remove c-strstr.
+	Reported by Paul Eggert <eggert@cs.ucla.edu>.
+
+2008-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* modules/propername (Notice): New field.
+	(configure.ac): Invoke AM_GETTEXT_OPTION.
+	* lib/propername.h: Add more comments.
+	Reported by Ben Pfaff <blp@cs.stanford.edu>.
+
+2008-05-11  Bruno Haible  <bruno@clisp.org>
+
+	* lib/gen-lbrkprop.c: Move to gnulib as lib/unilbrk/gen-lbrk.c.
+	* lib/3level.h: Remove file.
+	* modules/gen-lbrkprop: Move to gnulib as modules/unilbrk/gen-lbrk.
+	* Makefile.am (EXTRA_DIST): Remove lib/gen-lbrkprop.c, lib/3level.h,
+	modules/gen-lbrkprop.
+
+2008-05-11  Bruno Haible  <bruno@clisp.org>
+
+	* lib/gen-lbrkprop.c (output_lbp): Output to two different streams.
+	(output_tables): Accept two filename arguments.
+	(main): Generate lbrkprop1.h and lbrkprop2.h instead of lbrkprop.h.
+
+	* lib/gen-lbrkprop.c (unicode_combining): Remove variable.
+	(fill_combining): Remove function.
+	(main): Take one argument less.
+	* lib/Combining.txt: Remove file.
+	* modules/gen-lbrkprop (Files): Remove Combining.txt.
+	* Makefile.am (EXTRA_DIST): Likewise.
+
+	* lib/gen-lbrkprop.c: Change copyright to GPLv3+.
+	(output_tables): Emit a GPLv3+ header.
+
+2008-05-10  Bruno Haible  <bruno@clisp.org>
+
+	* lib/linebreak.c.diff: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2008-01-13  Bruno Haible  <bruno@clisp.org>
+
+	New configure option --disable-curses.
+	* m4/curses.m4: New file.
+	* m4/termcap.m4 (gl_TERMCAP_BODY): Require gl_CURSES and consider its
+	result.
+	* m4/terminfo.m4 (gl_TERMINFO_BODY): Likewise.
+	* modules/termcap (Files): Add m4/curses.m4.
+	* modules/terminfo (Files): Likewise.
+	* Makefile.am (EXTRA_DIST): Add m4/curses.m4.
+
+2007-11-09  Bruno Haible  <bruno@clisp.org>
+
+	* m4/libglib.m4 (gl_LIBGLIB): Ensure that the <glib.h> is from a glib
+	version >= 2.0.
+	Reported by Paul Eggert <eggert@cs.ucla.edu>.
+
 2007-11-07  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.17 released.

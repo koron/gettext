@@ -132,6 +132,10 @@ msgcmp.c        Main source for the 'msgcmp' program.
 |
 +-------------- The 'msgmerge' program
 
+msgl-header.h
+msgl-header.c
+                Message list header manipulation.
+
 msgcomm.c       Main source for the 'msgcomm' program.
 msgattrib.c     Main source for the 'msgattrib' program.
 msgcat.c        Main source for the 'msgcat' program.
@@ -223,7 +227,9 @@ format-perl.c          Format string handling for Perl.
 format-perl-brace.c    Format string handling for Perl, braced syntax.
 format-php.c           Format string handling for PHP.
 format-gcc-internal.c  Format string handling GCC internal.
+format-gfc-internal.c  Format string handling GFC internal.
 format-qt.c            Format string handling for Qt.
+format-qt-plural.c     Format string handling for Qt plural forms.
 format-kde.c           Format string handling for KDE.
 format-boost.c         Format string handling for Boost.
 format.c        Table of the language dependent format string handlers.
@@ -233,6 +239,8 @@ plural-exp.c
 plural-eval.h
 plural-eval.c
                 Evaluating plural expressions.
+plural-distrib.h
+                Value distribution of plural expressions.
 msgl-check.h
 msgl-check.c
                 Checking of messages.

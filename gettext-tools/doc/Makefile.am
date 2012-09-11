@@ -1,5 +1,5 @@
 ## Makefile for the gettext-tools/doc subdirectory of GNU gettext
-## Copyright (C) 1995-1997, 2001-2006 Free Software Foundation, Inc.
+## Copyright (C) 1995-1997, 2001-2007, 2009 Free Software Foundation, Inc.
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
 AUTOMAKE_OPTIONS = 1.2 gnits
 EXTRA_DIST =
 MOSTLYCLEANFILES =
+
+# List of -I options referring to directories that contain texinfo
+# sources used by this directory.
 TEXINCLUDES = -I $(top_srcdir)/../gettext-runtime/doc
 
 SED = sed
@@ -91,8 +94,7 @@ all-local: html-local
 install-data-local: install-html
 installdirs-local: installdirs-html
 uninstall-local: uninstall-html
-# Hidden from automake, but really activated. Works around an automake-1.5 bug.
-#distdir: dist-html
+dist-hook: dist-html
 
 html-local: html-split
 # Override of automake's definition. The HTML files we want to distribute are
@@ -103,8 +105,7 @@ install-html: install-html-split
 uninstall-html: uninstall-html-split
 dist-html: dist-html-split
 
-CLEANFILES = gettext.pdf gettext.html
-# gettext.dvi and gettext.ps are already known to automake.
+# CLEANFILES: gettext.{dvi,ps,pdf,html} are already known to automake.
 MAINTAINERCLEANFILES = gettext_*.html
 
 
@@ -159,7 +160,6 @@ uninstall-ps:
 # Override of automake's definition:
 #TEXI2PDF = @TEXI2PDF@
 TEXI2PDF = @TEXI2PDF@ $(TEXINCLUDES)
-SUFFIXES = .pdf
 
 # The install-pdf target is already defined by automake.
 
@@ -217,7 +217,7 @@ dist-html-monolithic:
 	cp -p $$d/$$file $(distdir)/$$file || exit 1
 
 # We would like to put gettext_*.html into EXTRA_DIST, but it doesn't work.
-dist-html-split:
+dist-html-split: gettext_toc.html
 	$(mkdir_p) $(distdir)/
 	file=gettext_toc.html; \
 	if test -f $$file; then d=.; else d=$(srcdir); fi; \

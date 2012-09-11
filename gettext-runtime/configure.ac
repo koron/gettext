@@ -1,5 +1,5 @@
 dnl Configuration for the gettext-runtime directory of GNU gettext
-dnl Copyright (C) 1995-1999, 2000-2007 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-1999, 2000-2009 Free Software Foundation, Inc.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -18,11 +18,12 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.59])
 AC_INIT
-AC_CONFIG_SRCDIR(intl/dcigettext.c)
-AC_CONFIG_AUX_DIR(../build-aux)
+AC_CONFIG_SRCDIR([intl/dcigettext.c])
+AC_CONFIG_AUX_DIR([../build-aux])
 . $srcdir/../version.sh
-AM_INIT_AUTOMAKE(gettext-runtime, $VERSION_NUMBER)
-AM_CONFIG_HEADER(config.h)
+gl_INIT_PACKAGE([gettext-runtime], [$VERSION_NUMBER])
+AM_INIT_AUTOMAKE([silent-rules])
+AM_CONFIG_HEADER([config.h])
 
 dnl Installation directories.
 test "$docdir" != '${datarootdir}/doc/${PACKAGE}' || docdir='${datarootdir}/doc/gettext'
@@ -35,13 +36,13 @@ AC_PROG_YACC
 gt_JAVA_CHOICE
 
 gt_JAVACOMP([1.3], [1.1])
-AC_CHECK_PROG(JAR, jar, jar)
+AC_CHECK_PROG([JAR], [jar], [jar])
 if test -n "$HAVE_JAVACOMP" && test -n "$JAR" && test "$JAVA_CHOICE" != no; then
   BUILDJAVA=yes
 else
   BUILDJAVA=no
 fi
-AC_SUBST(BUILDJAVA)
+AC_SUBST([BUILDJAVA])
 
 gt_CSHARPCOMP
 if test -n "$HAVE_CSHARPCOMP" && test "$CSHARP_CHOICE" != no; then
@@ -49,7 +50,7 @@ if test -n "$HAVE_CSHARPCOMP" && test "$CSHARP_CHOICE" != no; then
 else
   BUILDCSHARP=no
 fi
-AC_SUBST(BUILDCSHARP)
+AC_SUBST([BUILDCSHARP])
 
 dnl Check for host type.
 AC_CANONICAL_HOST
@@ -64,8 +65,12 @@ gl_EARLY
 dnl Check for build configuration.
 
 gl_WOE32_DLL
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+
+LT_INIT([win32-dll])
+
+dnl Prepares the libtool configuration for handling of Windows resources, and
+dnl sets the RC variable to a program that compiles Windows resource files.
+LT_LANG([Windows Resource])
 
 dnl On mingw and Cygwin, we can activate special Makefile rules which add
 dnl version information to the shared libraries and executables.
@@ -79,7 +84,7 @@ dnl Checks for libraries.
 
 dnl These are the only lines required to internationalize the package.
 dnl (OK, not quite, the AC_CONFIG_FILES has also some parts.)
-AM_GNU_GETTEXT(use-libtool, need-ngettext)
+AM_GNU_GETTEXT([use-libtool], [need-ngettext])
 
 dnl Checks for header files, functions and declarations.
 gl_INIT
@@ -103,11 +108,11 @@ AH_BOTTOM([
 
 dnl Check for tools needed for formatting the documentation.
 ac_aux_dir_abs=`cd $ac_aux_dir && pwd`
-AC_PATH_PROG(PERL, perl, $ac_aux_dir_abs/missing perl)
+AC_PATH_PROG([PERL], [perl], [$ac_aux_dir_abs/missing perl])
 
 dnl Check for tools needed for formatting man pages.
 CROSS_COMPILING=$cross_compiling
-AC_SUBST(CROSS_COMPILING)
+AC_SUBST([CROSS_COMPILING])
 
 dnl Checks for optional programs for the tests/lang-* tests.
 gt_PROG_ANSI_CXX
@@ -117,27 +122,27 @@ dnl On some systems, sched_yield is in librt, rather than in libpthread.
 LIBSCHED=
 if test $gl_threads_api = posix; then
   dnl Solaris has sched_yield in librt, not in libpthread or libc.
-  AC_CHECK_LIB(rt, sched_yield, [LIBSCHED=-lrt],
+  AC_CHECK_LIB([rt], [sched_yield], [LIBSCHED=-lrt],
     [dnl Solaris 2.5.1, 2.6 has sched_yield in libposix4, not librt.
-     AC_CHECK_LIB(posix4, sched_yield, [LIBSCHED=-lposix4])])
+     AC_CHECK_LIB([posix4], [sched_yield], [LIBSCHED=-lposix4])])
 fi
 AC_SUBST([LIBSCHED])
 
 dnl Determine whether to build libasprintf.
-AC_ARG_ENABLE(libasprintf,
+AC_ARG_ENABLE([libasprintf],
   [  --disable-libasprintf   do not build libasprintf],
   [if test "$enableval" != no; then
      SUBDIR_libasprintf=libasprintf
    else
      SUBDIR_libasprintf=
    fi
-  ], SUBDIR_libasprintf=libasprintf)
+  ], [SUBDIR_libasprintf=libasprintf])
 if test "$CXX" = ":"; then
   SUBDIR_libasprintf=
 fi
 AM_CONDITIONAL([ENABLE_LIBASPRINTF], [test -n "$SUBDIR_libasprintf"])
 
-AC_CONFIG_SUBDIRS(libasprintf)
+AC_CONFIG_SUBDIRS([libasprintf])
 
 AC_CONFIG_FILES([Makefile])
 
@@ -149,11 +154,9 @@ AC_CONFIG_FILES([intl-java/Makefile])
 
 AC_CONFIG_FILES([intl-csharp/Makefile])
 
-AC_CONFIG_FILES([gnulib-lib/Makefile],
-                [FIX_MAKEFILE_COMPILE])
+AC_CONFIG_FILES([gnulib-lib/Makefile])
 
-AC_CONFIG_FILES([src/Makefile],
-                [FIX_MAKEFILE_COMPILE])
+AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/gettext.sh], [chmod a+x src/gettext.sh])
 
 AC_CONFIG_FILES([po/Makefile.in])

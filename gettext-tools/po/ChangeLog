@@ -1,3 +1,97 @@
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.18 released.
+
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (GETTEXT_MACRO_VERSION): Bump to 0.18.
+
+2010-03-03  Bruno Haible  <bruno@clisp.org>
+
+	* bg.po: Update from Roumen Petrov <transl@roumenpetrov.info>.
+
+2010-02-07  Bruno Haible  <bruno@clisp.org>
+
+	* bg.po: New file, from Roumen Petrov <transl@roumenpetrov.info>.
+	* LINGUAS: Add bg.
+
+2009-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* fi.po: Update from Lauri Nurmi <lanurmi@iki.fi>.
+	* id.po: Update from Arif E. Nugroho <arif_endro@yahoo.com>.
+	* ko.po: Update from Changwoo Ryu <cwryu@debian.org>.
+	* nl.po: Update from Benno Schulenberg <benno@vertaalt.nl> and
+	Erwin Poeze <erwin.poeze@gmail.com>.
+	* nn.po: Update from Eirik U. Birkeland <eirbir@gmail.com>.
+	* ja.po: Update from Masahito Yamaga <ma@yama-ga.com>.
+	* zh_CN.po: Update from Ji ZhengYu <zhengyuji@gmail.com>.
+
+2009-08-16  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (MSGMERGE_OPTIONS): New variable.
+	* Makefile.in.in ($(POFILES), .nop.po-update): Use it when invoking
+	msgmerge.
+	Suggested by Guillem Jover <guillem@debian.org>.
+
+2009-07-28  Bruno Haible  <bruno@clisp.org>
+
+	* sk.po: Update from Marcel Telka <marcel@telka.sk>.
+
+2009-07-25  Bruno Haible  <bruno@clisp.org>
+
+	* de.po: Update from Karl Eichwalder <ke@suse.de>.
+
+2009-06-08  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (install-data-yes, installdirs-data-yes): Remove
+	unnecessary mkdir of $(datadir).
+	Reported by Serge Pavlovsky <pal666@gmail.com>.
+
+2009-02-27  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (Makefile): Use @SHELL@, not $(SHELL).
+	Reported by Scott James Remnant <scott@ubuntu.com>.
+
+2009-01-18  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (.po.gmo): Pass --verbose to msgfmt when producing
+	statistics.
+	Suggested by Vincent Lefevre <vincent@vinc17.org>.
+
+2009-01-18  Bruno Haible  <bruno@clisp.org>
+
+	* id.po: Update from Arif E. Nugroho <arif_endro@yahoo.com>.
+	* zh_CN.po: Update from Ji ZhengYu <zhengyuji@gmail.com>.
+
+2008-09-28  Bruno Haible  <bruno@clisp.org>
+
+	* Rules-quot (.insert-header.po-update-en): Pass the locale name with
+	suffix to msginit. Needed for the "Language:" field in the header
+	entry.
+
+2008-05-19  Bruno Haible  <bruno@clisp.org>
+
+	* Makevars (XGETTEXT_OPTIONS): Remove the options for proper_name and
+	proper_name_utf8, now collected automatically through
+	AM_XGETTEXT_OPTION.
+
+2008-05-08  Bruno Haible  <bruno@clisp.org>
+
+	* sk.po: Update from Marcel Telka <marcel@telka.sk>.
+	* sv.po: Update from Jan Djärv <jan.h.d@swipnet.se>.
+
+2007-12-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in ($(POFILES), .nop.po-update): When using msgmerge
+	0.18 or newer, pass a --lang option.
+
+2007-12-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in.in (.nop.po-update): Put all non-option arguments after
+	all option arguments, so that the commands work 1. when POSIXLY_CORRECT
+	is set, 2. on platforms whose getopt facility is POSIX compliant but
+	not GNU libc compatible, such as Cygwin.
+
 2007-11-07  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.17 released.

@@ -1,5 +1,5 @@
 ## Makefile for the gettext-runtime/libasprintf subdirectory of GNU gettext
-## Copyright (C) 2002-2007 Free Software Foundation, Inc.
+## Copyright (C) 2002-2007, 2009 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify it
 ## under the terms of the GNU Library General Public License as published
@@ -20,8 +20,9 @@
 
 AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
 ACLOCAL = ../../build-aux/fixaclocal @ACLOCAL@
-ACLOCAL_AMFLAGS = -I ../../m4 -I ../m4
+ACLOCAL_AMFLAGS = -I ../../m4 -I ../m4 -I gnulib-m4
 EXTRA_DIST =
+BUILT_SOURCES =
 MOSTLYCLEANFILES =
 
 RM = rm -f
@@ -47,6 +48,8 @@ dist-hook:
 
 lib_LTLIBRARIES = libasprintf.la
 
+noinst_LTLIBRARIES =
+
 libasprintf_la_SOURCES = \
   lib-asprintf.h lib-asprintf.c \
   autosprintf.h autosprintf.cc
@@ -67,20 +70,15 @@ EXTRA_DIST += $(lib_asprintf_EXTRASOURCES)
 # to create a shared library, however "libtool --tag=CC" succeeds.
 libasprintf_la_LDFLAGS = @LTNOUNDEF@
 libasprintf.la: $(libasprintf_la_OBJECTS) $(libasprintf_la_DEPENDENCIES)
-	$(CXXLINK) -rpath $(libdir) $(libasprintf_la_LDFLAGS) $(libasprintf_la_OBJECTS) $(libasprintf_la_LIBADD) $(LIBS) || \
+	$(AM_V_GEN)$(CXXLINK) -rpath $(libdir) $(libasprintf_la_LDFLAGS) $(libasprintf_la_OBJECTS) $(libasprintf_la_LIBADD) $(LIBS) || \
 	$(LINK) -rpath $(libdir) $(libasprintf_la_LDFLAGS) $(libasprintf_la_OBJECTS) $(libasprintf_la_LIBADD) $(LIBS)
 
 
-# >>> gnulib module alloca.
-EXTRA_DIST += alloca.in.h
+# A small set of gnulib modules is needed here as well.
+include Makefile.gnulib
 
-# The following is needed in order to create an <alloca.h> when the system
-# doesn't have one that works with the given compiler.
-all-local $(libasprintf_la_OBJECTS): @ALLOCA_H@
-alloca.h: alloca.in.h
-	cp $(srcdir)/alloca.in.h alloca.h
-MOSTLYCLEANFILES += alloca.h
-# <<< gnulib module alloca.
+# Allow users to use "gnulib-tool --update".
+EXTRA_DIST += gnulib-m4/gnulib-cache.m4
 
 
 # Clean up after Solaris cc.
@@ -105,8 +103,7 @@ install-data-local: install-html
 installdirs-local: installdirs-html
 uninstall-local: uninstall-html
 
-CLEANFILES = autosprintf.pdf
-# autosprintf.dvi and autosprintf.ps are already known to automake.
+# CLEANFILES: autosprintf.{dvi,ps,pdf,html} are already known to automake.
 
 
 # Documentation in DVI format.
@@ -142,8 +139,6 @@ uninstall-ps:
 
 
 # Documentation in Portable Document Format.
-
-SUFFIXES = .pdf
 
 # The install-pdf target is already defined by automake.
 

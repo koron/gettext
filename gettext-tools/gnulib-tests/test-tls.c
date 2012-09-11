@@ -1,5 +1,5 @@
 /* Test of thread-local storage in multithreaded situations.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2008-2010 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,7 +50,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tls.h"
+#include "glthread/tls.h"
+#include "glthread/thread.h"
+#include "glthread/yield.h"
 
 #if ENABLE_DEBUGGING
 # define dbgprintf printf
@@ -58,128 +60,6 @@
 # define dbgprintf if (0) printf
 #endif
 
-#if TEST_POSIX_THREADS
-# include <pthread.h>
-# include <sched.h>
-typedef pthread_t gl_thread_t;
-static inline gl_thread_t gl_thread_create (void * (*func) (void *), void *arg)
-{
-  pthread_t thread;
-  if (pthread_create (&thread, NULL, func, arg) != 0)
-    abort ();
-  return thread;
-}
-static inline void gl_thread_join (gl_thread_t thread)
-{
-  void *retval;
-  if (pthread_join (thread, &retval) != 0)
-    abort ();
-}
-static inline void gl_thread_yield (void)
-{
-  sched_yield ();
-}
-static inline void * gl_thread_self (void)
-{
-  return (void *) pthread_self ();
-}
-#endif
-#if TEST_PTH_THREADS
-# include <pth.h>
-typedef pth_t gl_thread_t;
-static inline gl_thread_t gl_thread_create (void * (*func) (void *), void *arg)
-{
-  pth_t thread = pth_spawn (NULL, func, arg);
-  if (thread == NULL)
-    abort ();
-  return thread;
-}
-static inline void gl_thread_join (gl_thread_t thread)
-{
-  if (!pth_join (thread, NULL))
-    abort ();
-}
-static inline void gl_thread_yield (void)
-{
-  pth_yield (NULL);
-}
-static inline void * gl_thread_self (void)
-{
-  return pth_self ();
-}
-#endif
-#if TEST_SOLARIS_THREADS
-# include <thread.h>
-typedef thread_t gl_thread_t;
-static inline gl_thread_t gl_thread_create (void * (*func) (void *), void *arg)
-{
-  thread_t thread;
-  if (thr_create (NULL, 0, func, arg, 0, &thread) != 0)
-    abort ();
-  return thread;
-}
-static inline void gl_thread_join (gl_thread_t thread)
-{
-  void *retval;
-  if (thr_join (thread, NULL, &retval) != 0)
-    abort ();
-}
-static inline void gl_thread_yield (void)
-{
-  thr_yield ();
-}
-static inline void * gl_thread_self (void)
-{
-  return (void *) thr_self ();
-}
-#endif
-#if TEST_WIN32_THREADS
-# include <windows.h>
-typedef HANDLE gl_thread_t;
-/* Use a wrapper function, instead of adding WINAPI through a cast.  */
-struct wrapper_args { void * (*func) (void *); void *arg; };
-static DWORD WINAPI wrapper_func (void *varg)
-{
-  struct wrapper_args *warg = (struct wrapper_args *)varg;
-  void * (*func) (void *) = warg->func;
-  void *arg = warg->arg;
-  free (warg);
-  func (arg);
-  return 0;
-}
-static inline gl_thread_t gl_thread_create (void * (*func) (void *), void *arg)
-{
-  struct wrapper_args *warg =
-    (struct wrapper_args *) malloc (sizeof (struct wrapper_args));
-  if (warg == NULL)
-    abort ();
-  warg->func = func;
-  warg->arg = arg;
-  {
-    DWORD thread_id;
-    HANDLE thread =
-      CreateThread (NULL, 100000, wrapper_func, warg, 0, &thread_id);
-    if (thread == NULL)
-      abort ();
-    return thread;
-  }
-}
-static inline void gl_thread_join (gl_thread_t thread)
-{
-  if (WaitForSingleObject (thread, INFINITE) == WAIT_FAILED)
-    abort ();
-  if (!CloseHandle (thread))
-    abort ();
-}
-static inline void gl_thread_yield (void)
-{
-  Sleep (0);
-}
-static inline void * gl_thread_self (void)
-{
-  return (void *) GetCurrentThreadId ();
-}
-#endif
 #if EXPLICIT_YIELD
 # define yield() gl_thread_yield ()
 #else
@@ -194,6 +74,9 @@ perhaps_yield (void)
   if ((((unsigned int) rand () >> 3) % 4) == 0)
     yield ();
 }
+
+
+/* ----------------------- Test thread-local storage ----------------------- */
 
 #define KEYS_COUNT 4
 
@@ -211,10 +94,10 @@ worker_thread (void *arg)
   /* Initialize the per-thread storage.  */
   for (i = 0; i < KEYS_COUNT; i++)
     {
-      values[i] = (((unsigned int) rand() >> 3) % 1000000) * THREAD_COUNT + id;
+      values[i] = (((unsigned int) rand () >> 3) % 1000000) * THREAD_COUNT + id;
       /* Hopefully no arithmetic overflow.  */
       if ((values[i] % THREAD_COUNT) != id)
-	abort ();
+        abort ();
     }
   perhaps_yield ();
 
@@ -241,16 +124,16 @@ worker_thread (void *arg)
   for (repeat = REPEAT_COUNT; repeat > 0; repeat--)
     {
       dbgprintf ("Worker %p doing value swapping\n", gl_thread_self ());
-      i = ((unsigned int) rand() >> 3) % KEYS_COUNT;
-      j = ((unsigned int) rand() >> 3) % KEYS_COUNT;
+      i = ((unsigned int) rand () >> 3) % KEYS_COUNT;
+      j = ((unsigned int) rand () >> 3) % KEYS_COUNT;
       if (i != j)
-	{
-	  void *vi = gl_tls_get (mykeys[i]);
-	  void *vj = gl_tls_get (mykeys[j]);
+        {
+          void *vi = gl_tls_get (mykeys[i]);
+          void *vj = gl_tls_get (mykeys[j]);
 
-	  gl_tls_set (mykeys[i], vj);
-	  gl_tls_set (mykeys[j], vi);
-	}
+          gl_tls_set (mykeys[i], vj);
+          gl_tls_set (mykeys[j], vi);
+        }
       perhaps_yield ();
     }
 
@@ -266,7 +149,7 @@ worker_thread (void *arg)
   return NULL;
 }
 
-void
+static void
 test_tls (void)
 {
   int pass, i;
@@ -276,24 +159,27 @@ test_tls (void)
       gl_thread_t threads[THREAD_COUNT];
 
       if (pass == 0)
-	for (i = 0; i < KEYS_COUNT; i++)
-	  gl_tls_key_init (mykeys[i], free);
+        for (i = 0; i < KEYS_COUNT; i++)
+          gl_tls_key_init (mykeys[i], free);
       else
-	for (i = KEYS_COUNT - 1; i >= 0; i--)
-	  gl_tls_key_init (mykeys[i], free);
+        for (i = KEYS_COUNT - 1; i >= 0; i--)
+          gl_tls_key_init (mykeys[i], free);
 
       /* Spawn the threads.  */
       for (i = 0; i < THREAD_COUNT; i++)
-	threads[i] = gl_thread_create (worker_thread, NULL);
+        threads[i] = gl_thread_create (worker_thread, NULL);
 
       /* Wait for the threads to terminate.  */
       for (i = 0; i < THREAD_COUNT; i++)
-	gl_thread_join (threads[i]);
+        gl_thread_join (threads[i], NULL);
 
       for (i = 0; i < KEYS_COUNT; i++)
-	gl_tls_key_destroy (mykeys[i]);
+        gl_tls_key_destroy (mykeys[i]);
     }
 }
+
+
+/* -------------------------------------------------------------------------- */
 
 int
 main ()
@@ -314,9 +200,12 @@ main ()
 
 /* No multithreading available.  */
 
+#include <stdio.h>
+
 int
 main ()
 {
+  fputs ("Skipping test: multithreading not enabled\n", stderr);
   return 77;
 }
 

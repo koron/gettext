@@ -1,3 +1,68 @@
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.18 released.
+
+2010-05-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in (LIBGETTEXTPO_VERSION): Bump version number.
+	* Makefile.am (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 5:0:5.
+	* libgettextpo.rc: Update year.
+
+2009-12-26  Bruno Haible  <bruno@clisp.org>
+
+	* libgettextpo.rc: Update.
+
+2009-12-12  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in: Untabify.
+	* gettext-po.c: Untabify.
+
+2009-11-30  Guido Flohr <guido@imperia.bg>
+
+	* Makefile.am (MOSTLYCLEANDIRS): New variable.
+
+2009-08-10  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (libgettextpo_la_AUXSOURCES): Add format-gfc-internal.c,
+	format-qt-plural.c.
+
+2009-03-25  Bruno Haible  <bruno@clisp.org>
+
+	Fix the handling of Windows resources in shared libraries.
+	* Makefile.am (WOE32_LIBADD): Renamed from WOE32_LDADD. Use
+	libgettextpo.res.lo instead of libgettextpo.res.
+	(libgettextpo.res.lo): Renamed from libgettextpo.res. Use libtool
+	--tag=RC.
+	(MOSTLYCLEANFILES): Update.
+
+2009-01-18  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.c (po_message_comments, po_message_extracted_comments):
+	Update after string_list_join changed.
+
+2008-10-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.h.in (po_message_is_range, po_message_set_range): New
+	declarations.
+	* gettext-po.c (po_message_is_range, po_message_set_range): New
+	functions.
+	(po_message_check_format): Update.
+
+2008-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.c (po_message_check_format): Update for signature changes
+	of check_message and check_msgid_msgstr_format.
+
+2008-07-19  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (EXTRA_DIST): Add gnulib-m4/gnulib-cache.m4.
+
+2008-05-26  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-po.c (po_header_field, po_header_set_field): Recognize a
+	field also if there is no space after the ':'.
+	Reported by Nacho <nacho.resa@gmail.com>.
+
 2007-11-07  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.17 released.

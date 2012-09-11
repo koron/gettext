@@ -70,11 +70,11 @@ tmpfiles="$tmpfiles mf-test10.err"
 : ${MSGFMT=msgfmt}
 LC_MESSAGES=C LC_ALL= \
 ${MSGFMT} --check -o /dev/null mf-test10.po2 \
-    2>&1 | grep -v '^==' | sed -e 's|[^ ]*\\msgfmt\.exe|msgfmt|' | tr -d '\r' > mf-test10.err
+    2>&1 | grep -v '^==' | sed -e 's|[^ ]*\\msgfmt\.exe|msgfmt|' -e 's|^msgfmt\.exe|msgfmt|' | LC_ALL=C tr -d '\r' > mf-test10.err
 
 tmpfiles="$tmpfiles mf-test10.ok"
 cat << EOF > mf-test10.ok
-mf-test10.po2:20: number of format specifications in 'msgid' and 'msgstr[1]' does not match
+mf-test10.po2:20: number of format specifications in 'msgid_plural' and 'msgstr[1]' does not match
 msgfmt: found 1 fatal error
 EOF
 
