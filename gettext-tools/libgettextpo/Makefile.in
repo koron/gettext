@@ -311,7 +311,9 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
 @WOE32_TRUE@am__DEPENDENCIES_1 = libgettextpo.res.lo
-libgettextpo_la_DEPENDENCIES = libgnu.la $(am__DEPENDENCIES_1)
+am__DEPENDENCIES_2 =
+libgettextpo_la_DEPENDENCIES = libgnu.la $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2)
 am__libgettextpo_la_SOURCES_DIST = gettext-po.c ../src/str-list.c \
 	../src/dir-list.c ../src/message.c ../src/msgl-ascii.c \
 	../src/po-error.c ../src/po-xerror.c ../src/write-catalog.c \
@@ -354,7 +356,6 @@ libgettextpo_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgettextpo_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am__DEPENDENCIES_2 =
 am__libgnu_la_SOURCES_DIST = basename.h basename.c c-ctype.h c-ctype.c \
 	c-strcase.h c-strcasecmp.c c-strncasecmp.c c-strstr.h \
 	c-strstr.c concat-filename.c diffseq.h error-progname.h \
@@ -1487,7 +1488,7 @@ LTV_AGE = 5
 # How to build libgettextpo.la.
 # Don't make it depend on libgettextsrc.la or libgettextlib.la, since they
 # define an uncontrolled amount of symbols.
-libgettextpo_la_LIBADD = libgnu.la $(WOE32_LIBADD)
+libgettextpo_la_LIBADD = libgnu.la $(WOE32_LIBADD) $(LTLIBUNISTRING)
 libgettextpo_la_LDFLAGS = -version-info \
 	$(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) -rpath $(libdir) \
 	@LTLIBINTL@ @LTLIBICONV@ -lc @LTNOUNDEF@ $(am__append_2)
