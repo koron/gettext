@@ -1,3 +1,57 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (LIBADD_SOURCE): Remove strdup.h.
+
+2007-01-26  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* strdup.h: Remove file.
+	* strdup.c: Don't include no-longer-existent include files. Rely on
+	<string.h> instead.
+	* hard-locale.c: Likewise.
+
+2006-11-03  Bruno Haible  <bruno@clisp.org>
+
+	Simplify xmalloc expressions. Add overflow check in xmalloc arguments.
+	* m-common.c (kwsinit): Use XNMALLOC instead of xmalloc.
+	* m-fgrep.c (Fcompile): Use XMALLOC instead of xmalloc.
+	* m-regex.c (Gcompile, compile): Use XMALLOC, XNMALLOC instead of
+	xmalloc.
+
+2006-11-01  Bruno Haible  <bruno@clisp.org>
+
+	* dfa.c (delete_pos): Renamed from remove.
+	(epsclosure): Update.
+	Reported by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	Make it compile in C++ mode.
+	* dfa.h (token): Typedef as int.
+	* dfa.c (remove): Renamed from delete.
+	(epsclosure): Update.
+	(match_mb_charset): Cast strncpy argument.
+	(dfaexec): Add cast.
+	(dfacomp): Cast malloc result.
+	(icatalloc): Rename argument names to 'stem', 'suffix'.
+	(enlist): Rename 'new' argument to 'suffix'.
+	(addlists): Rename 'new' argument to 'suffixes'.
+	(dfamust): Cast malloc results. Rename local variable 'new' to 'common'.
+	* kwset.c (kwsprep): Cast obstack_alloc result.
+	(bmexec): Cast memchr result.
+	* m-fgrep.c (Fexecute): Rename local variable 'try' to 'curr'. Cast
+	memchr result.
+	* m-regex.c (struct patterns): Move out of the scope of struct
+	compiled_regex.
+	(Gcompile, compile, EGexecute): Cast memchr results.
+	* regex.c (EXTEND_BUFFER): Cast REALLOC result.
+	(byte_re_match_2_internal): Limit the scope of same_str_p variable.
+	Rename local variable 'not' to 'invert'.
+	(regcomp): Cast malloc results.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

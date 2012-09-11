@@ -1,12 +1,12 @@
 /* xgettext YCP backend.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-ycp.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -32,7 +34,6 @@
 #include "x-ycp.h"
 #include "error.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -327,6 +328,7 @@ struct token_ty
 {
   token_type_ty type;
   char *string;		/* for token_type_string_literal, token_type_symbol */
+  refcounted_string_list_ty *comment;	/* for token_type_string_literal */
   int line_number;
 };
 
@@ -400,6 +402,17 @@ phase7_getc ()
 	    return c;
 	  }
     }
+}
+
+
+/* Free the memory pointed to by a 'struct token_ty'.  */
+static inline void
+free_token (token_ty *tp)
+{
+  if (tp->type == token_type_string_literal || tp->type == token_type_symbol)
+    free (tp->string);
+  if (tp->type == token_type_string_literal)
+    drop_reference (tp->comment);
 }
 
 
@@ -530,6 +543,7 @@ phase5_get (token_ty *tp)
 	  buffer[bufpos] = '\0';
 	  tp->string = xstrdup (buffer);
 	  tp->type = token_type_string_literal;
+	  tp->comment = add_reference (savable_comment);
 	  return;
 
 	case '(':
@@ -590,7 +604,7 @@ phase8_get (token_ty *tp)
       len = strlen (tp->string);
       tp->string = xrealloc (tp->string, len + strlen (tmp.string) + 1);
       strcpy (tp->string + len, tmp.string);
-      free (tmp.string);
+      free_token (&tmp);
     }
 }
 
@@ -670,7 +684,7 @@ extract_parenthesized (message_list_ty *mlp,
 		  /* Seen an msgid.  */
 		  plural_mp = remember_a_message (mlp, NULL, token.string,
 						  inner_context, &pos,
-						  savable_comment);
+						  token.comment);
 		  state = 2;
 		}
 	      else
@@ -678,13 +692,14 @@ extract_parenthesized (message_list_ty *mlp,
 		  /* Seen an msgid_plural.  */
 		  remember_a_message_plural (plural_mp, token.string,
 					     inner_context, &pos,
-					     savable_comment);
+					     token.comment);
 		  state = 0;
 		}
+	      drop_reference (token.comment);
 	    }
 	  else
 	    {
-	      free (token.string);
+	      free_token (&token);
 	      state = 0;
 	    }
 	  next_context_iter = null_context_list_iterator;
@@ -696,7 +711,7 @@ extract_parenthesized (message_list_ty *mlp,
 	      flag_context_list_table_lookup (
 		flag_context_list_table,
 		token.string, strlen (token.string)));
-	  free (token.string);
+	  free_token (&token);
 	  state = 0;
 	  continue;
 

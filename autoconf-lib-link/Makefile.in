@@ -42,11 +42,12 @@ DIST_COMMON = README $(am__configure_deps) \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure \
 	../build-aux/compile ../build-aux/config.guess \
 	../build-aux/config.rpath ../build-aux/config.sub \
-	../build-aux/elisp-comp ../build-aux/install-sh \
-	../build-aux/ltmain.sh ../build-aux/mdate-sh \
-	../build-aux/missing ../build-aux/mkinstalldirs \
-	../build-aux/texinfo.tex ../build-aux/ylwrap AUTHORS COPYING \
-	ChangeLog INSTALL NEWS config.rpath
+	../build-aux/depcomp ../build-aux/elisp-comp \
+	../build-aux/install-sh ../build-aux/ltmain.sh \
+	../build-aux/mdate-sh ../build-aux/missing \
+	../build-aux/mkinstalldirs ../build-aux/texinfo.tex \
+	../build-aux/ylwrap AUTHORS COPYING ChangeLog INSTALL NEWS \
+	config.rpath
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../m4/fixautomake.m4 \
 	$(top_srcdir)/../m4/libtool.m4 \
@@ -85,7 +86,7 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = @ACLOCAL@
+ACLOCAL = ../build-aux/fixaclocal @ACLOCAL@
 AMTAR = @AMTAR@
 AR = @AR@
 AS = @AS@
@@ -141,6 +142,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -689,49 +691,49 @@ distclean-local:
 $(srcdir)/tests/rpathx/Makefile.in: $(srcdir)/tests/rpathx/Makefile.am $(srcdir)/tests/rpathx/configure.ac $(srcdir)/tests/rpathx/aclocal.m4
 	cd $(srcdir)/tests/rpathx && automake Makefile
 $(srcdir)/tests/rpathx/aclocal.m4: $(srcdir)/tests/rpathx/configure.ac $(srcdir)/../m4/libtool.m4
-	cd $(srcdir)/tests/rpathx && aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+	cd $(srcdir)/tests/rpathx && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
 $(srcdir)/tests/rpathx/configure: $(srcdir)/tests/rpathx/configure.ac $(srcdir)/tests/rpathx/aclocal.m4
 	cd $(srcdir)/tests/rpathx && autoconf
 $(srcdir)/tests/rpathy/Makefile.in: $(srcdir)/tests/rpathy/Makefile.am $(srcdir)/tests/rpathy/configure.ac $(srcdir)/tests/rpathy/aclocal.m4
 	cd $(srcdir)/tests/rpathy && automake Makefile
 $(srcdir)/tests/rpathy/aclocal.m4: $(srcdir)/tests/rpathy/configure.ac $(srcdir)/../m4/libtool.m4 $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathy && aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+	cd $(srcdir)/tests/rpathy && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
 $(srcdir)/tests/rpathy/configure: $(srcdir)/tests/rpathy/configure.ac $(srcdir)/tests/rpathy/aclocal.m4
 	cd $(srcdir)/tests/rpathy && autoconf
 $(srcdir)/tests/rpathz/Makefile.in: $(srcdir)/tests/rpathz/Makefile.am $(srcdir)/tests/rpathz/configure.ac $(srcdir)/tests/rpathz/aclocal.m4
 	cd $(srcdir)/tests/rpathz && automake Makefile
 $(srcdir)/tests/rpathz/aclocal.m4: $(srcdir)/tests/rpathz/configure.ac $(srcdir)/../m4/libtool.m4 $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathz && aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
+	cd $(srcdir)/tests/rpathz && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd` -I `cd ../../../m4 && pwd`
 $(srcdir)/tests/rpathz/configure: $(srcdir)/tests/rpathz/configure.ac $(srcdir)/tests/rpathz/aclocal.m4
 	cd $(srcdir)/tests/rpathz && autoconf
 $(srcdir)/tests/rpathlx/Makefile.in: $(srcdir)/tests/rpathlx/Makefile.am $(srcdir)/tests/rpathlx/configure.ac $(srcdir)/tests/rpathlx/aclocal.m4
 	cd $(srcdir)/tests/rpathlx && automake Makefile
 $(srcdir)/tests/rpathlx/aclocal.m4: $(srcdir)/tests/rpathlx/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathlx && aclocal -I `cd ../../m4 && pwd`
+	cd $(srcdir)/tests/rpathlx && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd`
 $(srcdir)/tests/rpathlx/configure: $(srcdir)/tests/rpathlx/configure.ac $(srcdir)/tests/rpathlx/aclocal.m4
 	cd $(srcdir)/tests/rpathlx && autoconf
 $(srcdir)/tests/rpathly/Makefile.in: $(srcdir)/tests/rpathly/Makefile.am $(srcdir)/tests/rpathly/configure.ac $(srcdir)/tests/rpathly/aclocal.m4
 	cd $(srcdir)/tests/rpathly && automake Makefile
 $(srcdir)/tests/rpathly/aclocal.m4: $(srcdir)/tests/rpathly/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathly && aclocal -I `cd ../../m4 && pwd`
+	cd $(srcdir)/tests/rpathly && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd`
 $(srcdir)/tests/rpathly/configure: $(srcdir)/tests/rpathly/configure.ac $(srcdir)/tests/rpathly/aclocal.m4
 	cd $(srcdir)/tests/rpathly && autoconf
 $(srcdir)/tests/rpathlyx/Makefile.in: $(srcdir)/tests/rpathlyx/Makefile.am $(srcdir)/tests/rpathlyx/configure.ac $(srcdir)/tests/rpathlyx/aclocal.m4
 	cd $(srcdir)/tests/rpathlyx && automake Makefile
 $(srcdir)/tests/rpathlyx/aclocal.m4: $(srcdir)/tests/rpathlyx/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathlyx && aclocal -I `cd ../../m4 && pwd`
+	cd $(srcdir)/tests/rpathlyx && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd`
 $(srcdir)/tests/rpathlyx/configure: $(srcdir)/tests/rpathlyx/configure.ac $(srcdir)/tests/rpathlyx/aclocal.m4
 	cd $(srcdir)/tests/rpathlyx && autoconf
 $(srcdir)/tests/rpathlz/Makefile.in: $(srcdir)/tests/rpathlz/Makefile.am $(srcdir)/tests/rpathlz/configure.ac $(srcdir)/tests/rpathlz/aclocal.m4
 	cd $(srcdir)/tests/rpathlz && automake Makefile
 $(srcdir)/tests/rpathlz/aclocal.m4: $(srcdir)/tests/rpathlz/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathlz && aclocal -I `cd ../../m4 && pwd`
+	cd $(srcdir)/tests/rpathlz && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd`
 $(srcdir)/tests/rpathlz/configure: $(srcdir)/tests/rpathlz/configure.ac $(srcdir)/tests/rpathlz/aclocal.m4
 	cd $(srcdir)/tests/rpathlz && autoconf
 $(srcdir)/tests/rpathlzyx/Makefile.in: $(srcdir)/tests/rpathlzyx/Makefile.am $(srcdir)/tests/rpathlzyx/configure.ac $(srcdir)/tests/rpathlzyx/aclocal.m4
 	cd $(srcdir)/tests/rpathlzyx && automake Makefile
 $(srcdir)/tests/rpathlzyx/aclocal.m4: $(srcdir)/tests/rpathlzyx/configure.ac $(srcdir)/m4/lib-link.m4 $(srcdir)/m4/lib-prefix.m4 $(srcdir)/m4/lib-ld.m4
-	cd $(srcdir)/tests/rpathlzyx && aclocal -I `cd ../../m4 && pwd`
+	cd $(srcdir)/tests/rpathlzyx && ../../../build-aux/fixaclocal aclocal -I `cd ../../m4 && pwd`
 $(srcdir)/tests/rpathlzyx/configure: $(srcdir)/tests/rpathlzyx/configure.ac $(srcdir)/tests/rpathlzyx/aclocal.m4
 	cd $(srcdir)/tests/rpathlzyx && autoconf
 

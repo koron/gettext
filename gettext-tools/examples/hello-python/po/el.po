@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3.1\n"
 
-#: hello.py.in:13
+#: hello.py.in:12
 msgid "Hello, world!"
 msgstr "Γεια σου, κόσμε!"
 
-#: hello.py.in:14
+#: hello.py.in:13
 #, python-format
 msgid "This program is running as process number %(pid)d."
 msgstr "Αυτό το πρόγραμμα εκτελείται με αριθμό διεργασίας %(pid)d."

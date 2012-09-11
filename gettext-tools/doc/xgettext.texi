@@ -218,11 +218,13 @@ For Scheme: @code{gettext}, @code{ngettext:1,2}, @code{gettext-noop}.
 
 @item
 For Java: @code{GettextResource.gettext:2},
-@code{GettextResource.ngettext:2,3}, @code{gettext}, @code{ngettext:1,2},
-@code{getString}.
+@code{GettextResource.ngettext:2,3}, @code{GettextResource.pgettext:2c,3},
+@code{GettextResource.npgettext:2c,3,4}, @code{gettext}, @code{ngettext:1,2},
+@code{pgettext:1c,2}, @code{npgettext:1c,2,3}, @code{getString}.
 
 @item
-For C#: @code{GetString}, @code{GetPluralString:1,2}.
+For C#: @code{GetString}, @code{GetPluralString:1,2},
+@code{GetParticularString:1c,2}, @code{GetParticularPluralString:1c,2,3}.
 
 @item
 For awk: @code{dcgettext}, @code{dcngettext:1,2}.
@@ -312,6 +314,13 @@ Recognize Qt format strings.
 @*
 This option has an effect only with the language C++.
 
+@item --kde
+@opindex --kde@r{, @code{xgettext} option}
+@cindex KDE format strings
+Recognize KDE 4 format strings.
+@*
+This option has an effect only with the language C++.
+
 @item --boost
 @opindex --boost@r{, @code{xgettext} option}
 @cindex Boost format strings
@@ -353,7 +362,9 @@ Write the .po file using indented style.
 
 @item --no-location
 @opindex --no-location@r{, @code{xgettext} option}
-Do not write @samp{#: @var{filename}:@var{line}} lines.
+Do not write @samp{#: @var{filename}:@var{line}} lines.  Note that using
+this option makes it harder for technically skilled translators to understand
+each message's context.
 
 @item -n
 @itemx --add-location
@@ -416,6 +427,9 @@ of variance for generated @code{.gmo} files.  With @code{--omit-header},
 two invocations of @code{xgettext} on the same files with the same
 options at different times are guaranteed to produce the same results.
 
+Note that using this option will lead to an error if the resulting file
+would not entirely be in ASCII.
+
 @item --copyright-holder=@var{string}
 @opindex --copyright-holder@r{, @code{xgettext} option}
 Set the copyright holder in the output.  @var{string} should be the
@@ -436,6 +450,15 @@ simply because @code{xgettext} was first used in the GNU project.
 Omit FSF copyright in output.  This option is equivalent to
 @samp{--copyright-holder=''}.  It can be useful for packages outside the GNU
 project that want their translations to be in the public domain.
+
+@item --package-name=@var{package}
+@opindex --package-name@r{, @code{xgettext} option}
+Set the package name in the header of the output.
+
+@item --package-version=@var{version}
+@opindex --package-version@r{, @code{xgettext} option}
+Set the package version in the header of the output.  This option has an
+effect only if the @samp{--package-name} option is also used.
 
 @item --msgid-bugs-address=@var{email@@address}
 @opindex --msgid-bugs-address@r{, @code{xgettext} option}

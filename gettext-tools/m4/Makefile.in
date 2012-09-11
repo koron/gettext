@@ -40,43 +40,67 @@ DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
 	$(top_srcdir)/libgettextpo/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/libgettextpo/gnulib-m4/ulonglong.m4 \
 	$(top_srcdir)/gnulib-m4/absolute-header.m4 \
+	$(top_srcdir)/gnulib-m4/acl.m4 \
 	$(top_srcdir)/gnulib-m4/alloca.m4 \
-	$(top_srcdir)/gnulib-m4/allocsa.m4 \
 	$(top_srcdir)/gnulib-m4/argmatch.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
 	$(top_srcdir)/gnulib-m4/backupfile.m4 \
 	$(top_srcdir)/gnulib-m4/bison-i18n.m4 \
 	$(top_srcdir)/gnulib-m4/byteswap.m4 \
-	$(top_srcdir)/gnulib-m4/canonicalize.m4 \
+	$(top_srcdir)/gnulib-m4/canonicalize-lgpl.m4 \
 	$(top_srcdir)/gnulib-m4/copy-file.m4 \
 	$(top_srcdir)/gnulib-m4/csharp.m4 \
 	$(top_srcdir)/gnulib-m4/csharpcomp.m4 \
 	$(top_srcdir)/gnulib-m4/csharpexec.m4 \
 	$(top_srcdir)/gnulib-m4/eaccess.m4 \
 	$(top_srcdir)/gnulib-m4/eealloc.m4 \
+	$(top_srcdir)/gnulib-m4/eoverflow.m4 \
 	$(top_srcdir)/gnulib-m4/error.m4 \
 	$(top_srcdir)/gnulib-m4/execute.m4 \
 	$(top_srcdir)/gnulib-m4/exitfail.m4 \
 	$(top_srcdir)/gnulib-m4/extensions.m4 \
 	$(top_srcdir)/gnulib-m4/fatal-signal.m4 \
+	$(top_srcdir)/gnulib-m4/fcntl_h.m4 \
 	$(top_srcdir)/gnulib-m4/findprog.m4 \
+	$(top_srcdir)/gnulib-m4/float_h.m4 \
 	$(top_srcdir)/gnulib-m4/fnmatch.m4 \
+	$(top_srcdir)/gnulib-m4/fopen.m4 \
 	$(top_srcdir)/gnulib-m4/gcj.m4 \
 	$(top_srcdir)/gnulib-m4/getdelim.m4 \
 	$(top_srcdir)/gnulib-m4/getline.m4 \
 	$(top_srcdir)/gnulib-m4/getopt.m4 \
+	$(top_srcdir)/gnulib-m4/gettimeofday.m4 \
 	$(top_srcdir)/gnulib-m4/gl_list.m4 \
+	$(top_srcdir)/gnulib-m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-comp.m4 \
 	$(top_srcdir)/gnulib-m4/hard-locale.m4 \
+	$(top_srcdir)/gnulib-m4/iconv_h.m4 \
+	$(top_srcdir)/gnulib-m4/iconv_open.m4 \
+	$(top_srcdir)/gnulib-m4/include_next.m4 \
+	$(top_srcdir)/gnulib-m4/inline.m4 \
+	$(top_srcdir)/gnulib-m4/intmax_t.m4 \
 	$(top_srcdir)/gnulib-m4/java.m4 \
 	$(top_srcdir)/gnulib-m4/javacomp.m4 \
 	$(top_srcdir)/gnulib-m4/javaexec.m4 \
+	$(top_srcdir)/gnulib-m4/libcroco.m4 \
+	$(top_srcdir)/gnulib-m4/libglib.m4 \
+	$(top_srcdir)/gnulib-m4/libxml.m4 \
 	$(top_srcdir)/gnulib-m4/linebreak.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
+	$(top_srcdir)/gnulib-m4/locale-fr.m4 \
+	$(top_srcdir)/gnulib-m4/locale-tr.m4 \
+	$(top_srcdir)/gnulib-m4/locale-zh.m4 \
+	$(top_srcdir)/gnulib-m4/locale_h.m4 \
+	$(top_srcdir)/gnulib-m4/localename.m4 \
+	$(top_srcdir)/gnulib-m4/malloc.m4 \
+	$(top_srcdir)/gnulib-m4/malloca.m4 \
 	$(top_srcdir)/gnulib-m4/mbchar.m4 \
 	$(top_srcdir)/gnulib-m4/mbiter.m4 \
 	$(top_srcdir)/gnulib-m4/mbrtowc.m4 \
+	$(top_srcdir)/gnulib-m4/mbslen.m4 \
+	$(top_srcdir)/gnulib-m4/mbsstr.m4 \
 	$(top_srcdir)/gnulib-m4/mbstate_t.m4 \
 	$(top_srcdir)/gnulib-m4/mbswidth.m4 \
 	$(top_srcdir)/gnulib-m4/memchr.m4 \
@@ -84,42 +108,59 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/gnulib-m4/memset.m4 \
 	$(top_srcdir)/gnulib-m4/minmax.m4 \
 	$(top_srcdir)/gnulib-m4/mkdtemp.m4 \
+	$(top_srcdir)/gnulib-m4/moo.m4 \
+	$(top_srcdir)/gnulib-m4/no-c++.m4 \
 	$(top_srcdir)/gnulib-m4/onceonly_2_57.m4 \
+	$(top_srcdir)/gnulib-m4/open.m4 \
+	$(top_srcdir)/gnulib-m4/openmp.m4 \
 	$(top_srcdir)/gnulib-m4/pathmax.m4 \
 	$(top_srcdir)/gnulib-m4/pipe.m4 \
 	$(top_srcdir)/gnulib-m4/quote.m4 \
 	$(top_srcdir)/gnulib-m4/quotearg.m4 \
 	$(top_srcdir)/gnulib-m4/readlink.m4 \
+	$(top_srcdir)/gnulib-m4/realloc.m4 \
+	$(top_srcdir)/gnulib-m4/relocatable-lib.m4 \
 	$(top_srcdir)/gnulib-m4/relocatable.m4 \
 	$(top_srcdir)/gnulib-m4/safe-read.m4 \
 	$(top_srcdir)/gnulib-m4/safe-write.m4 \
 	$(top_srcdir)/gnulib-m4/setenv.m4 \
 	$(top_srcdir)/gnulib-m4/sig_atomic_t.m4 \
+	$(top_srcdir)/gnulib-m4/signal_h.m4 \
 	$(top_srcdir)/gnulib-m4/signalblocking.m4 \
+	$(top_srcdir)/gnulib-m4/snprintf.m4 \
 	$(top_srcdir)/gnulib-m4/ssize_t.m4 \
 	$(top_srcdir)/gnulib-m4/stdarg.m4 \
 	$(top_srcdir)/gnulib-m4/stdbool.m4 \
 	$(top_srcdir)/gnulib-m4/stdint.m4 \
+	$(top_srcdir)/gnulib-m4/stdio_h.m4 \
+	$(top_srcdir)/gnulib-m4/stdlib_h.m4 \
 	$(top_srcdir)/gnulib-m4/stpcpy.m4 \
 	$(top_srcdir)/gnulib-m4/stpncpy.m4 \
 	$(top_srcdir)/gnulib-m4/strcspn.m4 \
 	$(top_srcdir)/gnulib-m4/strdup.m4 \
 	$(top_srcdir)/gnulib-m4/strerror.m4 \
+	$(top_srcdir)/gnulib-m4/string_h.m4 \
+	$(top_srcdir)/gnulib-m4/strnlen.m4 \
 	$(top_srcdir)/gnulib-m4/strpbrk.m4 \
-	$(top_srcdir)/gnulib-m4/strstr.m4 \
 	$(top_srcdir)/gnulib-m4/strtol.m4 \
 	$(top_srcdir)/gnulib-m4/strtoul.m4 \
+	$(top_srcdir)/gnulib-m4/sys_stat_h.m4 \
+	$(top_srcdir)/gnulib-m4/sys_time_h.m4 \
+	$(top_srcdir)/gnulib-m4/tempname.m4 \
+	$(top_srcdir)/gnulib-m4/term-ostream.m4 \
+	$(top_srcdir)/gnulib-m4/terminfo.m4 \
 	$(top_srcdir)/gnulib-m4/tls.m4 \
 	$(top_srcdir)/gnulib-m4/tmpdir.m4 \
-	$(top_srcdir)/gnulib-m4/ucs4-utf.m4 \
 	$(top_srcdir)/gnulib-m4/unionwait.m4 \
 	$(top_srcdir)/gnulib-m4/unistd_h.m4 \
 	$(top_srcdir)/gnulib-m4/unlocked-io.m4 \
-	$(top_srcdir)/gnulib-m4/utf-ucs4.m4 \
+	$(top_srcdir)/gnulib-m4/vasnprintf.m4 \
 	$(top_srcdir)/gnulib-m4/vasprintf.m4 \
+	$(top_srcdir)/gnulib-m4/vsnprintf.m4 \
 	$(top_srcdir)/gnulib-m4/wait-process.m4 \
+	$(top_srcdir)/gnulib-m4/wchar.m4 \
+	$(top_srcdir)/gnulib-m4/wctype.m4 \
 	$(top_srcdir)/gnulib-m4/wcwidth.m4 \
-	$(top_srcdir)/gnulib-m4/xreadlink.m4 \
 	$(top_srcdir)/gnulib-m4/xvasprintf.m4 \
 	$(top_srcdir)/../m4/fixautomake.m4 \
 	$(top_srcdir)/../m4/libtool.m4 \
@@ -135,12 +176,12 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/../gettext-runtime/m4/iconv.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/intdiv0.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/intl.m4 \
+	$(top_srcdir)/../gettext-runtime/m4/intlmacosx.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/intmax.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/inttypes-pri.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/inttypes_h.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/lcmessage.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/lock.m4 \
-	$(top_srcdir)/../gettext-runtime/m4/longdouble.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/longlong.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/nls.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/po.m4 \
@@ -149,15 +190,14 @@ am__aclocal_m4_deps =  \
 	$(top_srcdir)/../gettext-runtime/m4/size_max.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/stdint_h.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/uintmax_t.m4 \
-	$(top_srcdir)/../gettext-runtime/m4/ulonglong.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/visibility.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/wchar_t.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/wint_t.m4 \
 	$(top_srcdir)/../gettext-runtime/m4/xsize.m4 \
 	$(top_srcdir)/m4/hostname.m4 $(top_srcdir)/m4/libgrep.m4 \
-	$(top_srcdir)/m4/locale-fr.m4 $(top_srcdir)/m4/openmp.m4 \
-	$(top_srcdir)/m4/regex.m4 $(top_srcdir)/m4/setlocale.m4 \
-	$(top_srcdir)/m4/siginfo.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/locale-ja.m4 $(top_srcdir)/m4/regex.m4 \
+	$(top_srcdir)/m4/setlocale.m4 $(top_srcdir)/m4/siginfo.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../build-aux/mkinstalldirs
@@ -177,7 +217,6 @@ aclocalDATA_INSTALL = $(INSTALL_DATA)
 examplesbuildauxDATA_INSTALL = $(INSTALL_DATA)
 DATA = $(aclocal_DATA) $(examplesbuildaux_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ABSOLUTE_STDINT_H = @ABSOLUTE_STDINT_H@
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
 ALLOCA_H = @ALLOCA_H@
@@ -232,36 +271,129 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EMACS = @EMACS@
 EMACSLOADPATH = @EMACSLOADPATH@
+EOVERFLOW = @EOVERFLOW@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FCNTL_H = @FCNTL_H@
 FFLAGS = @FFLAGS@
+FLOAT_H = @FLOAT_H@
 FNMATCH_H = @FNMATCH_H@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GENCAT = @GENCAT@
 GETOPT_H = @GETOPT_H@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GLIBC2 = @GLIBC2@
 GLIBC21 = @GLIBC21@
 GLOBAL_SYMBOL_PIPE = @GLOBAL_SYMBOL_PIPE@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
+GNULIB_CALLOC_POSIX = @GNULIB_CALLOC_POSIX@
+GNULIB_CHOWN = @GNULIB_CHOWN@
+GNULIB_DUP2 = @GNULIB_DUP2@
+GNULIB_FCHDIR = @GNULIB_FCHDIR@
+GNULIB_FFLUSH = @GNULIB_FFLUSH@
+GNULIB_FOPEN = @GNULIB_FOPEN@
+GNULIB_FPRINTF_POSIX = @GNULIB_FPRINTF_POSIX@
+GNULIB_FREOPEN = @GNULIB_FREOPEN@
+GNULIB_FSEEK = @GNULIB_FSEEK@
+GNULIB_FSEEKO = @GNULIB_FSEEKO@
+GNULIB_FTELL = @GNULIB_FTELL@
+GNULIB_FTELLO = @GNULIB_FTELLO@
+GNULIB_FTRUNCATE = @GNULIB_FTRUNCATE@
+GNULIB_GETCWD = @GNULIB_GETCWD@
+GNULIB_GETDELIM = @GNULIB_GETDELIM@
+GNULIB_GETLINE = @GNULIB_GETLINE@
+GNULIB_GETLOGIN_R = @GNULIB_GETLOGIN_R@
+GNULIB_GETSUBOPT = @GNULIB_GETSUBOPT@
+GNULIB_LCHOWN = @GNULIB_LCHOWN@
+GNULIB_LSEEK = @GNULIB_LSEEK@
+GNULIB_MALLOC_POSIX = @GNULIB_MALLOC_POSIX@
+GNULIB_MBSCASECMP = @GNULIB_MBSCASECMP@
+GNULIB_MBSCASESTR = @GNULIB_MBSCASESTR@
+GNULIB_MBSCHR = @GNULIB_MBSCHR@
+GNULIB_MBSCSPN = @GNULIB_MBSCSPN@
+GNULIB_MBSLEN = @GNULIB_MBSLEN@
+GNULIB_MBSNCASECMP = @GNULIB_MBSNCASECMP@
+GNULIB_MBSNLEN = @GNULIB_MBSNLEN@
+GNULIB_MBSPBRK = @GNULIB_MBSPBRK@
+GNULIB_MBSPCASECMP = @GNULIB_MBSPCASECMP@
+GNULIB_MBSRCHR = @GNULIB_MBSRCHR@
+GNULIB_MBSSEP = @GNULIB_MBSSEP@
+GNULIB_MBSSPN = @GNULIB_MBSSPN@
+GNULIB_MBSSTR = @GNULIB_MBSSTR@
+GNULIB_MBSTOK_R = @GNULIB_MBSTOK_R@
+GNULIB_MEMMEM = @GNULIB_MEMMEM@
+GNULIB_MEMPCPY = @GNULIB_MEMPCPY@
+GNULIB_MEMRCHR = @GNULIB_MEMRCHR@
+GNULIB_MKDTEMP = @GNULIB_MKDTEMP@
+GNULIB_MKSTEMP = @GNULIB_MKSTEMP@
+GNULIB_OPEN = @GNULIB_OPEN@
+GNULIB_PRINTF_POSIX = @GNULIB_PRINTF_POSIX@
+GNULIB_PUTENV = @GNULIB_PUTENV@
+GNULIB_READLINK = @GNULIB_READLINK@
+GNULIB_REALLOC_POSIX = @GNULIB_REALLOC_POSIX@
+GNULIB_SIGPROCMASK = @GNULIB_SIGPROCMASK@
+GNULIB_SLEEP = @GNULIB_SLEEP@
+GNULIB_SNPRINTF = @GNULIB_SNPRINTF@
+GNULIB_SPRINTF_POSIX = @GNULIB_SPRINTF_POSIX@
+GNULIB_STPCPY = @GNULIB_STPCPY@
+GNULIB_STPNCPY = @GNULIB_STPNCPY@
+GNULIB_STRCASESTR = @GNULIB_STRCASESTR@
+GNULIB_STRCHRNUL = @GNULIB_STRCHRNUL@
+GNULIB_STRDUP = @GNULIB_STRDUP@
+GNULIB_STRERROR = @GNULIB_STRERROR@
+GNULIB_STRNDUP = @GNULIB_STRNDUP@
+GNULIB_STRNLEN = @GNULIB_STRNLEN@
+GNULIB_STRPBRK = @GNULIB_STRPBRK@
+GNULIB_STRSEP = @GNULIB_STRSEP@
+GNULIB_STRTOK_R = @GNULIB_STRTOK_R@
+GNULIB_VASPRINTF = @GNULIB_VASPRINTF@
+GNULIB_VFPRINTF_POSIX = @GNULIB_VFPRINTF_POSIX@
+GNULIB_VPRINTF_POSIX = @GNULIB_VPRINTF_POSIX@
+GNULIB_VSNPRINTF = @GNULIB_VSNPRINTF@
+GNULIB_VSPRINTF_POSIX = @GNULIB_VSPRINTF_POSIX@
+GNULIB_WCWIDTH = @GNULIB_WCWIDTH@
 GREP = @GREP@
 HAVE_ASPRINTF = @HAVE_ASPRINTF@
+HAVE_CALLOC_POSIX = @HAVE_CALLOC_POSIX@
 HAVE_CLIX = @HAVE_CLIX@
 HAVE_CLIX_IN_PATH = @HAVE_CLIX_IN_PATH@
 HAVE_CSC = @HAVE_CSC@
 HAVE_CSCC = @HAVE_CSCC@
 HAVE_CSCC_IN_PATH = @HAVE_CSCC_IN_PATH@
 HAVE_CSC_IN_PATH = @HAVE_CSC_IN_PATH@
+HAVE_DECL_GETDELIM = @HAVE_DECL_GETDELIM@
+HAVE_DECL_GETLINE = @HAVE_DECL_GETLINE@
+HAVE_DECL_GETLOGIN_R = @HAVE_DECL_GETLOGIN_R@
+HAVE_DECL_MEMMEM = @HAVE_DECL_MEMMEM@
+HAVE_DECL_MEMRCHR = @HAVE_DECL_MEMRCHR@
+HAVE_DECL_MKDIR = @HAVE_DECL_MKDIR@
+HAVE_DECL_SNPRINTF = @HAVE_DECL_SNPRINTF@
+HAVE_DECL_STRDUP = @HAVE_DECL_STRDUP@
+HAVE_DECL_STRERROR = @HAVE_DECL_STRERROR@
+HAVE_DECL_STRNCASECMP = @HAVE_DECL_STRNCASECMP@
+HAVE_DECL_STRNDUP = @HAVE_DECL_STRNDUP@
+HAVE_DECL_STRNLEN = @HAVE_DECL_STRNLEN@
+HAVE_DECL_STRTOK_R = @HAVE_DECL_STRTOK_R@
+HAVE_DECL_VSNPRINTF = @HAVE_DECL_VSNPRINTF@
+HAVE_DECL_WCWIDTH = @HAVE_DECL_WCWIDTH@
+HAVE_DUP2 = @HAVE_DUP2@
+HAVE_FSEEKO = @HAVE_FSEEKO@
+HAVE_FTELLO = @HAVE_FTELLO@
+HAVE_FTRUNCATE = @HAVE_FTRUNCATE@
 HAVE_GCJ = @HAVE_GCJ@
 HAVE_GCJ_C = @HAVE_GCJ_C@
 HAVE_GCJ_IN_PATH = @HAVE_GCJ_IN_PATH@
+HAVE_GETSUBOPT = @HAVE_GETSUBOPT@
 HAVE_GIJ = @HAVE_GIJ@
 HAVE_GIJ_IN_PATH = @HAVE_GIJ_IN_PATH@
 HAVE_GLOBAL_SYMBOL_PIPE = @HAVE_GLOBAL_SYMBOL_PIPE@
 HAVE_ILRUN = @HAVE_ILRUN@
 HAVE_ILRUN_IN_PATH = @HAVE_ILRUN_IN_PATH@
 HAVE_INTTYPES_H = @HAVE_INTTYPES_H@
+HAVE_IO_H = @HAVE_IO_H@
+HAVE_ISWCNTRL = @HAVE_ISWCNTRL@
 HAVE_JAVA = @HAVE_JAVA@
 HAVE_JAVAC = @HAVE_JAVAC@
 HAVE_JAVAC_ENVVAR = @HAVE_JAVAC_ENVVAR@
@@ -276,27 +408,57 @@ HAVE_JVIEW = @HAVE_JVIEW@
 HAVE_JVIEW_IN_PATH = @HAVE_JVIEW_IN_PATH@
 HAVE_LIBEXPAT = @HAVE_LIBEXPAT@
 HAVE_LONG_LONG_INT = @HAVE_LONG_LONG_INT@
+HAVE_LSTAT = @HAVE_LSTAT@
+HAVE_MALLOC_POSIX = @HAVE_MALLOC_POSIX@
 HAVE_MCS = @HAVE_MCS@
 HAVE_MCS_IN_PATH = @HAVE_MCS_IN_PATH@
+HAVE_MEMPCPY = @HAVE_MEMPCPY@
+HAVE_MKDTEMP = @HAVE_MKDTEMP@
 HAVE_MONO = @HAVE_MONO@
 HAVE_MONO_IN_PATH = @HAVE_MONO_IN_PATH@
 HAVE_POSIX_PRINTF = @HAVE_POSIX_PRINTF@
+HAVE_POSIX_SIGNALBLOCKING = @HAVE_POSIX_SIGNALBLOCKING@
+HAVE_READLINK = @HAVE_READLINK@
+HAVE_REALLOC_POSIX = @HAVE_REALLOC_POSIX@
 HAVE_SIGNED_SIG_ATOMIC_T = @HAVE_SIGNED_SIG_ATOMIC_T@
 HAVE_SIGNED_WCHAR_T = @HAVE_SIGNED_WCHAR_T@
 HAVE_SIGNED_WINT_T = @HAVE_SIGNED_WINT_T@
+HAVE_SIGSET_T = @HAVE_SIGSET_T@
+HAVE_SLEEP = @HAVE_SLEEP@
 HAVE_SNPRINTF = @HAVE_SNPRINTF@
 HAVE_STDINT_H = @HAVE_STDINT_H@
+HAVE_STPCPY = @HAVE_STPCPY@
+HAVE_STPNCPY = @HAVE_STPNCPY@
+HAVE_STRCASECMP = @HAVE_STRCASECMP@
+HAVE_STRCASESTR = @HAVE_STRCASESTR@
+HAVE_STRCHRNUL = @HAVE_STRCHRNUL@
+HAVE_STRNDUP = @HAVE_STRNDUP@
+HAVE_STRPBRK = @HAVE_STRPBRK@
+HAVE_STRSEP = @HAVE_STRSEP@
+HAVE_STRUCT_TIMEVAL = @HAVE_STRUCT_TIMEVAL@
 HAVE_SYS_BITYPES_H = @HAVE_SYS_BITYPES_H@
 HAVE_SYS_INTTYPES_H = @HAVE_SYS_INTTYPES_H@
+HAVE_SYS_TIME_H = @HAVE_SYS_TIME_H@
 HAVE_SYS_TYPES_H = @HAVE_SYS_TYPES_H@
+HAVE_UNISTD_H = @HAVE_UNISTD_H@
 HAVE_UNSIGNED_LONG_LONG_INT = @HAVE_UNSIGNED_LONG_LONG_INT@
+HAVE_VASPRINTF = @HAVE_VASPRINTF@
 HAVE_VISIBILITY = @HAVE_VISIBILITY@
 HAVE_WCHAR_H = @HAVE_WCHAR_H@
+HAVE_WCTYPE_H = @HAVE_WCTYPE_H@
+HAVE_WINT_T = @HAVE_WINT_T@
 HAVE_WPRINTF = @HAVE_WPRINTF@
 HAVE__BOOL = @HAVE__BOOL@
+ICONV_H = @ICONV_H@
+INCCROCO = @INCCROCO@
+INCGLIB = @INCGLIB@
+INCLUDE_NEXT = @INCLUDE_NEXT@
+INCTERMINFO = @INCTERMINFO@
+INCXML = @INCXML@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM_ENV = @INSTALL_PROGRAM_ENV@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
@@ -308,26 +470,46 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAR = @JAR@
 JAVA_CHOICE = @JAVA_CHOICE@
 LDFLAGS = @LDFLAGS@
+LIBCROCO = @LIBCROCO@
 LIBEXPAT = @LIBEXPAT@
+LIBEXPAT_PREFIX = @LIBEXPAT_PREFIX@
+LIBGLIB = @LIBGLIB@
+LIBGLIB_H = @LIBGLIB_H@
 LIBGREPOBJS = @LIBGREPOBJS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
 LIBOBJS = @LIBOBJS@
 LIBPTH = @LIBPTH@
+LIBPTH_PREFIX = @LIBPTH_PREFIX@
 LIBS = @LIBS@
+LIBSCHED = @LIBSCHED@
+LIBTERMINFO = @LIBTERMINFO@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
+LIBXML = @LIBXML@
+LIBXML_H = @LIBXML_H@
+LIB_ACL = @LIB_ACL@
+LIB_ACL_TRIVIAL = @LIB_ACL_TRIVIAL@
 LN_S = @LN_S@
 LOCALE_FR = @LOCALE_FR@
 LOCALE_FR_UTF8 = @LOCALE_FR_UTF8@
+LOCALE_H = @LOCALE_H@
+LOCALE_JA = @LOCALE_JA@
+LOCALE_TR_UTF8 = @LOCALE_TR_UTF8@
+LOCALE_ZH_CN = @LOCALE_ZH_CN@
+LTLIBC = @LTLIBC@
+LTLIBCROCO = @LTLIBCROCO@
 LTLIBEXPAT = @LTLIBEXPAT@
+LTLIBGLIB = @LTLIBGLIB@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBMULTITHREAD = @LTLIBMULTITHREAD@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBPTH = @LTLIBPTH@
+LTLIBTERMINFO = @LTLIBTERMINFO@
 LTLIBTHREAD = @LTLIBTHREAD@
+LTLIBXML = @LTLIBXML@
 LTNOUNDEF = @LTNOUNDEF@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -337,7 +519,22 @@ MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
 MSGMERGE_LIBM = @MSGMERGE_LIBM@
+NEXT_FCNTL_H = @NEXT_FCNTL_H@
+NEXT_FLOAT_H = @NEXT_FLOAT_H@
+NEXT_ICONV_H = @NEXT_ICONV_H@
+NEXT_LOCALE_H = @NEXT_LOCALE_H@
+NEXT_SIGNAL_H = @NEXT_SIGNAL_H@
+NEXT_STDINT_H = @NEXT_STDINT_H@
+NEXT_STDIO_H = @NEXT_STDIO_H@
+NEXT_STDLIB_H = @NEXT_STDLIB_H@
+NEXT_STRING_H = @NEXT_STRING_H@
+NEXT_SYS_STAT_H = @NEXT_SYS_STAT_H@
+NEXT_SYS_TIME_H = @NEXT_SYS_TIME_H@
+NEXT_UNISTD_H = @NEXT_UNISTD_H@
+NEXT_WCHAR_H = @NEXT_WCHAR_H@
+NEXT_WCTYPE_H = @NEXT_WCTYPE_H@
 NM = @NM@
+NO_CXX = @NO_CXX@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPENMP_CFLAGS = @OPENMP_CFLAGS@
@@ -354,27 +551,69 @@ PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
 PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RELOCATABLE = @RELOCATABLE@
+RELOCATABLE_BUILD_DIR = @RELOCATABLE_BUILD_DIR@
+RELOCATABLE_CONFIG_H_DIR = @RELOCATABLE_CONFIG_H_DIR@
+RELOCATABLE_LDFLAGS = @RELOCATABLE_LDFLAGS@
+RELOCATABLE_LIBRARY_PATH = @RELOCATABLE_LIBRARY_PATH@
+RELOCATABLE_SRC_DIR = @RELOCATABLE_SRC_DIR@
+REPLACE_CHOWN = @REPLACE_CHOWN@
+REPLACE_FCHDIR = @REPLACE_FCHDIR@
+REPLACE_FFLUSH = @REPLACE_FFLUSH@
+REPLACE_FOPEN = @REPLACE_FOPEN@
+REPLACE_FPRINTF = @REPLACE_FPRINTF@
+REPLACE_FREOPEN = @REPLACE_FREOPEN@
+REPLACE_FSEEK = @REPLACE_FSEEK@
+REPLACE_FSEEKO = @REPLACE_FSEEKO@
+REPLACE_FTELL = @REPLACE_FTELL@
+REPLACE_FTELLO = @REPLACE_FTELLO@
+REPLACE_GETCWD = @REPLACE_GETCWD@
+REPLACE_GETLINE = @REPLACE_GETLINE@
+REPLACE_GETTIMEOFDAY = @REPLACE_GETTIMEOFDAY@
+REPLACE_ICONV = @REPLACE_ICONV@
+REPLACE_ICONV_OPEN = @REPLACE_ICONV_OPEN@
+REPLACE_ICONV_UTF = @REPLACE_ICONV_UTF@
+REPLACE_LCHOWN = @REPLACE_LCHOWN@
+REPLACE_LSEEK = @REPLACE_LSEEK@
+REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
+REPLACE_OPEN = @REPLACE_OPEN@
+REPLACE_PRINTF = @REPLACE_PRINTF@
+REPLACE_PUTENV = @REPLACE_PUTENV@
+REPLACE_SNPRINTF = @REPLACE_SNPRINTF@
+REPLACE_SPRINTF = @REPLACE_SPRINTF@
+REPLACE_STRERROR = @REPLACE_STRERROR@
+REPLACE_VASPRINTF = @REPLACE_VASPRINTF@
+REPLACE_VFPRINTF = @REPLACE_VFPRINTF@
+REPLACE_VPRINTF = @REPLACE_VPRINTF@
+REPLACE_VSNPRINTF = @REPLACE_VSNPRINTF@
+REPLACE_VSPRINTF = @REPLACE_VSPRINTF@
+REPLACE_WCWIDTH = @REPLACE_WCWIDTH@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
-SET_RELOCATABLE = @SET_RELOCATABLE@
 SHELL = @SHELL@
 SIG_ATOMIC_T_SUFFIX = @SIG_ATOMIC_T_SUFFIX@
 SIZE_T_SUFFIX = @SIZE_T_SUFFIX@
 STDBOOL_H = @STDBOOL_H@
 STDINT_H = @STDINT_H@
 STRIP = @STRIP@
+SYS_STAT_H = @SYS_STAT_H@
+SYS_TIME_H = @SYS_TIME_H@
 TESTCSHARP = @TESTCSHARP@
 TESTJAVA = @TESTJAVA@
 TESTLIBASPRINTF = @TESTLIBASPRINTF@
 TEXI2PDF = @TEXI2PDF@
-UNISTD_H = @UNISTD_H@
 USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+WCHAR_H = @WCHAR_H@
 WCHAR_T_SUFFIX = @WCHAR_T_SUFFIX@
+WCTYPE_H = @WCTYPE_H@
+WINDRES = @WINDRES@
 WINT_T_SUFFIX = @WINT_T_SUFFIX@
+WOE32 = @WOE32@
 WOE32DLL = @WOE32DLL@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 YACC = @YACC@
 YFLAGS = @YFLAGS@
 abs_builddir = @abs_builddir@
@@ -447,12 +686,12 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/intdiv0.m4 \
   ../../gettext-runtime/m4/intl.m4 \
   ../../gettext-runtime/m4/intldir.m4 \
+  ../../gettext-runtime/m4/intlmacosx.m4 \
   ../../gettext-runtime/m4/intmax.m4 \
   ../../gettext-runtime/m4/inttypes_h.m4 \
   ../../gettext-runtime/m4/inttypes-pri.m4 \
   ../../gettext-runtime/m4/lcmessage.m4 \
   ../../gettext-runtime/m4/lock.m4 \
-  ../../gettext-runtime/m4/longdouble.m4 \
   ../../gettext-runtime/m4/longlong.m4 \
   ../../gettext-runtime/m4/nls.m4 \
   ../../gettext-runtime/m4/po.m4 \
@@ -461,7 +700,6 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/size_max.m4 \
   ../../gettext-runtime/m4/stdint_h.m4 \
   ../../gettext-runtime/m4/uintmax_t.m4 \
-  ../../gettext-runtime/m4/ulonglong.m4 \
   ../../gettext-runtime/m4/visibility.m4 \
   ../../gettext-runtime/m4/wchar_t.m4 \
   ../../gettext-runtime/m4/wint_t.m4 \
@@ -480,8 +718,7 @@ examplesbuildaux_DATA = \
 EXTRA_DIST = README csharpexec-test.exe \
 hostname.m4 \
 libgrep.m4 \
-locale-fr.m4 \
-openmp.m4 \
+locale-ja.m4 \
 regex.m4 \
 setlocale.m4 \
 siginfo.m4

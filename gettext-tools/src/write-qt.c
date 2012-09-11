@@ -1,11 +1,11 @@
 /* Writing Qt .qm files.
-   Copyright (C) 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -36,13 +35,12 @@
 #include "po-charset.h"
 #include "msgl-iconv.h"
 #include "hash-string.h"
-#include "utf8-ucs4.h"
+#include "unistr.h"
 #include "xalloc.h"
 #include "obstack.h"
 #include "hash.h"
 #include "binary-io.h"
 #include "fwriteerror.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -290,7 +288,7 @@ conv_to_iso_8859_1 (const char *string)
   const char *str = string;
   const char *str_limit = string + length;
   /* Conversion to ISO-8859-1 can only reduce the number of bytes.  */
-  char *result = (char *) xmalloc (length + 1);
+  char *result = XNMALLOC (length + 1, char);
   char *q = result;
 
   while (str < str_limit)
@@ -318,7 +316,7 @@ conv_to_utf16 (const char *string, size_t *sizep)
   const char *str = string;
   const char *str_limit = string + length;
   /* Conversion to UTF-16 can at most double the number of bytes.  */
-  unsigned short *result = (unsigned short *) xmalloc (2 * length);
+  unsigned short *result = XNMALLOC (length, unsigned short);
   unsigned short *q = result;
 
   while (str < str_limit)
@@ -518,12 +516,10 @@ write_qm (FILE *output_file, message_list_ty *mlp)
 	{
 	  struct list_cell { const char *context; struct list_cell *next; };
 	  struct list_cell *list_memory =
-	    (struct list_cell *)
-	    xmalloc (table_size * sizeof (struct list_cell));
+	    XNMALLOC (table_size, struct list_cell);
 	  struct list_cell *freelist;
 	  struct bucket { struct list_cell *head; struct list_cell **tail; };
-	  struct bucket *buckets =
-	    (struct bucket *) xmalloc (table_size * sizeof (struct bucket));
+	  struct bucket *buckets = XNMALLOC (table_size, struct bucket);
 	  size_t i;
 
 	  freelist = list_memory;

@@ -1,11 +1,11 @@
 /* xgettext Java backend.
-   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +13,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-java.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -31,11 +33,9 @@
 #include "x-java.h"
 #include "error.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "hash.h"
 #include "po-charset.h"
-#include "utf16-ucs4.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -99,10 +99,14 @@ init_keywords ()
     {
       /* When adding new keywords here, also update the documentation in
 	 xgettext.texi!  */
-      x_java_keyword ("GettextResource.gettext:2");	/* static method */
-      x_java_keyword ("GettextResource.ngettext:2,3");	/* static method */
+      x_java_keyword ("GettextResource.gettext:2");        /* static method */
+      x_java_keyword ("GettextResource.ngettext:2,3");     /* static method */
+      x_java_keyword ("GettextResource.pgettext:2c,3");    /* static method */
+      x_java_keyword ("GettextResource.npgettext:2c,3,4"); /* static method */
       x_java_keyword ("gettext");
       x_java_keyword ("ngettext:1,2");
+      x_java_keyword ("pgettext:1c,2");
+      x_java_keyword ("npgettext:1c,2,3");
       x_java_keyword ("getString");	/* ResourceBundle.getString */
       default_keywords = false;
     }
@@ -114,9 +118,15 @@ init_flag_table_java ()
   xgettext_record_flag ("GettextResource.gettext:2:pass-java-format");
   xgettext_record_flag ("GettextResource.ngettext:2:pass-java-format");
   xgettext_record_flag ("GettextResource.ngettext:3:pass-java-format");
+  xgettext_record_flag ("GettextResource.pgettext:3:pass-java-format");
+  xgettext_record_flag ("GettextResource.npgettext:3:pass-java-format");
+  xgettext_record_flag ("GettextResource.npgettext:4:pass-java-format");
   xgettext_record_flag ("gettext:1:pass-java-format");
   xgettext_record_flag ("ngettext:1:pass-java-format");
   xgettext_record_flag ("ngettext:2:pass-java-format");
+  xgettext_record_flag ("pgettext:2:pass-java-format");
+  xgettext_record_flag ("npgettext:2:pass-java-format");
+  xgettext_record_flag ("npgettext:3:pass-java-format");
   xgettext_record_flag ("getString:1:pass-java-format");
   xgettext_record_flag ("MessageFormat:1:java-format");
   xgettext_record_flag ("MessageFormat.format:1:java-format");
@@ -449,14 +459,49 @@ string_buffer_append_unicode (struct string_buffer *bp, unsigned int uc)
   bp->utf8_buflen += count;
 }
 
+/* Auxiliary function: Handle the attempt to append a lone surrogate to
+   bp->utf8.  */
+static void
+string_buffer_append_lone_surrogate (struct string_buffer *bp, unsigned int uc)
+{
+  /* A half surrogate is invalid, therefore use U+FFFD instead.
+     It appears to be valid Java: The Java Language Specification,
+     3rd ed., says "The Java programming language represents text
+     in sequences of 16-bit code units, using the UTF-16 encoding."
+     but does not impose constraints on the use of \uxxxx escape
+     sequences for surrogates.  And the JDK's javac happily groks
+     half surrogates.
+     But a half surrogate is invalid in UTF-8:
+       - RFC 3629 says
+	   "The definition of UTF-8 prohibits encoding character
+	    numbers between U+D800 and U+DFFF".
+       - Unicode 4.0 chapter 3
+	 <http://www.unicode.org/versions/Unicode4.0.0/ch03.pdf>
+	 section 3.9, p.77, says
+	   "Because surrogate code points are not Unicode scalar
+	    values, any UTF-8 byte sequence that would otherwise
+	    map to code points D800..DFFF is ill-formed."
+	 and in table 3-6, p. 78, does not mention D800..DFFF.
+       - The unicode.org FAQ question "How do I convert an unpaired
+	 UTF-16 surrogate to UTF-8?" has the answer
+	   "By representing such an unpaired surrogate on its own
+	    as a 3-byte sequence, the resulting UTF-8 data stream
+	    would become ill-formed."
+     So use U+FFFD instead.  */
+  error_with_progname = false;
+  error (0, 0, _("%s:%d: warning: lone surrogate U+%04X"),
+	 logical_file_name, line_number, uc);
+  error_with_progname = true;
+  string_buffer_append_unicode (bp, 0xfffd);
+}
+
 /* Auxiliary function: Flush bp->utf16_surr into bp->utf8_buffer.  */
 static inline void
 string_buffer_flush_utf16_surr (struct string_buffer *bp)
 {
   if (bp->utf16_surr != 0)
     {
-      /* A half surrogate is invalid, therefore use U+FFFD instead.  */
-      string_buffer_append_unicode (bp, 0xfffd);
+      string_buffer_append_lone_surrogate (bp, bp->utf16_surr);
       bp->utf16_surr = 0;
     }
 }
@@ -509,7 +554,7 @@ string_buffer_append (struct string_buffer *bp, int c)
 
 	  utf16buf[0] = bp->utf16_surr;
 	  utf16buf[1] = UTF16_VALUE (c);
-	  if (u16_mbtouc_aux (&uc, utf16buf, 2) != 2)
+	  if (u16_mbtouc (&uc, utf16buf, 2) != 2)
 	    abort ();
 
 	  string_buffer_append_unicode (bp, uc);
@@ -521,6 +566,8 @@ string_buffer_append (struct string_buffer *bp, int c)
 
 	  if (c >= UNICODE (0xd800) && c < UNICODE (0xdc00))
 	    bp->utf16_surr = UTF16_VALUE (c);
+	  else if (c >= UNICODE (0xdc00) && c < UNICODE (0xe000))
+	    string_buffer_append_lone_surrogate (bp, UTF16_VALUE (c));
 	  else
 	    string_buffer_append_unicode (bp, UTF16_VALUE (c));
 	}

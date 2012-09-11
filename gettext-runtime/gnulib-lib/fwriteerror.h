@@ -2,10 +2,10 @@
    Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* There are two approaches for detecting a write error on a stream opened
    for writing:
@@ -40,6 +39,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Write out the not yet written buffered contents of the stream FP, close
    the stream FP, and test whether some error occurred on the stream FP.
    FP must be a stream opened for writing.
@@ -53,3 +56,7 @@ extern int fwriteerror (FILE *fp);
 /* Likewise, but don't consider it an error if FP has an invalid file
    descriptor and no output was done to FP.  */
 extern int fwriteerror_no_ebadf (FILE *fp);
+
+#ifdef __cplusplus
+}
+#endif

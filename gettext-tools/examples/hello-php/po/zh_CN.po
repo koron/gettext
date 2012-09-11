@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.php:13
+#: hello.php:12
 msgid "Hello, world!"
 msgstr "世界你好！"
 
-#: hello.php:15
+#: hello.php:14
 #, php-format
 msgid "This program is running as process number %d."
 msgstr "此程序正以进程号 %d 运行。"

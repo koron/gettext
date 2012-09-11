@@ -68,7 +68,6 @@ following file list.
       $prefix/share/doc/gettext/*.3.html
 
       $prefix/share/gettext/libintl.jar
-      $prefix/share/doc/gettext/javadoc1/*
       $prefix/share/doc/gettext/javadoc2/*
 
       $prefix/lib/GNU.Gettext.dll
@@ -123,6 +122,7 @@ following file list.
       $prefix/share/aclocal/intdiv0.m4
       $prefix/share/aclocal/intl.m4
       $prefix/share/aclocal/intldir.m4
+      $prefix/share/aclocal/intlmacosx.m4
       $prefix/share/aclocal/intmax.m4
       $prefix/share/aclocal/inttypes_h.m4
       $prefix/share/aclocal/inttypes-pri.m4
@@ -131,7 +131,6 @@ following file list.
       $prefix/share/aclocal/lib-link.m4
       $prefix/share/aclocal/lib-prefix.m4
       $prefix/share/aclocal/lock.m4
-      $prefix/share/aclocal/longdouble.m4
       $prefix/share/aclocal/longlong.m4
       $prefix/share/aclocal/nls.m4
       $prefix/share/aclocal/po.m4
@@ -140,7 +139,6 @@ following file list.
       $prefix/share/aclocal/size_max.m4
       $prefix/share/aclocal/stdint_h.m4
       $prefix/share/aclocal/uintmax_t.m4
-      $prefix/share/aclocal/ulonglong.m4
       $prefix/share/aclocal/visibility.m4
       $prefix/share/aclocal/wchar_t.m4
       $prefix/share/aclocal/wint_t.m4

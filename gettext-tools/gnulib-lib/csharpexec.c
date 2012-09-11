@@ -1,11 +1,11 @@
 /* Execute a C# program.
-   Copyright (C) 2003-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 #include <alloca.h>
@@ -27,7 +26,7 @@
 
 #include "execute.h"
 #include "sh-quote.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "error.h"
 #include "gettext.h"
 
@@ -124,7 +123,7 @@ execute_csharp_using_pnet (const char *assembly_path,
       bool err;
 
       argc = 1 + 2 * libdirs_count + 1 + nargs;
-      argv = (char **) xallocsa ((argc + 1) * sizeof (char *));
+      argv = (char **) xmalloca ((argc + 1) * sizeof (char *));
 
       argp = argv;
       *argp++ = "ilrun";
@@ -150,7 +149,7 @@ execute_csharp_using_pnet (const char *assembly_path,
 
       err = executer ("ilrun", "ilrun", argv, private_data);
 
-      freesa (argv);
+      freea (argv);
 
       return err;
     }
@@ -188,7 +187,7 @@ execute_csharp_using_mono (const char *assembly_path,
   if (mono_present)
     {
       char *old_monopath;
-      char **argv = (char **) xallocsa ((2 + nargs + 1) * sizeof (char *));
+      char **argv = (char **) xmalloca ((2 + nargs + 1) * sizeof (char *));
       unsigned int i;
       bool err;
 
@@ -212,7 +211,7 @@ execute_csharp_using_mono (const char *assembly_path,
       /* Reset MONO_PATH.  */
       reset_monopath (old_monopath);
 
-      freesa (argv);
+      freea (argv);
 
       return err;
     }
@@ -249,7 +248,7 @@ execute_csharp_using_sscli (const char *assembly_path,
   if (clix_present)
     {
       char *old_clixpath;
-      char **argv = (char **) xallocsa ((2 + nargs + 1) * sizeof (char *));
+      char **argv = (char **) xmalloca ((2 + nargs + 1) * sizeof (char *));
       unsigned int i;
       bool err;
 
@@ -273,7 +272,7 @@ execute_csharp_using_sscli (const char *assembly_path,
       /* Reset clix' PATH variable.  */
       reset_clixpath (old_clixpath);
 
-      freesa (argv);
+      freea (argv);
 
       return err;
     }

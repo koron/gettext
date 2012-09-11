@@ -1,10 +1,10 @@
 /* GNU gettext - internationalization aids
    Copyright (C) 1995-1998, 2000-2003, 2006 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,15 +12,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _WRITE_CATALOG_H
 #define _WRITE_CATALOG_H
 
 #include <stdbool.h>
-#include <stdio.h>
 
+#include "ostream.h"
 #include "message.h"
 
 
@@ -32,12 +31,15 @@ extern "C" {
 /* This structure describes a textual catalog output format.  */
 struct catalog_output_format
 {
-  /* Outputs a list of domains of messages to a file.  */
-  void (*print) (msgdomain_list_ty *mdlp, FILE *fp, size_t page_width, bool debug);
+  /* Outputs a list of domains of messages to a stream.  */
+  void (*print) (msgdomain_list_ty *mdlp, ostream_t stream, size_t page_width, bool debug);
 
   /* Whether the print function requires the MDLP to be encoded in UTF-8
      encoding.  */
   bool requires_utf8;
+
+  /* Whether the print function supports styled output.  */
+  bool supports_color;
 
   /* Whether the format supports multiple domains in a single file.  */
   bool supports_multiple_domains;

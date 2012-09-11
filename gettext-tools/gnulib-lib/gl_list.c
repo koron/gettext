@@ -1,11 +1,11 @@
 /* Abstract sequential list data type.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -31,21 +30,23 @@ gl_list_t
 gl_list_create_empty (gl_list_implementation_t implementation,
 		      gl_listelement_equals_fn equals_fn,
 		      gl_listelement_hashcode_fn hashcode_fn,
+		      gl_listelement_dispose_fn dispose_fn,
 		      bool allow_duplicates)
 {
   return implementation->create_empty (implementation, equals_fn, hashcode_fn,
-				       allow_duplicates);
+				       dispose_fn, allow_duplicates);
 }
 
 gl_list_t
 gl_list_create (gl_list_implementation_t implementation,
 		gl_listelement_equals_fn equals_fn,
 		gl_listelement_hashcode_fn hashcode_fn,
+		gl_listelement_dispose_fn dispose_fn,
 		bool allow_duplicates,
 		size_t count, const void **contents)
 {
   return implementation->create (implementation, equals_fn, hashcode_fn,
-				 allow_duplicates, count, contents);
+				 dispose_fn, allow_duplicates, count, contents);
 }
 
 size_t

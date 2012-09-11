@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.0\n"
 
-#: hello.scm:16
+#: hello.scm:15
 msgid "Hello, world!"
 msgstr "Merhaba Dünyalı!"
 
-#: hello.scm:18
+#: hello.scm:17
 #, scheme-format
 msgid "This program is running as process number ~D."
 msgstr "Bu yazılım, ~D süreç kimliği ile çalışıyor."

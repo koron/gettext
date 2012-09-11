@@ -1,11 +1,11 @@
 /* Reading binary .mo files.
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, April 1995.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -36,13 +35,18 @@
 #include "error.h"
 #include "xalloc.h"
 #include "binary-io.h"
-#include "exit.h"
 #include "message.h"
 #include "format.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
 
+
+enum mo_endianness
+{
+  MO_LITTLE_ENDIAN,
+  MO_BIG_ENDIAN
+};
 
 /* We read the file completely into memory.  This is more efficient than
    lots of lseek().  This struct represents the .mo file in memory.  */
@@ -51,7 +55,7 @@ struct binary_mo_file
   const char *filename;
   char *data;
   size_t size;
-  enum { MO_LITTLE_ENDIAN, MO_BIG_ENDIAN } endian;
+  enum mo_endianness endian;
 };
 
 
@@ -179,7 +183,7 @@ get_sysdep_string (const struct binary_mo_file *bfp, size_t offset,
     }
 
   /* Allocate and fill the string.  */
-  string = (char *) xmalloc (length);
+  string = XNMALLOC (length, char);
   p = string;
   s_offset = get_uint32 (bfp, offset);
   for (i = 4; ; i += 8)
@@ -398,7 +402,8 @@ read_mo_file (message_list_ty *mlp, const char *filename)
 		  for (str = msgid; str < str_end; str += strlen (str) + 1)
 		    {
 		      char *invalid_reason = NULL;
-		      void *descr = parser->parse (str, false, &invalid_reason);
+		      void *descr =
+			parser->parse (str, false, NULL, &invalid_reason);
 
 		      if (descr != NULL)
 			parser->free (descr);
@@ -416,7 +421,7 @@ read_mo_file (message_list_ty *mlp, const char *filename)
 			{
 			  char *invalid_reason = NULL;
 			  void *descr =
-			    parser->parse (str, true, &invalid_reason);
+			    parser->parse (str, true, NULL, &invalid_reason);
 
 			  if (descr != NULL)
 			    parser->free (descr);

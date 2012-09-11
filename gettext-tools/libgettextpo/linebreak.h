@@ -1,11 +1,11 @@
 /* linebreak.h - line breaking of Unicode strings
-   Copyright (C) 2001-2003 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-This program is free software; you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software Foundation,
-Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _LINEBREAK_H
 #define _LINEBREAK_H
@@ -23,22 +22,9 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #include <stddef.h>
 
 
-/* Display width.  */
-
-/* These functions are locale dependent.  The encoding argument identifies
-   the encoding (e.g. "ISO-8859-2" for Polish).  */
-
-/* Return the encoding of the current locale.  */
-extern const char * locale_charset (void);
-
-/* Determine number of column positions required for UC. */
-extern int uc_width (unsigned int uc, const char *encoding);
-
-/* Determine number of column positions required for first N units
-   (or fewer if S ends before this) in S.  */
-extern int u8_width (const unsigned char *s, size_t n, const char *encoding);
-extern int u16_width (const unsigned short *s, size_t n, const char *encoding);
-extern int u32_width (const unsigned int *s, size_t n, const char *encoding);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /* Line breaking.  */
@@ -98,6 +84,11 @@ extern int
                              int width, int start_column, int at_end_columns,
                              const char *o, const char *encoding,
                              char *p);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* _LINEBREAK_H */

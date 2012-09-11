@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.lisp.in:12
+#: hello.lisp.in:11
 msgid "Hello, world!"
 msgstr "您好！"
 
-#: hello.lisp.in:14
+#: hello.lisp.in:13
 #, lisp-format
 msgid "This program is running as process number ~D."
 msgstr "本程式正在執行中，進程編號為 ~D。"

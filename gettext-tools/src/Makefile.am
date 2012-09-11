@@ -1,10 +1,10 @@
 ## Makefile for the gettext-tools/src subdirectory of GNU gettext
-## Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+## Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
 ##
-## This program is free software; you can redistribute it and/or modify
+## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 2, or (at your option)
-## any later version.
+## the Free Software Foundation; either version 3 of the License, or
+## (at your option) any later version.
 ##
 ## This program is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
 ## GNU General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software Foundation,
-## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in.
 
@@ -38,7 +37,7 @@ noinst_HEADERS = pos.h message.h po-error.h po-xerror.h po-gram.h po-charset.h \
 po-lex.h open-catalog.h read-catalog-abstract.h read-catalog.h \
 read-po.h read-properties.h read-stringtable.h \
 str-list.h \
-write-catalog.h write-po.h write-properties.h write-stringtable.h \
+color.h write-catalog.h write-po.h write-properties.h write-stringtable.h \
 dir-list.h file-list.h po-gram-gen.h po-gram-gen2.h \
 msgl-charset.h msgl-equal.h msgl-iconv.h msgl-ascii.h msgl-cat.h \
 msgl-english.h msgl-check.h msgl-fsearch.h msgfmt.h msgunfmt.h \
@@ -66,7 +65,6 @@ AM_CPPFLAGS = \
   -I. -I$(srcdir) \
   -I.. -I$(top_srcdir) \
   -I$(top_srcdir)/libgrep \
-  -I$(top_srcdir)/libuniname \
   -I../gnulib-lib -I$(top_srcdir)/gnulib-lib \
   -I../intl -I$(top_srcdir)/../gettext-runtime/intl
 DEFS = \
@@ -78,7 +76,9 @@ DEFS = \
   -DLIBDIR=\"$(libdir)\" \
   -DGETTEXTDATADIR=\"$(pkgdatadir)\" \
   -DPROJECTSDIR=\"$(projectsdir)\" @DEFS@
-LDADD = ../gnulib-lib/libgettextlib.la @LTLIBINTL@
+# Ensure that <stdint.h> defines SIZE_MAX in C++ mode, like it does in C mode.
+AM_CXXFLAGS = -D__STDC_LIMIT_MACROS
+LDADD = ../gnulib-lib/libgettextlib.la @LTLIBINTL@ $(WOE32_LDADD)
 
 SED = sed
 YACC = @YACC@ -d
@@ -113,21 +113,18 @@ FORMAT_SOURCE += format-invalid.h \
 format-c.c format-sh.c format-python.c format-lisp.c format-elisp.c \
 format-librep.c format-scheme.c format-java.c format-csharp.c format-awk.c \
 format-pascal.c format-ycp.c format-tcl.c format-perl.c format-perl-brace.c \
-format-php.c format-gcc-internal.c format-qt.c format-boost.c
+format-php.c format-gcc-internal.c format-qt.c format-kde.c format-boost.c
 
 # libgettextsrc contains all code that is needed by at least two programs.
 libgettextsrc_la_SOURCES = \
 $(COMMON_SOURCE) read-catalog.c \
-write-catalog.c write-properties.c write-stringtable.c write-po.c \
+color.c write-catalog.c write-properties.c write-stringtable.c write-po.c \
 msgl-ascii.c msgl-iconv.c msgl-equal.c msgl-cat.c msgl-english.c msgl-check.c \
 file-list.c msgl-charset.c po-time.c plural-exp.c plural-eval.c plural-table.c \
 $(FORMAT_SOURCE)
 
 # msggrep needs pattern matching.
 LIBGREP = ../libgrep/libgrep.a
-
-# x-python needs table of Unicode character names.
-LIBUNINAME = ../libuniname/libuniname.a
 
 # Source dependencies.
 msgcmp_SOURCES = msgcmp.c
@@ -238,23 +235,22 @@ msgmerge_CXXFLAGS = $(AM_CXXFLAGS) $(OPENMP_CFLAGS)
 # INTL_MACOSX_LIBS is needed because the programs depend on libintl.la
 # but libtool doesn't put -Wl,-framework options into .la files.
 # For msginit, it is also needed because of localename.c.
-msgcmp_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @MSGMERGE_LIBM@ $(OPENMP_CFLAGS)
-msgunfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-xgettext_LDADD = $(LIBUNINAME) libgettextsrc.la @INTL_MACOSX_LIBS@ @LTLIBEXPAT@
-msgattrib_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgcat_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgcomm_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgconv_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgen_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgexec_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msgfilter_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-msggrep_LDADD = $(LIBGREP) libgettextsrc.la @INTL_MACOSX_LIBS@
-msginit_LDADD = ../intl/localename.@INTL_LIBTOOL_SUFFIX_PREFIX@o \
-                libgettextsrc.la @INTL_MACOSX_LIBS@
-msguniq_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@
-recode_sr_latin_LDADD = ../gnulib-lib/libgettextlib.la @INTL_MACOSX_LIBS@
+msgcmp_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgmerge_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @MSGMERGE_LIBM@ $(WOE32_LDADD) $(OPENMP_CFLAGS)
+msgunfmt_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+xgettext_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ @LTLIBEXPAT@ $(WOE32_LDADD)
+msgattrib_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgcat_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgcomm_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgconv_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgen_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgexec_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msgfilter_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msggrep_LDADD = $(LIBGREP) libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msginit_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+msguniq_LDADD = libgettextsrc.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
+recode_sr_latin_LDADD = ../gnulib-lib/libgettextlib.la @INTL_MACOSX_LIBS@ $(WOE32_LDADD)
 
 # Specify installation directory, for --enable-relocatable.
 msgcmp_CPPFLAGS = $(AM_CPPFLAGS) -DINSTALLDIR=\"$(bindir)\"
@@ -545,4 +541,13 @@ RELOCATABLE_LIBRARY_PATH = $(libdir)
 RELOCATABLE_SRC_DIR = $(top_srcdir)/gnulib-lib
 RELOCATABLE_BUILD_DIR = ../gnulib-lib
 RELOCATABLE_CONFIG_H_DIR = ..
-@SET_RELOCATABLE@
+
+# Version information according to Woe32 conventions.
+if WOE32
+WOE32_LDADD = gettext.res
+gettext.res : $(top_srcdir)/../windows/gettext.rc
+	$(WINDRES) `$(SHELL) $(top_srcdir)/../windows/windres-options --escape $(VERSION)` -i $(top_srcdir)/../windows/gettext.rc -o gettext.res --output-format=coff
+MOSTLYCLEANFILES += gettext.res
+else
+WOE32_LDADD =
+endif

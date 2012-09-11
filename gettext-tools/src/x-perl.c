@@ -1,12 +1,12 @@
 /* xgettext Perl backend.
-   Copyright (C) 2002-2006 Free Software Foundation, Inc.
+   Copyright (C) 2002-2007 Free Software Foundation, Inc.
 
    This file was written by Guido Flohr <guido@imperia.net>, 2002-2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-perl.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -33,11 +35,9 @@
 #include "error.h"
 #include "error-progname.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "po-charset.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "uniname.h"
-#include "getline.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -283,7 +283,7 @@ get_here_document (const char *delimiter)
   /* Allocate the initial buffer.  Later on, bufmax > 0.  */
   if (bufmax == 0)
     {
-      buffer = xrealloc (NULL, 1);
+      buffer = XNMALLOC (1, char);
       buffer[0] = '\0';
       bufmax = 1;
     }
@@ -553,6 +553,7 @@ struct token_ty
 				   token_type_symbol	ASCII
 				   token_type_variable	global_source_encoding
 				 */
+  refcounted_string_list_ty *comment; /* for token_type_string */
   int line_number;
 };
 
@@ -619,6 +620,8 @@ free_token (token_ty *tp)
     default:
       break;
     }
+  if (tp->type == token_type_string)
+    drop_reference (tp->comment);
   free (tp);
 }
 
@@ -633,7 +636,7 @@ extract_quotelike_pass1 (int delim)
      statically.  Also alloca() is inappropriate due to limited stack
      size on some platforms.  So we use malloc().  */
   int bufmax = 10;
-  char *buffer = (char *) xmalloc (bufmax);
+  char *buffer = XNMALLOC (bufmax, char);
   int bufpos = 0;
   bool nested = true;
   int counter_delim;
@@ -841,6 +844,7 @@ extract_quotelike (token_ty *tp, int delim)
   string[len - 1] = '\0';
   tp->string = xstrdup (string + 1);
   free (string);
+  tp->comment = add_reference (savable_comment);
 }
 
 /* Extract the quotelike constructs with double delimiters, like
@@ -880,7 +884,8 @@ extract_triple_quotelike (message_list_ty *mlp, token_ty *tp, int delim,
 
 /* Perform pass 3 of quotelike extraction (interpolation).
    *tp is a token of type token_type_string.
-   This function replaces tp->string.  */
+   This function replaces tp->string.
+   This function does not access tp->comment.  */
 /* FIXME: Currently may writes null-bytes into the string.  */
 static void
 extract_quotelike_pass3 (token_ty *tp, int error_level)
@@ -1090,7 +1095,7 @@ extract_quotelike_pass3 (token_ty *tp, int error_level)
 		      char *name;
 		      unsigned int unicode;
 
-		      name = (char *) xmalloc (end - (crs + 1) + 1);
+		      name = XNMALLOC (end - (crs + 1) + 1, char);
 		      memcpy (name, crs + 1, end - (crs + 1));
 		      name[end - (crs + 1)] = '\0';
 
@@ -1694,6 +1699,10 @@ interpolate_keywords (message_list_ty *mlp, const char *string, int lineno)
   token.type = token_type_string;
   token.sub_type = string_type_qq;
   token.line_number = line_number;
+  /* No need for  token.comment = add_reference (savable_comment);  here.
+     We can let token.comment uninitialized here, and use savable_comment
+     directly, because this function only parses the given string and does
+     not call phase2_getc.  */
   pos.file_name = logical_file_name;
   pos.line_number = lineno;
 
@@ -2206,6 +2215,7 @@ x_perl_prelex (message_list_ty *mlp, token_ty *tp)
 	      if (delim != '\'')
 		interpolate_keywords (mlp, tp->string, line_number);
 	      free (tp->string);
+	      drop_reference (tp->comment);
 	      tp->type = token_type_regex_op;
 	      prefer_division_over_regexp = true;
 
@@ -2263,9 +2273,11 @@ x_perl_prelex (message_list_ty *mlp, token_ty *tp)
 		  interpolate_keywords (mlp, tp->string, line_number);
 		  break;
 		case 'r':
+		  drop_reference (tp->comment);
 		  tp->type = token_type_regex_op;
 		  break;
 		case 'w':
+		  drop_reference (tp->comment);
 		  tp->type = token_type_symbol;
 		  tp->sub_type = symbol_type_none;
 		  break;
@@ -2455,6 +2467,7 @@ x_perl_prelex (message_list_ty *mlp, token_ty *tp)
 		      tp->string = string;
 		      tp->type = token_type_string;
 		      tp->sub_type = string_type_qq;
+		      tp->comment = add_reference (savable_comment);
 		      tp->line_number = line_number + 1;
 		      interpolate_keywords (mlp, tp->string, line_number + 1);
 		      return;
@@ -2500,6 +2513,7 @@ x_perl_prelex (message_list_ty *mlp, token_ty *tp)
 	      extract_quotelike (tp, c);
 	      interpolate_keywords (mlp, tp->string, line_number);
 	      free (tp->string);
+	      drop_reference (tp->comment);
 	      tp->type = token_type_other;
 	      prefer_division_over_regexp = true;
 	      /* Eat the following modifiers.  */
@@ -2621,7 +2635,7 @@ x_perl_lex (message_list_ty *mlp)
 
   if (!tp)
     {
-      tp = (token_ty *) xmalloc (sizeof (token_ty));
+      tp = XMALLOC (token_ty);
       x_perl_prelex (mlp, tp);
 #if DEBUG_PERL
       fprintf (stderr, "%s:%d: x_perl_prelex returned %s\n",
@@ -2667,6 +2681,7 @@ x_perl_lex (message_list_ty *mlp)
 	{
 	  tp->type = token_type_string;
 	  tp->sub_type = string_type_q;
+	  tp->comment = add_reference (savable_comment);
 #if DEBUG_PERL
 	  fprintf (stderr,
 		   "%s:%d: token %s mutated to token_type_string\n",
@@ -3137,7 +3152,8 @@ extract_balanced (message_list_ty *mlp,
 	      pos.file_name = logical_file_name;
 	      pos.line_number = tp->line_number;
 	      xgettext_current_source_encoding = po_charset_utf8;
-	      remember_a_message (mlp, NULL, string, inner_context, &pos, savable_comment);
+	      remember_a_message (mlp, NULL, string, inner_context, &pos,
+				  tp->comment);
 	      xgettext_current_source_encoding = xgettext_global_source_encoding;
 	    }
 	  else if (!skip_until_comma)
@@ -3167,7 +3183,7 @@ extract_balanced (message_list_ty *mlp,
 		  arglist_parser_remember (argparser, arg,
 					   string, inner_context,
 					   logical_file_name, tp->line_number,
-					   savable_comment);
+					   tp->comment);
 		  xgettext_current_source_encoding = xgettext_global_source_encoding;
 		}
 	    }

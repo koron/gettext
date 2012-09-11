@@ -1,11 +1,11 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -47,19 +46,19 @@
 #include "write-stringtable.h"
 #include "format.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "obstack.h"
 #include "c-strstr.h"
-#include "exit.h"
 #include "c-strcase.h"
-#include "stpcpy.h"
-#include "stpncpy.h"
 #include "po-charset.h"
 #include "msgl-iconv.h"
 #include "msgl-equal.h"
 #include "msgl-fsearch.h"
 #include "lock.h"
+#include "plural-exp.h"
 #include "plural-count.h"
+#include "msgl-check.h"
+#include "po-xerror.h"
 #include "backupfile.h"
 #include "copy-file.h"
 #include "propername.h"
@@ -321,10 +320,11 @@ main (int argc, char **argv)
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "1995-1998, 2000-2006");
+	      "1995-1998, 2000-2007");
       printf (_("Written by %s.\n"), proper_name ("Peter Miller"));
       exit (EXIT_SUCCESS);
     }
@@ -574,6 +574,10 @@ Informative output:\n"));
       printf (_("\
   -q, --quiet, --silent       suppress progress indicators\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"),
 	     stdout);
     }
@@ -728,56 +732,31 @@ definitions_destroy (definitions_ty *definitions)
 }
 
 
-static bool
-msgfmt_check_pair_fails (const lex_pos_ty *pos,
-			 const char *msgid, const char *msgid_plural,
-			 const char *msgstr, size_t msgstr_len,
-			 size_t fmt)
+/* A silent error logger.  We are only interested in knowing whether errors
+   occurred at all.  */
+static void
+silent_error_logger (const char *format, ...)
+     __attribute__ ((__format__ (__printf__, 1, 2)));
+static void
+silent_error_logger (const char *format, ...)
 {
-  bool failure;
-  struct formatstring_parser *parser = formatstring_parsers[fmt];
-  char *invalid_reason = NULL;
-  void *msgid_descr =
-    parser->parse (msgid_plural != NULL ? msgid_plural : msgid, false,
-		   &invalid_reason);
+}
 
-  failure = false;
-  if (msgid_descr != NULL)
-    {
-      const char *p_end = msgstr + msgstr_len;
-      const char *p;
 
-      for (p = msgstr; p < p_end; p += strlen (p) + 1)
-	{
-	  void *msgstr_descr = parser->parse (msgstr, true, &invalid_reason);
-
-	  if (msgstr_descr != NULL)
-	    {
-	      failure = parser->check (msgid_descr, msgstr_descr,
-				       msgid_plural == NULL, NULL, NULL);
-	      parser->free (msgstr_descr);
-	    }
-	  else
-	    {
-	      failure = true;
-	      free (invalid_reason);
-	    }
-
-	  if (failure)
-	    break;
-	}
-
-      parser->free (msgid_descr);
-    }
-  else
-    free (invalid_reason);
-
-  return failure;
+/* Another silent error logger.  */
+static void
+silent_xerror (int severity,
+	       const struct message_ty *message,
+	       const char *filename, size_t lineno, size_t column,
+	       int multiline_p, const char *message_text)
+{
 }
 
 
 static message_ty *
-message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
+message_merge (message_ty *def, message_ty *ref, bool force_fuzzy,
+	       const unsigned char *plural_distribution,
+	       unsigned long plural_distribution_length)
 {
   const char *msgstr;
   size_t msgstr_len;
@@ -963,7 +942,7 @@ message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
 	  len += known_fields[cnt].len + header_fields[cnt].len;
       len += header_fields[UNKNOWN].len;
 
-      cp = newp = (char *) xmalloc (len + 1);
+      cp = newp = XNMALLOC (len + 1, char);
       newp[len] = '\0';
 
 #define IF_FILLED(idx)							      \
@@ -1036,6 +1015,15 @@ message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
      come from the definition file (fuzzy or not).  */
   result->is_fuzzy = def->is_fuzzy | force_fuzzy;
 
+  /* If ref and def have the same msgid but different msgid_plural, it's
+     a reason to mark the result fuzzy.  */
+  if (!result->is_fuzzy
+      && (ref->msgid_plural != NULL
+	  ? def->msgid_plural == NULL
+	    || strcmp (ref->msgid_plural, def->msgid_plural) != 0
+	  : def->msgid_plural != NULL))
+    result->is_fuzzy = true;
+
   for (i = 0; i < NFORMATS; i++)
     {
       result->is_format[i] = ref->is_format[i];
@@ -1050,8 +1038,11 @@ message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
       if (!result->is_fuzzy
 	  && possible_format_p (ref->is_format[i])
 	  && !possible_format_p (def->is_format[i])
-	  && msgfmt_check_pair_fails (&def->pos, ref->msgid, ref->msgid_plural,
-				      msgstr, msgstr_len, i))
+	  && check_msgid_msgstr_format_i (ref->msgid, ref->msgid_plural,
+					  msgstr, msgstr_len, i,
+					  plural_distribution,
+					  plural_distribution_length,
+					  silent_error_logger) > 0)
 	result->is_fuzzy = true;
     }
 
@@ -1071,6 +1062,12 @@ message_merge (message_ty *def, message_ty *ref, bool force_fuzzy)
       result->prev_msgid = prev_msgid;
       result->prev_msgid_plural = prev_msgid_plural;
     }
+
+  /* If the reference message was obsolete, make the resulting message
+     obsolete.  This case doesn't occur for POT files, but users sometimes
+     use PO files that are themselves the result of msgmerge instead of POT
+     files.  */
+  result->obsolete = ref->obsolete;
 
   /* Take the file position comments from the reference file, as they
      are generated by xgettext.  Any in the definition file are old ones
@@ -1109,22 +1106,43 @@ match_domain (const char *fn1, const char *fn2,
 {
   message_ty *header_entry;
   unsigned long int nplurals;
+  const struct expression *plural_expr;
   char *untranslated_plural_msgstr;
+  unsigned char *plural_distribution;
+  unsigned long plural_distribution_length;
   struct search_result { message_ty *found; bool fuzzy; } *search_results;
   size_t j;
 
   header_entry =
     message_list_search (definitions_current_list (definitions), NULL, "");
-  nplurals = get_plural_count (header_entry ? header_entry->msgstr : NULL);
-  untranslated_plural_msgstr = (char *) xmalloc (nplurals);
+  extract_plural_expression (header_entry ? header_entry->msgstr : NULL,
+			     &plural_expr, &nplurals);
+  untranslated_plural_msgstr = XNMALLOC (nplurals, char);
   memset (untranslated_plural_msgstr, '\0', nplurals);
+
+  /* Determine the plural distribution of the plural_expr formula.  */
+  {
+    /* Disable error output temporarily.  */
+    void (*old_po_xerror) (int, const struct message_ty *, const char *, size_t,
+			   size_t, int, const char *)
+      = po_xerror;
+    po_xerror = silent_xerror;
+
+    if (check_plural_eval (plural_expr, nplurals, header_entry,
+			   &plural_distribution,
+			   &plural_distribution_length) > 0)
+      {
+        plural_distribution = NULL;
+	plural_distribution_length = 0;
+      }
+
+    po_xerror = old_po_xerror;
+  }
 
   /* Most of the time is spent in definitions_search_fuzzy.
      Perform it in a separate loop that can be parallelized by an OpenMP
      capable compiler.  */
-  search_results =
-    (struct search_result *)
-    xmalloc (refmlp->nitems * sizeof (struct search_result));
+  search_results = XNMALLOC (refmlp->nitems, struct search_result);
   {
     long int nn = refmlp->nitems;
     long int jj;
@@ -1189,7 +1207,9 @@ match_domain (const char *fn1, const char *fn2,
 	     #: comments from the reference, take the # comments from
 	     the definition, take the msgstr from the definition.  Add
 	     this merged entry to the output message list.  */
-	  message_ty *mp = message_merge (defmsg, refmsg, false);
+	  message_ty *mp =
+	    message_merge (defmsg, refmsg, false,
+			   plural_distribution, plural_distribution_length);
 
 	  message_list_append (resultmlp, mp);
 
@@ -1222,7 +1242,9 @@ this message is used but not defined..."));
 		 #: comments from the reference, take the # comments from
 		 the definition, take the msgstr from the definition.  Add
 		 this merged entry to the output message list.  */
-	      mp = message_merge (defmsg, refmsg, true);
+	      mp = message_merge (defmsg, refmsg, true,
+				  plural_distribution,
+				  plural_distribution_length);
 
 	      message_list_append (resultmlp, mp);
 
@@ -1320,7 +1342,7 @@ this message should define plural forms"));
 		  }
 
 		new_msgstr_len = nplurals * mp->msgstr_len;
-		new_msgstr = (char *) xmalloc (new_msgstr_len);
+		new_msgstr = XNMALLOC (new_msgstr_len, char);
 		for (i = 0, p = new_msgstr; i < nplurals; i++)
 		  {
 		    memcpy (p, mp->msgstr, mp->msgstr_len);
@@ -1417,7 +1439,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 	}
     if (was_utf8)
       {
-	def = iconv_msgdomain_list (def, "UTF-8", fn1);
+	def = iconv_msgdomain_list (def, "UTF-8", true, fn1);
 	if (compendiums != NULL)
 	  for (k = 0; k < compendiums->nitems; k++)
 	    iconv_message_list (compendiums->item[k], NULL, po_charset_utf8,
@@ -1454,7 +1476,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 
 			    charsetstr += strlen ("charset=");
 			    len = strcspn (charsetstr, " \t\n");
-			    charset = (char *) xallocsa (len + 1);
+			    charset = (char *) xmalloca (len + 1);
 			    memcpy (charset, charsetstr, len);
 			    charset[len] = '\0';
 			    break;
@@ -1492,7 +1514,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 		      conversion_done = true;
 		    }
 		}
-	      freesa (charset);
+	      freea (charset);
 	    }
 	}
 	if (!conversion_done)
@@ -1526,7 +1548,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 
 				  charsetstr += strlen ("charset=");
 				  len = strcspn (charsetstr, " \t\n");
-				  charset = (char *) xallocsa (len + 1);
+				  charset = (char *) xmalloca (len + 1);
 				  memcpy (charset, charsetstr, len);
 				  charset[len] = '\0';
 
@@ -1537,7 +1559,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 		    if (charset != NULL)
 		      {
 			canon_charset = po_charset_canonicalize (charset);
-			freesa (charset);
+			freea (charset);
 		      }
 		    /* If no charset declaration was found in this file,
 		       or if it is not a valid encoding name, or if it
@@ -1561,7 +1583,7 @@ merge (const char *fn1, const char *fn2, catalog_input_format_ty input_syntax,
 	      {
 		/* It's too hairy to find out what would be the optimal target
 		   encoding.  So, convert everything to UTF-8.  */
-		def = iconv_msgdomain_list (def, "UTF-8", fn1);
+		def = iconv_msgdomain_list (def, "UTF-8", true, fn1);
 		if (compendiums != NULL)
 		  for (k = 0; k < compendiums->nitems; k++)
 		    iconv_message_list (compendiums->item[k],

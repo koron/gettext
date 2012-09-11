@@ -2,10 +2,10 @@
    Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _MSGL_ICONV_H
 #define _MSGL_ICONV_H
@@ -60,10 +59,13 @@ extern bool
 			   const char *canon_to_code,
 			   const char *from_filename);
 
-/* Converts all the message lists in MDLP to the encoding TO_CODE.  */
+/* Converts all the message lists in MDLP to the encoding TO_CODE.
+   UPDATE_HEADER specifies whether to update the "charset=..." specification
+   in the header; it should normally be true.  */
 extern msgdomain_list_ty *
        iconv_msgdomain_list (msgdomain_list_ty *mdlp,
 			     const char *to_code,
+			     bool update_header,
 			     const char *from_filename);
 
 /* Tests whether the message list MLP could be converted to CANON_TO_CODE.

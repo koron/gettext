@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3\n"
 
-#: hello.m:48
+#: hello.m:47
 msgid "Hello, world!"
 msgstr "Здравствуй, мир!"
 
-#: hello.m:53
+#: hello.m:52
 #, c-format
 msgid "This program is running as process number %d."
 msgstr "Эта программа выполняется как процесс под номером %d."

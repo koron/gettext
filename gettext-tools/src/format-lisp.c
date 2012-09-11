@@ -1,11 +1,11 @@
 /* Lisp format strings.
-   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -78,6 +77,15 @@ struct format_arg
   struct format_arg_list *list;	/* For FAT_LIST: List elements.  */
 };
 
+struct segment
+{
+  unsigned int count;	/* Number of format_arg records used.  */
+  unsigned int allocated;
+  struct format_arg *element;	/* Argument constraints.  */
+  unsigned int length; /* Number of arguments represented by this segment.
+			  This is the sum of all repcounts in the segment.  */
+};
+
 struct format_arg_list
 {
   /* The constraints for the potentially infinite argument list are assumed
@@ -90,16 +98,8 @@ struct format_arg_list
      A finite sequence is represented entirely in the initial segment; the
      loop segment is empty.  */
 
-  struct segment
-  {
-    unsigned int count;	/* Number of format_arg records used.  */
-    unsigned int allocated;
-    struct format_arg *element;	/* Argument constraints.  */
-    unsigned int length; /* Number of arguments represented by this segment.
-			    This is the sum of all repcounts in the segment.  */
-  }
-  initial,	/* Initial arguments segment.  */
-  repeated;	/* Endlessly repeated segment.  */
+  struct segment initial;	/* Initial arguments segment.  */
+  struct segment repeated;	/* Endlessly repeated segment.  */
 };
 
 struct spec
@@ -238,8 +238,7 @@ copy_list (const struct format_arg_list *list)
 
   VERIFY_LIST (list);
 
-  newlist =
-    (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  newlist = XMALLOC (struct format_arg_list);
 
   newlist->initial.count = newlist->initial.allocated = list->initial.count;
   length = 0;
@@ -248,8 +247,7 @@ copy_list (const struct format_arg_list *list)
   else
     {
       newlist->initial.element =
-	(struct format_arg *)
-	xmalloc (newlist->initial.allocated * sizeof (struct format_arg));
+	XNMALLOC (newlist->initial.allocated, struct format_arg);
       for (i = 0; i < list->initial.count; i++)
 	{
 	  copy_element (&newlist->initial.element[i],
@@ -267,8 +265,7 @@ copy_list (const struct format_arg_list *list)
   else
     {
       newlist->repeated.element =
-	(struct format_arg *)
-	xmalloc (newlist->repeated.allocated * sizeof (struct format_arg));
+	XNMALLOC (newlist->repeated.allocated, struct format_arg);
       for (i = 0; i < list->repeated.count; i++)
 	{
 	  copy_element (&newlist->repeated.element[i],
@@ -597,15 +594,14 @@ make_unconstrained_list ()
 {
   struct format_arg_list *list;
 
-  list = (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  list = XMALLOC (struct format_arg_list);
   list->initial.count = 0;
   list->initial.allocated = 0;
   list->initial.element = NULL;
   list->initial.length = 0;
   list->repeated.count = 1;
   list->repeated.allocated = 1;
-  list->repeated.element =
-    (struct format_arg *) xmalloc (1 * sizeof (struct format_arg));
+  list->repeated.element = XNMALLOC (1, struct format_arg);
   list->repeated.element[0].repcount = 1;
   list->repeated.element[0].presence = FCT_OPTIONAL;
   list->repeated.element[0].type = FAT_OBJECT;
@@ -624,7 +620,7 @@ make_empty_list ()
 {
   struct format_arg_list *list;
 
-  list = (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  list = XMALLOC (struct format_arg_list);
   list->initial.count = 0;
   list->initial.allocated = 0;
   list->initial.element = NULL;
@@ -759,9 +755,7 @@ rotate_loop (struct format_arg_list *list, unsigned int m)
 
 	  oldcount = list->repeated.count;
 	  newcount = list->repeated.count + (t > 0 ? 1 : 0);
-	  newelement =
-	    (struct format_arg *)
-	    xmalloc (newcount * sizeof (struct format_arg));
+	  newelement = XNMALLOC (newcount, struct format_arg);
 	  i = 0;
 	  for (j = s; j < oldcount; j++, i++)
 	    newelement[i] = list->repeated.element[j];
@@ -1159,8 +1153,7 @@ make_intersected_list (struct format_arg_list *list1,
     }
 
   /* Step 3: Allocate the result.  */
-  result =
-    (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  result = XMALLOC (struct format_arg_list);
   result->initial.count = 0;
   result->initial.allocated = 0;
   result->initial.element = NULL;
@@ -1537,8 +1530,7 @@ make_union_list (struct format_arg_list *list1, struct format_arg_list *list2)
     }
 
   /* Step 3: Allocate the result.  */
-  result =
-    (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  result = XMALLOC (struct format_arg_list);
   result->initial.count = 0;
   result->initial.allocated = 0;
   result->initial.element = NULL;
@@ -1718,8 +1710,7 @@ make_union_list (struct format_arg_list *list1, struct format_arg_list *list2)
       result->repeated.count = list1->repeated.count;
       result->repeated.allocated = result->repeated.count;
       result->repeated.element =
-	(struct format_arg *)
-	xmalloc (result->repeated.allocated * sizeof (struct format_arg));
+	XNMALLOC (result->repeated.allocated, struct format_arg);
       for (i = 0; i < list1->repeated.count; i++)
 	copy_element (&result->repeated.element[i],
 		      &list1->repeated.element[i]);
@@ -1734,8 +1725,7 @@ make_union_list (struct format_arg_list *list1, struct format_arg_list *list2)
       result->repeated.count = list2->repeated.count;
       result->repeated.allocated = result->repeated.count;
       result->repeated.element =
-	(struct format_arg *)
-	xmalloc (result->repeated.allocated * sizeof (struct format_arg));
+	XNMALLOC (result->repeated.allocated, struct format_arg);
       for (i = 0; i < list2->repeated.count; i++)
 	copy_element (&result->repeated.element[i],
 		      &list2->repeated.element[i]);
@@ -2057,8 +2047,7 @@ make_repeated_list_of_lists (struct format_arg_list *sublist)
     {
       struct format_arg_list *listlist;
 
-      listlist =
-	(struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+      listlist = XMALLOC (struct format_arg_list);
 
       listlist->initial.count = 0;
       listlist->initial.allocated = 0;
@@ -2066,8 +2055,7 @@ make_repeated_list_of_lists (struct format_arg_list *sublist)
       listlist->initial.length = 0;
       listlist->repeated.count = 1;
       listlist->repeated.allocated = 1;
-      listlist->repeated.element =
-	(struct format_arg *) xmalloc (1 * sizeof (struct format_arg));
+      listlist->repeated.element = XNMALLOC (1, struct format_arg);
       listlist->repeated.element[0].repcount = 1;
       listlist->repeated.element[0].presence = FCT_OPTIONAL;
       listlist->repeated.element[0].type = FAT_LIST;
@@ -2130,9 +2118,7 @@ make_repeated_list (struct format_arg_list *sublist, unsigned int period)
 	 segment.  */
       tmp.count = sublist->initial.count + sublist->repeated.count;
       tmp.allocated = tmp.count;
-      tmp.element =
-	(struct format_arg *)
-	xmalloc (tmp.allocated * sizeof (struct format_arg));
+      tmp.element = XNMALLOC (tmp.allocated, struct format_arg);
       for (i = 0; i < sublist->initial.count; i++)
 	tmp.element[i] = sublist->initial.element[i];
       for (j = 0; j < sublist->repeated.count; i++, j++)
@@ -2157,7 +2143,7 @@ make_repeated_list (struct format_arg_list *sublist, unsigned int period)
      Or by a single incremental intersection operation, going from left
      to right.  */
 
-  list = (struct format_arg_list *) xmalloc (sizeof (struct format_arg_list));
+  list = XMALLOC (struct format_arg_list);
   list->initial.count = 0;
   list->initial.allocated = 0;
   list->initial.element = NULL;
@@ -2274,8 +2260,7 @@ make_repeated_list (struct format_arg_list *sublist, unsigned int period)
       if (newcount > list->repeated.allocated)
 	{
 	  list->repeated.allocated = newcount;
-	  list->repeated.element =
-	    (struct format_arg *) xmalloc (newcount * sizeof (struct format_arg));
+	  list->repeated.element = XNMALLOC (newcount, struct format_arg);
 	}
       for (i = splitindex, j = 0; i < n; i++, j++)
 	list->repeated.element[j] = list->initial.element[i];
@@ -2448,6 +2433,7 @@ nocheck_params (struct format_arg_list **listp,
    spec is the global struct spec.
    terminator is the directive that terminates this parse.
    separator specifies if ~; separators are allowed.
+   fdi is an array to be filled with format directive indicators, or NULL.
    If the format string is invalid, false is returned and *invalid_reason is
    set to an error message explaining why.  */
 static bool
@@ -2455,9 +2441,10 @@ parse_upto (const char **formatp,
 	    int *positionp, struct format_arg_list **listp,
 	    struct format_arg_list **escapep, int *separatorp,
 	    struct spec *spec, char terminator, bool separator,
-	    char **invalid_reason)
+	    char *fdi, char **invalid_reason)
 {
   const char *format = *formatp;
+  const char *const format_start = format;
   int position = *positionp;
   struct format_arg_list *list = *listp;
   struct format_arg_list *escape = *escapep;
@@ -2469,6 +2456,8 @@ parse_upto (const char **formatp,
 	bool atsign_p = false;
 	unsigned int paramcount = 0;
 	struct param *params = NULL;
+
+	FDI_SET (format - 1, FMTDIR_START);
 
 	/* Count number of directives.  */
 	spec->directives++;
@@ -2496,10 +2485,17 @@ parse_upto (const char **formatp,
 		format++;
 		if (!c_isdigit (*format))
 		  {
-		    *invalid_reason =
-		      (*format == '\0'
-		       ? INVALID_UNTERMINATED_DIRECTIVE ()
-		       : xasprintf (_("In the directive number %u, '%c' is not followed by a digit."), spec->directives, format[-1]));
+		    if (*format == '\0')
+		      {
+			*invalid_reason = INVALID_UNTERMINATED_DIRECTIVE ();
+			FDI_SET (format - 1, FMTDIR_ERROR);
+		      }
+		    else
+		      {
+			*invalid_reason =
+			  xasprintf (_("In the directive number %u, '%c' is not followed by a digit."), spec->directives, format[-1]);
+			FDI_SET (format, FMTDIR_ERROR);
+		      }
 		    return false;
 		  }
 		do
@@ -2518,6 +2514,7 @@ parse_upto (const char **formatp,
 		if (*format == '\0')
 		  {
 		    *invalid_reason = INVALID_UNTERMINATED_DIRECTIVE ();
+		    FDI_SET (format - 1, FMTDIR_ERROR);
 		    return false;
 		  }
 		format++;
@@ -2574,7 +2571,10 @@ parse_upto (const char **formatp,
 	  case 'S': case 's': /* 22.3.4.2 FORMAT-S-EXPRESSION */
 	    if (!check_params (&list, paramcount, params, 4, IIIC,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_OBJECT);
 	    break;
@@ -2582,7 +2582,10 @@ parse_upto (const char **formatp,
 	  case 'W': case 'w': /* 22.3.4.3 FORMAT-WRITE */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_OBJECT);
 	    break;
@@ -2593,7 +2596,10 @@ parse_upto (const char **formatp,
 	  case 'X': case 'x': /* 22.3.2.5 FORMAT-HEXADECIMAL */
 	    if (!check_params (&list, paramcount, params, 4, ICCI,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_INTEGER);
 	    break;
@@ -2601,7 +2607,10 @@ parse_upto (const char **formatp,
 	  case 'R': case 'r': /* 22.3.2.1 FORMAT-RADIX */
 	    if (!check_params (&list, paramcount, params, 5, IICCI,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_INTEGER);
 	    break;
@@ -2609,7 +2618,10 @@ parse_upto (const char **formatp,
 	  case 'P': case 'p': /* 22.3.8.3 FORMAT-PLURAL */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (colon_p)
 	      {
 		/* Go back by 1 argument.  */
@@ -2623,7 +2635,10 @@ parse_upto (const char **formatp,
 	  case 'C': case 'c': /* 22.3.1.1 FORMAT-CHARACTER */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_CHARACTER);
 	    break;
@@ -2631,7 +2646,10 @@ parse_upto (const char **formatp,
 	  case 'F': case 'f': /* 22.3.3.1 FORMAT-FIXED-FLOAT */
 	    if (!check_params (&list, paramcount, params, 5, IIICC,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_REAL);
 	    break;
@@ -2640,7 +2658,10 @@ parse_upto (const char **formatp,
 	  case 'G': case 'g': /* 22.3.3.3 FORMAT-GENERAL-FLOAT */
 	    if (!check_params (&list, paramcount, params, 7, IIIICCC,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_REAL);
 	    break;
@@ -2648,7 +2669,10 @@ parse_upto (const char **formatp,
 	  case '$': /* 22.3.3.4 FORMAT-DOLLARS-FLOAT */
 	    if (!check_params (&list, paramcount, params, 4, IIIC,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_REAL);
 	    break;
@@ -2660,26 +2684,38 @@ parse_upto (const char **formatp,
 	  case 'I': case 'i': /* 22.3.5.3 */
 	    if (!check_params (&list, paramcount, params, 1, I,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    break;
 
 	  case '\n': /* 22.3.9.3 #\Newline */
 	  case '_': /* 22.3.5.1 */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    break;
 
 	  case 'T': case 't': /* 22.3.6.1 FORMAT-TABULATE */
 	    if (!check_params (&list, paramcount, params, 2, II,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    break;
 
 	  case '*': /* 22.3.7.1 FORMAT-GOTO */
 	    if (!check_params (&list, paramcount, params, 1, I,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    {
 	      int n; /* value of first parameter */
 	      if (paramcount == 0
@@ -2698,6 +2734,7 @@ parse_upto (const char **formatp,
 		  /* invalid argument */
 		  *invalid_reason =
 		    xasprintf (_("In the directive number %u, the argument %d is negative."), spec->directives, n);
+		  FDI_SET (format - 1, FMTDIR_ERROR);
 		  return false;
 		}
 	      if (atsign_p)
@@ -2733,7 +2770,10 @@ parse_upto (const char **formatp,
 	  case '?': /* 22.3.7.6 FORMAT-INDIRECTION */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_FORMATSTRING);
 	    if (atsign_p)
@@ -2751,7 +2791,10 @@ parse_upto (const char **formatp,
 	  case '/': /* 22.3.5.4 FORMAT-CALL-USER-FUNCTION */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      add_req_type_constraint (&list, position++, FAT_OBJECT);
 	    while (*format != '\0' && *format != '/')
@@ -2760,6 +2803,7 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xstrdup (_("The string ends in the middle of a ~/.../ directive."));
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    format++;
@@ -2768,7 +2812,10 @@ parse_upto (const char **formatp,
 	  case '(': /* 22.3.8.1 FORMAT-CASE-CONVERSION */
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    *positionp = position;
 	    *listp = list;
@@ -2776,8 +2823,12 @@ parse_upto (const char **formatp,
 	    {
 	      if (!parse_upto (formatp, positionp, listp, escapep,
 			       NULL, spec, ')', false,
-			       invalid_reason))
-		return false;
+			       NULL, invalid_reason))
+		{
+		  FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			   FMTDIR_ERROR);
+		  return false;
+		}
 	    }
 	    format = *formatp;
 	    position = *positionp;
@@ -2790,11 +2841,15 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("Found '~%c' without matching '~%c'."), ')', '(');
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    *positionp = position;
 	    *listp = list;
@@ -2806,6 +2861,7 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("In the directive number %u, both the @ and the : modifiers are given."), spec->directives);
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    else if (atsign_p)
@@ -2815,7 +2871,10 @@ parse_upto (const char **formatp,
 
 		if (!check_params (&list, paramcount, params, 0, NULL,
 				   spec->directives, invalid_reason))
-		  return false;
+		  {
+		    FDI_SET (format - 1, FMTDIR_ERROR);
+		    return false;
+		  }
 
 		*formatp = format;
 		*escapep = escape;
@@ -2837,8 +2896,12 @@ parse_upto (const char **formatp,
 		    (list != NULL ? copy_list (list) : NULL);
 		  if (!parse_upto (formatp, &sub_position, &sub_list, escapep,
 				   NULL, spec, ']', false,
-				   invalid_reason))
-		    return false;
+				   NULL, invalid_reason))
+		    {
+		      FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			       FMTDIR_ERROR);
+		      return false;
+		    }
 		  if (sub_list != NULL)
 		    {
 		      if (position >= 0)
@@ -2873,7 +2936,10 @@ parse_upto (const char **formatp,
 
 		if (!check_params (&list, paramcount, params, 0, NULL,
 				   spec->directives, invalid_reason))
-		  return false;
+		  {
+		    FDI_SET (format - 1, FMTDIR_ERROR);
+		    return false;
+		  }
 
 		if (position >= 0)
 		  add_req_type_constraint (&list, position++, FAT_OBJECT);
@@ -2898,12 +2964,18 @@ parse_upto (const char **formatp,
 		    }
 		  if (!parse_upto (formatp, &sub_position, &sub_list, escapep,
 				   &sub_separator, spec, ']', true,
-				   invalid_reason))
-		    return false;
+				   NULL, invalid_reason))
+		    {
+		      FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			       FMTDIR_ERROR);
+		      return false;
+		    }
 		  if (!sub_separator)
 		    {
 		      *invalid_reason =
 			xasprintf (_("In the directive number %u, '~:[' is not followed by two clauses, separated by '~;'."), spec->directives);
+		      FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			       FMTDIR_ERROR);
 		      return false;
 		    }
 		  if (sub_list != NULL)
@@ -2918,8 +2990,12 @@ parse_upto (const char **formatp,
 		    (list != NULL ? copy_list (list) : NULL);
 		  if (!parse_upto (formatp, &sub_position, &sub_list, escapep,
 				   NULL, spec, ']', false,
-				   invalid_reason))
-		    return false;
+				   NULL, invalid_reason))
+		    {
+		      FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			       FMTDIR_ERROR);
+		      return false;
+		    }
 		  if (sub_list != NULL)
 		    {
 		      if (union_position == -2)
@@ -2949,7 +3025,10 @@ parse_upto (const char **formatp,
 
 		if (!check_params (&list, paramcount, params, 1, I,
 				   spec->directives, invalid_reason))
-		  return false;
+		  {
+		    FDI_SET (format - 1, FMTDIR_ERROR);
+		    return false;
+		  }
 
 		/* If there was no first parameter, an argument is consumed.  */
 		arg_position = -1;
@@ -2975,8 +3054,12 @@ parse_upto (const char **formatp,
 		    int sub_separator = 0;
 		    if (!parse_upto (formatp, &sub_position, &sub_list, escapep,
 				     &sub_separator, spec, ']', !last_alternative,
-				     invalid_reason))
-		      return false;
+				     NULL, invalid_reason))
+		      {
+			FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+				 FMTDIR_ERROR);
+			return false;
+		      }
 		    /* If this alternative is chosen, the argument arg_position
 		       is an integer, namely the index of this alternative.  */
 		    if (!last_alternative && arg_position >= 0)
@@ -3023,11 +3106,15 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("Found '~%c' without matching '~%c'."), ']', '[');
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    *positionp = position;
 	    *listp = list;
@@ -3037,7 +3124,10 @@ parse_upto (const char **formatp,
 	  case '{': /* 22.3.7.4 FORMAT-ITERATION */
 	    if (!check_params (&list, paramcount, params, 1, I,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    {
 	      int sub_position = 0;
@@ -3048,8 +3138,12 @@ parse_upto (const char **formatp,
 	      sub_spec.list = sub_list;
 	      if (!parse_upto (formatp, &sub_position, &sub_list, &sub_escape,
 			       NULL, &sub_spec, '}', false,
-			       invalid_reason))
-		return false;
+			       NULL, invalid_reason))
+		{
+		  FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			   FMTDIR_ERROR);
+		  return false;
+		}
 	      spec->directives += sub_spec.directives;
 
 	      /* If the sub-formatstring is empty, except for the terminating
@@ -3129,11 +3223,15 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("Found '~%c' without matching '~%c'."), '}', '{');
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    *positionp = position;
 	    *listp = list;
@@ -3143,7 +3241,10 @@ parse_upto (const char **formatp,
 	  case '<': /* 22.3.6.2, 22.3.5.2 FORMAT-JUSTIFICATION */
 	    if (!check_params (&list, paramcount, params, 4, IIIC,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    {
 	      struct format_arg_list *sub_escape = NULL;
 
@@ -3156,8 +3257,12 @@ parse_upto (const char **formatp,
 		  int sub_separator = 0;
 		  if (!parse_upto (formatp, positionp, listp, &sub_escape,
 				   &sub_separator, spec, '>', true,
-				   invalid_reason))
-		    return false;
+				   NULL, invalid_reason))
+		    {
+		      FDI_SET (**formatp == '\0' ? *formatp - 1 : *formatp,
+			       FMTDIR_ERROR);
+		      return false;
+		    }
 		  if (!sub_separator)
 		    break;
 		}
@@ -3178,11 +3283,15 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("Found '~%c' without matching '~%c'."), '>', '<');
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    if (!check_params (&list, paramcount, params, 0, NULL,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    *formatp = format;
 	    *positionp = position;
 	    *listp = list;
@@ -3192,7 +3301,10 @@ parse_upto (const char **formatp,
 	  case '^': /* 22.3.9.2 FORMAT-UP-AND-OUT */
 	    if (!check_params (&list, paramcount, params, 3, THREE,
 			       spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0 && list != NULL && is_required (list, position))
 	      /* This ~^ can never be executed.  Ignore it.  */
 	      break;
@@ -3212,19 +3324,26 @@ parse_upto (const char **formatp,
 	      {
 		*invalid_reason =
 		  xasprintf (_("In the directive number %u, '~;' is used in an invalid position."), spec->directives);
+		FDI_SET (format - 1, FMTDIR_ERROR);
 		return false;
 	      }
 	    if (terminator == '>')
 	      {
 		if (!check_params (&list, paramcount, params, 1, I,
 				   spec->directives, invalid_reason))
-		   return false;
+		  {
+		    FDI_SET (format - 1, FMTDIR_ERROR);
+		    return false;
+		  }
 	      }
 	    else
 	      {
 		if (!check_params (&list, paramcount, params, 0, NULL,
 				   spec->directives, invalid_reason))
-		   return false;
+		  {
+		    FDI_SET (format - 1, FMTDIR_ERROR);
+		    return false;
+		  }
 	      }
 	    *formatp = format;
 	    *positionp = position;
@@ -3236,7 +3355,10 @@ parse_upto (const char **formatp,
 	  case '!': /* FORMAT-CALL, a CLISP extension */
 	    if (!nocheck_params (&list, paramcount, params,
 				 spec->directives, invalid_reason))
-	      return false;
+	      {
+		FDI_SET (format - 1, FMTDIR_ERROR);
+		return false;
+	      }
 	    if (position >= 0)
 	      {
 		add_req_type_constraint (&list, position++, FAT_FUNCTION);
@@ -3246,12 +3368,21 @@ parse_upto (const char **formatp,
 
 	  default:
 	    --format;
-	    *invalid_reason =
-	      (*format == '\0'
-	       ? INVALID_UNTERMINATED_DIRECTIVE ()
-	       : INVALID_CONVERSION_SPECIFIER (spec->directives, *format));
+	    if (*format == '\0')
+	      {
+		*invalid_reason = INVALID_UNTERMINATED_DIRECTIVE ();
+		FDI_SET (format - 1, FMTDIR_ERROR);
+	      }
+	    else
+	      {
+		*invalid_reason =
+		  INVALID_CONVERSION_SPECIFIER (spec->directives, *format);
+		FDI_SET (format, FMTDIR_ERROR);
+	      }
 	    return false;
 	  }
+
+	FDI_SET (format - 1, FMTDIR_END);
 
 	free (params);
       }
@@ -3273,7 +3404,8 @@ parse_upto (const char **formatp,
 /* ============== Top level format string handling functions ============== */
 
 static void *
-format_parse (const char *format, bool translated, char **invalid_reason)
+format_parse (const char *format, bool translated, char *fdi,
+	      char **invalid_reason)
 {
   struct spec spec;
   struct spec *result;
@@ -3286,7 +3418,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 
   if (!parse_upto (&format, &position, &spec.list, &escape,
 		   NULL, &spec, '\0', false,
-		   invalid_reason))
+		   fdi, invalid_reason))
     /* Invalid format string.  */
     return NULL;
 
@@ -3304,7 +3436,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
   /* Normalize the result.  */
   normalize_list (spec.list);
 
-  result = (struct spec *) xmalloc (sizeof (struct spec));
+  result = XMALLOC (struct spec);
   *result = spec;
   return result;
 }
@@ -3385,7 +3517,6 @@ struct formatstring_parser formatstring_lisp =
    format_parse for strings read from standard input.  */
 
 #include <stdio.h>
-#include "getline.h"
 
 static void print_list (struct format_arg_list *list);
 
@@ -3501,7 +3632,7 @@ main ()
 	line[--line_len] = '\0';
 
       invalid_reason = NULL;
-      descr = format_parse (line, false, &invalid_reason);
+      descr = format_parse (line, false, NULL, &invalid_reason);
 
       format_print (descr);
       printf ("\n");
@@ -3518,7 +3649,7 @@ main ()
 /*
  * For Emacs M-x compile
  * Local Variables:
- * compile-command: "/bin/sh ../libtool --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../lib -I../intl -DHAVE_CONFIG_H -DTEST format-lisp.c ../lib/libgettextlib.la"
+ * compile-command: "/bin/sh ../libtool --tag=CC --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../gnulib-lib -I../intl -DHAVE_CONFIG_H -DTEST format-lisp.c ../gnulib-lib/libgettextlib.la"
  * End:
  */
 

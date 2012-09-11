@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.awk:12
+#: hello.awk:11
 msgid "Hello, world!"
 msgstr "Здраво свима!"
 
-#: hello.awk:13
+#: hello.awk:12
 #, awk-format
 msgid "This program is running as process number %d."
 msgstr "Овај програм се извршава као процес број %d."

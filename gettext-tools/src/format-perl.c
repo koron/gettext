@@ -1,11 +1,11 @@
 /* Perl format strings.
-   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -94,11 +93,16 @@ enum format_arg_type
   FAT_SIZE_MASK		= (FAT_SIZE_SHORT | FAT_SIZE_V | FAT_SIZE_PTR
 			   | FAT_SIZE_LONG | FAT_SIZE_LONGLONG)
 };
+#ifdef __cplusplus
+typedef int format_arg_type_t;
+#else
+typedef enum format_arg_type format_arg_type_t;
+#endif
 
 struct numbered_arg
 {
   unsigned int number;
-  enum format_arg_type type;
+  format_arg_type_t type;
 };
 
 struct spec
@@ -129,8 +133,10 @@ numbered_arg_compare (const void *p1, const void *p2)
 }
 
 static void *
-format_parse (const char *format, bool translated, char **invalid_reason)
+format_parse (const char *format, bool translated, char *fdi,
+	      char **invalid_reason)
 {
+  const char *const format_start = format;
   unsigned int directives;
   unsigned int numbered_arg_count;
   unsigned int allocated;
@@ -150,9 +156,10 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	/* A directive.  */
 	unsigned int number = 0;
 	bool vectorize = false;
-	enum format_arg_type type;
-	enum format_arg_type size;
+	format_arg_type_t type;
+	format_arg_type_t size;
 
+	FDI_SET (format - 1, FMTDIR_START);
 	directives++;
 
 	if (isnonzerodigit (*format))
@@ -424,6 +431,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	      {
 		*invalid_reason =
 		  xasprintf (_("In the directive number %u, the size specifier is incompatible with the conversion specifier '%c'."), directives, *format);
+		FDI_SET (format, FMTDIR_ERROR);
 		goto bad_format;
 	      }
 	    type = FAT_DOUBLE | size;
@@ -435,10 +443,17 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	    type = FAT_COUNT_POINTER | size;
 	    break;
 	  default:
-	    *invalid_reason =
-	      (*format == '\0'
-	       ? INVALID_UNTERMINATED_DIRECTIVE ()
-	       : INVALID_CONVERSION_SPECIFIER (directives, *format));
+	    if (*format == '\0')
+	      {
+		*invalid_reason = INVALID_UNTERMINATED_DIRECTIVE ();
+		FDI_SET (format - 1, FMTDIR_ERROR);
+	      }
+	    else
+	      {
+		*invalid_reason =
+		  INVALID_CONVERSION_SPECIFIER (directives, *format);
+		FDI_SET (format, FMTDIR_ERROR);
+	      }
 	    goto bad_format;
 	  }
 
@@ -454,6 +469,8 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	    numbered[numbered_arg_count].type = type;
 	    numbered_arg_count++;
 	  }
+
+	FDI_SET (format, FMTDIR_END);
 
 	format++;
       }
@@ -472,9 +489,9 @@ format_parse (const char *format, bool translated, char **invalid_reason)
       for (i = j = 0; i < numbered_arg_count; i++)
 	if (j > 0 && numbered[i].number == numbered[j-1].number)
 	  {
-	    enum format_arg_type type1 = numbered[i].type;
-	    enum format_arg_type type2 = numbered[j-1].type;
-	    enum format_arg_type type_both;
+	    format_arg_type_t type1 = numbered[i].type;
+	    format_arg_type_t type2 = numbered[j-1].type;
+	    format_arg_type_t type_both;
 
 	    if (type1 == type2)
 	      type_both = type1;
@@ -505,7 +522,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	goto bad_format;
     }
 
-  result = (struct spec *) xmalloc (sizeof (struct spec));
+  result = XMALLOC (struct spec);
   result->directives = directives;
   result->numbered_arg_count = numbered_arg_count;
   result->allocated = allocated;
@@ -626,7 +643,6 @@ struct formatstring_parser formatstring_perl =
    format_parse for strings read from standard input.  */
 
 #include <stdio.h>
-#include "getline.h"
 
 static void
 format_print (void *descr)
@@ -726,7 +742,7 @@ main ()
 	line[--line_len] = '\0';
 
       invalid_reason = NULL;
-      descr = format_parse (line, false, &invalid_reason);
+      descr = format_parse (line, false, NULL, &invalid_reason);
 
       format_print (descr);
       printf ("\n");
@@ -743,7 +759,7 @@ main ()
 /*
  * For Emacs M-x compile
  * Local Variables:
- * compile-command: "/bin/sh ../libtool --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../lib -I../intl -DHAVE_CONFIG_H -DTEST format-perl.c ../lib/libgettextlib.la"
+ * compile-command: "/bin/sh ../libtool --tag=CC --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../gnulib-lib -I../intl -DHAVE_CONFIG_H -DTEST format-perl.c ../gnulib-lib/libgettextlib.la"
  * End:
  */
 

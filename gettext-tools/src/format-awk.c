@@ -1,11 +1,11 @@
 /* awk format strings.
-   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2002.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -94,8 +93,10 @@ numbered_arg_compare (const void *p1, const void *p2)
 }
 
 static void *
-format_parse (const char *format, bool translated, char **invalid_reason)
+format_parse (const char *format, bool translated, char *fdi,
+	      char **invalid_reason)
 {
+  const char *const format_start = format;
   struct spec spec;
   unsigned int unnumbered_arg_count;
   struct spec *result;
@@ -113,6 +114,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	unsigned int number = 0;
 	enum format_arg_type type;
 
+	FDI_SET (format - 1, FMTDIR_START);
 	spec.directives++;
 
 	if (isdigit (*format))
@@ -132,6 +134,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		if (m == 0)
 		  {
 		    *invalid_reason = INVALID_ARGNO_0 (spec.directives);
+		    FDI_SET (f, FMTDIR_ERROR);
 		    goto bad_format;
 		  }
 		number = m;
@@ -169,6 +172,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		      {
 			*invalid_reason =
 			  INVALID_WIDTH_ARGNO_0 (spec.directives);
+			FDI_SET (f, FMTDIR_ERROR);
 			goto bad_format;
 		      }
 		    width_number = m;
@@ -184,6 +188,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		if (unnumbered_arg_count > 0)
 		  {
 		    *invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+		    FDI_SET (format - 1, FMTDIR_ERROR);
 		    goto bad_format;
 		  }
 
@@ -204,6 +209,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		if (spec.numbered_arg_count > 0)
 		  {
 		    *invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+		    FDI_SET (format - 1, FMTDIR_ERROR);
 		    goto bad_format;
 		  }
 
@@ -251,6 +257,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 			  {
 			    *invalid_reason =
 			      INVALID_PRECISION_ARGNO_0 (spec.directives);
+			    FDI_SET (f, FMTDIR_ERROR);
 			    goto bad_format;
 			  }
 			precision_number = m;
@@ -266,6 +273,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		    if (unnumbered_arg_count > 0)
 		      {
 			*invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+			FDI_SET (format - 1, FMTDIR_ERROR);
 			goto bad_format;
 		      }
 
@@ -286,6 +294,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		    if (spec.numbered_arg_count > 0)
 		      {
 			*invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+			FDI_SET (format - 1, FMTDIR_ERROR);
 			goto bad_format;
 		      }
 
@@ -294,7 +303,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 			spec.allocated = 2 * spec.allocated + 1;
 			spec.numbered = (struct numbered_arg *) xrealloc (spec.numbered, spec.allocated * sizeof (struct numbered_arg));
 		      }
-		    spec.numbered[unnumbered_arg_count].type = unnumbered_arg_count + 1;
+		    spec.numbered[unnumbered_arg_count].number = unnumbered_arg_count + 1;
 		    spec.numbered[unnumbered_arg_count].type = FAT_INTEGER;
 		    unnumbered_arg_count++;
 		  }
@@ -326,10 +335,17 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	    type = FAT_FLOAT;
 	    break;
 	  default:
-	    *invalid_reason =
-	      (*format == '\0'
-	       ? INVALID_UNTERMINATED_DIRECTIVE ()
-	       : INVALID_CONVERSION_SPECIFIER (spec.directives, *format));
+	    if (*format == '\0')
+	      {
+		*invalid_reason = INVALID_UNTERMINATED_DIRECTIVE ();
+		FDI_SET (format - 1, FMTDIR_ERROR);
+	      }
+	    else
+	      {
+		*invalid_reason =
+		  INVALID_CONVERSION_SPECIFIER (spec.directives, *format);
+		FDI_SET (format, FMTDIR_ERROR);
+	      }
 	    goto bad_format;
 	  }
 
@@ -343,6 +359,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		if (unnumbered_arg_count > 0)
 		  {
 		    *invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+		    FDI_SET (format, FMTDIR_ERROR);
 		    goto bad_format;
 		  }
 
@@ -363,6 +380,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		if (spec.numbered_arg_count > 0)
 		  {
 		    *invalid_reason = INVALID_MIXES_NUMBERED_UNNUMBERED ();
+		    FDI_SET (format, FMTDIR_ERROR);
 		    goto bad_format;
 		  }
 
@@ -376,6 +394,8 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		unnumbered_arg_count++;
 	      }
 	  }
+
+	FDI_SET (format, FMTDIR_END);
 
 	format++;
       }
@@ -430,7 +450,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	goto bad_format;
     }
 
-  result = (struct spec *) xmalloc (sizeof (struct spec));
+  result = XMALLOC (struct spec);
   *result = spec;
   return result;
 
@@ -548,7 +568,6 @@ struct formatstring_parser formatstring_awk =
    format_parse for strings read from standard input.  */
 
 #include <stdio.h>
-#include "getline.h"
 
 static void
 format_print (void *descr)
@@ -618,7 +637,7 @@ main ()
 	line[--line_len] = '\0';
 
       invalid_reason = NULL;
-      descr = format_parse (line, false, &invalid_reason);
+      descr = format_parse (line, false, NULL, &invalid_reason);
 
       format_print (descr);
       printf ("\n");
@@ -635,7 +654,7 @@ main ()
 /*
  * For Emacs M-x compile
  * Local Variables:
- * compile-command: "/bin/sh ../libtool --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../lib -I../intl -DHAVE_CONFIG_H -DTEST format-awk.c ../lib/libgettextlib.la"
+ * compile-command: "/bin/sh ../libtool --tag=CC --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../gnulib-lib -I../intl -DHAVE_CONFIG_H -DTEST format-awk.c ../gnulib-lib/libgettextlib.la"
  * End:
  */
 

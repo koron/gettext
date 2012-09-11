@@ -1,11 +1,11 @@
 /* Sequential list data type implemented by a linked list.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Common code of gl_linked_list.c and gl_linkedhash_list.c.  */
 
@@ -41,19 +40,19 @@ static gl_list_t
 gl_linked_create_empty (gl_list_implementation_t implementation,
 			gl_listelement_equals_fn equals_fn,
 			gl_listelement_hashcode_fn hashcode_fn,
+			gl_listelement_dispose_fn dispose_fn,
 			bool allow_duplicates)
 {
-  struct gl_list_impl *list =
-    (struct gl_list_impl *) xmalloc (sizeof (struct gl_list_impl));
+  struct gl_list_impl *list = XMALLOC (struct gl_list_impl);
 
   list->base.vtable = implementation;
   list->base.equals_fn = equals_fn;
   list->base.hashcode_fn = hashcode_fn;
+  list->base.dispose_fn = dispose_fn;
   list->base.allow_duplicates = allow_duplicates;
 #if WITH_HASHTABLE
   list->table_size = 11;
-  list->table =
-    (gl_hash_entry_t *) xzalloc (list->table_size * sizeof (gl_hash_entry_t));
+  list->table = XCALLOC (list->table_size, gl_hash_entry_t);
 #endif
   list->root.next = &list->root;
   list->root.prev = &list->root;
@@ -66,16 +65,17 @@ static gl_list_t
 gl_linked_create (gl_list_implementation_t implementation,
 		  gl_listelement_equals_fn equals_fn,
 		  gl_listelement_hashcode_fn hashcode_fn,
+		  gl_listelement_dispose_fn dispose_fn,
 		  bool allow_duplicates,
 		  size_t count, const void **contents)
 {
-  struct gl_list_impl *list =
-    (struct gl_list_impl *) xmalloc (sizeof (struct gl_list_impl));
+  struct gl_list_impl *list = XMALLOC (struct gl_list_impl);
   gl_list_node_t tail;
 
   list->base.vtable = implementation;
   list->base.equals_fn = equals_fn;
   list->base.hashcode_fn = hashcode_fn;
+  list->base.dispose_fn = dispose_fn;
   list->base.allow_duplicates = allow_duplicates;
 #if WITH_HASHTABLE
   {
@@ -83,17 +83,14 @@ gl_linked_create (gl_list_implementation_t implementation,
     if (estimate < 10)
       estimate = 10;
     list->table_size = next_prime (estimate);
-    list->table =
-      (gl_hash_entry_t *) xzalloc (list->table_size * sizeof (gl_hash_entry_t));
+    list->table = XCALLOC (list->table_size, gl_hash_entry_t);
   }
 #endif
   list->count = count;
   tail = &list->root;
   for (; count > 0; contents++, count--)
     {
-      gl_list_node_t node =
-	(struct gl_list_node_impl *)
-	xmalloc (sizeof (struct gl_list_node_impl));
+      gl_list_node_t node = XMALLOC (struct gl_list_node_impl);
 
       node->value = *contents;
 #if WITH_HASHTABLE
@@ -497,8 +494,7 @@ gl_linked_indexof_from_to (gl_list_t list, size_t start_index, size_t end_index,
 static gl_list_node_t
 gl_linked_add_first (gl_list_t list, const void *elt)
 {
-  gl_list_node_t node =
-    (struct gl_list_node_impl *) xmalloc (sizeof (struct gl_list_node_impl));
+  gl_list_node_t node = XMALLOC (struct gl_list_node_impl);
 
   ASYNCSAFE(const void *) node->value = elt;
 #if WITH_HASHTABLE
@@ -528,8 +524,7 @@ gl_linked_add_first (gl_list_t list, const void *elt)
 static gl_list_node_t
 gl_linked_add_last (gl_list_t list, const void *elt)
 {
-  gl_list_node_t node =
-    (struct gl_list_node_impl *) xmalloc (sizeof (struct gl_list_node_impl));
+  gl_list_node_t node = XMALLOC (struct gl_list_node_impl);
 
   ASYNCSAFE(const void *) node->value = elt;
 #if WITH_HASHTABLE
@@ -559,8 +554,7 @@ gl_linked_add_last (gl_list_t list, const void *elt)
 static gl_list_node_t
 gl_linked_add_before (gl_list_t list, gl_list_node_t node, const void *elt)
 {
-  gl_list_node_t new_node =
-    (struct gl_list_node_impl *) xmalloc (sizeof (struct gl_list_node_impl));
+  gl_list_node_t new_node = XMALLOC (struct gl_list_node_impl);
 
   ASYNCSAFE(const void *) new_node->value = elt;
 #if WITH_HASHTABLE
@@ -590,8 +584,7 @@ gl_linked_add_before (gl_list_t list, gl_list_node_t node, const void *elt)
 static gl_list_node_t
 gl_linked_add_after (gl_list_t list, gl_list_node_t node, const void *elt)
 {
-  gl_list_node_t new_node =
-    (struct gl_list_node_impl *) xmalloc (sizeof (struct gl_list_node_impl));
+  gl_list_node_t new_node = XMALLOC (struct gl_list_node_impl);
 
   ASYNCSAFE(const void *) new_node->value = elt;
 #if WITH_HASHTABLE
@@ -628,8 +621,7 @@ gl_linked_add_at (gl_list_t list, size_t position, const void *elt)
     /* Invalid argument.  */
     abort ();
 
-  new_node =
-    (struct gl_list_node_impl *) xmalloc (sizeof (struct gl_list_node_impl));
+  new_node = XMALLOC (struct gl_list_node_impl);
   ASYNCSAFE(const void *) new_node->value = elt;
 #if WITH_HASHTABLE
   new_node->h.hashcode =
@@ -695,6 +687,8 @@ gl_linked_remove_node (gl_list_t list, gl_list_node_t node)
   next->prev = prev;
   list->count--;
 
+  if (list->base.dispose_fn != NULL)
+    list->base.dispose_fn (node->value);
   free (node);
   return true;
 }
@@ -741,6 +735,8 @@ gl_linked_remove_at (gl_list_t list, size_t position)
 #endif
   list->count--;
 
+  if (list->base.dispose_fn != NULL)
+    list->base.dispose_fn (removed_node->value);
   free (removed_node);
   return true;
 }
@@ -759,11 +755,14 @@ gl_linked_remove (gl_list_t list, const void *elt)
 static void
 gl_linked_list_free (gl_list_t list)
 {
+  gl_listelement_dispose_fn dispose = list->base.dispose_fn;
   gl_list_node_t node;
 
   for (node = list->root.next; node != &list->root; )
     {
       gl_list_node_t next = node->next;
+      if (dispose != NULL)
+	dispose (node->value);
       free (node);
       node = next;
     }

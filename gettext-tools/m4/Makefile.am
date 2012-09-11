@@ -15,12 +15,12 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/intdiv0.m4 \
   ../../gettext-runtime/m4/intl.m4 \
   ../../gettext-runtime/m4/intldir.m4 \
+  ../../gettext-runtime/m4/intlmacosx.m4 \
   ../../gettext-runtime/m4/intmax.m4 \
   ../../gettext-runtime/m4/inttypes_h.m4 \
   ../../gettext-runtime/m4/inttypes-pri.m4 \
   ../../gettext-runtime/m4/lcmessage.m4 \
   ../../gettext-runtime/m4/lock.m4 \
-  ../../gettext-runtime/m4/longdouble.m4 \
   ../../gettext-runtime/m4/longlong.m4 \
   ../../gettext-runtime/m4/nls.m4 \
   ../../gettext-runtime/m4/po.m4 \
@@ -29,7 +29,6 @@ aclocal_DATA = \
   ../../gettext-runtime/m4/size_max.m4 \
   ../../gettext-runtime/m4/stdint_h.m4 \
   ../../gettext-runtime/m4/uintmax_t.m4 \
-  ../../gettext-runtime/m4/ulonglong.m4 \
   ../../gettext-runtime/m4/visibility.m4 \
   ../../gettext-runtime/m4/wchar_t.m4 \
   ../../gettext-runtime/m4/wint_t.m4 \
@@ -47,8 +46,7 @@ examplesbuildaux_DATA = \
 EXTRA_DIST = README csharpexec-test.exe \
 hostname.m4 \
 libgrep.m4 \
-locale-fr.m4 \
-openmp.m4 \
+locale-ja.m4 \
 regex.m4 \
 setlocale.m4 \
 siginfo.m4

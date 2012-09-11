@@ -1,11 +1,11 @@
 /* Reading C# satellite assemblies.
-   Copyright (C) 2003-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -36,9 +35,8 @@
 #include "read-catalog.h"
 #include "read-po.h"
 #include "xalloc.h"
-#include "pathname.h"
+#include "filename.h"
 #include "error.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -152,7 +150,7 @@ msgdomain_read_csharp (const char *resource_name, const char *locale_name,
     gettextlibdir = relocate (LIBDIR);
 
   /* Dump the resource and retrieve the resulting output.  */
-  assembly_path = concatenated_pathname (gettextexedir, "msgunfmt.net", ".exe");
+  assembly_path = concatenated_filename (gettextexedir, "msgunfmt.net", ".exe");
   libdirs[0] = gettextlibdir;
   if (execute_csharp_program (assembly_path, libdirs, 1,
 			      args,

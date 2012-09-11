@@ -1,11 +1,11 @@
 /* Writing Java ResourceBundles.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -54,13 +53,6 @@
 # define S_IXUSR 00100
 #endif
 
-#ifdef __MINGW32__
-# include <io.h>
-/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
-   Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) _mkdir)
-#endif
-
 #include "c-ctype.h"
 #include "error.h"
 #include "xerror.h"
@@ -72,11 +64,11 @@
 #include "plural-exp.h"
 #include "po-charset.h"
 #include "xalloc.h"
-#include "xallocsa.h"
-#include "pathname.h"
+#include "xmalloca.h"
+#include "filename.h"
 #include "fwriteerror.h"
 #include "clean-temp.h"
-#include "utf8-ucs4.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -143,6 +135,34 @@ string_hashcode (const char *str)
 }
 
 
+/* Return the Java hash code of a (msgctxt, msgid) pair mod 2^31.  */
+static unsigned int
+msgid_hashcode (const char *msgctxt, const char *msgid)
+{
+  if (msgctxt == NULL)
+    return string_hashcode (msgid);
+  else
+    {
+      size_t msgctxt_len = strlen (msgctxt);
+      size_t msgid_len = strlen (msgid);
+      size_t combined_len = msgctxt_len + 1 + msgid_len;
+      char *combined;
+      unsigned int result;
+
+      combined = (char *) xmalloca (combined_len);
+      memcpy (combined, msgctxt, msgctxt_len);
+      combined[msgctxt_len] = MSGCTXT_SEPARATOR;
+      memcpy (combined + msgctxt_len + 1, msgid, msgid_len + 1);
+
+      result = string_hashcode (combined);
+
+      freea (combined);
+
+      return result;
+    }
+}
+
+
 /* Compute a good hash table size for the given set of msgids.  */
 static unsigned int
 compute_hashsize (message_list_ty *mlp, bool *collisionp)
@@ -153,14 +173,14 @@ compute_hashsize (message_list_ty *mlp, bool *collisionp)
 #define XXS 3  /* can be tweaked */
   unsigned int n = mlp->nitems;
   unsigned int *hashcodes =
-    (unsigned int *) xallocsa (n * sizeof (unsigned int));
+    (unsigned int *) xmalloca (n * sizeof (unsigned int));
   unsigned int hashsize;
   unsigned int best_hashsize;
   unsigned int best_score;
   size_t j;
 
   for (j = 0; j < n; j++)
-    hashcodes[j] = string_hashcode (mlp->item[j]->msgid);
+    hashcodes[j] = msgid_hashcode (mlp->item[j]->msgctxt, mlp->item[j]->msgid);
 
   /* Try all numbers between n and 3*n.  The score depends on the size of the
      table -- the smaller the better -- and the number of collision lookups,
@@ -180,7 +200,7 @@ compute_hashsize (message_list_ty *mlp, bool *collisionp)
       if (hashsize >= best_score)
 	break;
 
-      bitmap = (char *) xmalloc (hashsize);
+      bitmap = XNMALLOC (hashsize, char);
       memset (bitmap, 0, hashsize);
 
       score = 0;
@@ -270,7 +290,7 @@ compute_hashsize (message_list_ty *mlp, bool *collisionp)
   if (best_hashsize == 0 || best_score < best_hashsize)
     abort ();
 
-  freesa (hashcodes);
+  freea (hashcodes);
 
   /* There are collisions if and only if best_score > best_hashsize.  */
   *collisionp = (best_score > best_hashsize);
@@ -293,17 +313,17 @@ static struct table_item *
 compute_table_items (message_list_ty *mlp, unsigned int hashsize)
 {
   unsigned int n = mlp->nitems;
-  struct table_item *arr =
-    (struct table_item *) xmalloc (n * sizeof (struct table_item));
+  struct table_item *arr = XNMALLOC (n, struct table_item);
   char *bitmap;
   size_t j;
 
-  bitmap = (char *) xmalloc (hashsize);
+  bitmap = XNMALLOC (hashsize, char);
   memset (bitmap, 0, hashsize);
 
   for (j = 0; j < n; j++)
     {
-      unsigned int hashcode = string_hashcode (mlp->item[j]->msgid);
+      unsigned int hashcode =
+	msgid_hashcode (mlp->item[j]->msgctxt, mlp->item[j]->msgid);
       unsigned int idx = hashcode % hashsize;
 
       if (bitmap[idx] != 0)
@@ -375,6 +395,35 @@ write_java_string (FILE *stream, const char *str)
 	}
     }
   fprintf (stream, "\"");
+}
+
+
+/* Write a (msgctxt, msgid) pair as a string in Java Unicode notation to the
+   given stream.  */
+static void
+write_java_msgid (FILE *stream, message_ty *mp)
+{
+  const char *msgctxt = mp->msgctxt;
+  const char *msgid = mp->msgid;
+
+  if (msgctxt == NULL)
+    write_java_string (stream, msgid);
+  else
+    {
+      size_t msgctxt_len = strlen (msgctxt);
+      size_t msgid_len = strlen (msgid);
+      size_t combined_len = msgctxt_len + 1 + msgid_len;
+      char *combined;
+
+      combined = (char *) xmalloca (combined_len);
+      memcpy (combined, msgctxt, msgctxt_len);
+      combined[msgctxt_len] = MSGCTXT_SEPARATOR;
+      memcpy (combined + msgctxt_len + 1, msgid, msgid_len + 1);
+
+      write_java_string (stream, combined);
+
+      freea (combined);
+    }
 }
 
 
@@ -487,7 +536,7 @@ is_expression_boolean (struct expression *exp)
 /* Write Java code that evaluates a plural expression according to the C rules.
    The variable is called 'n'.  */
 static void
-write_java_expression (FILE *stream, struct expression *exp, bool as_boolean)
+write_java_expression (FILE *stream, const struct expression *exp, bool as_boolean)
 {
   /* We use parentheses everywhere.  This frees us from tracking the priority
      of arithmetic operators.  */
@@ -722,7 +771,7 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
 	  struct table_item *ti = &table_items[j];
 
 	  fprintf (stream, "    t[%d] = ", 2 * ti->index);
-	  write_java_string (stream, ti->mp->msgid);
+	  write_java_msgid (stream, ti->mp);
 	  fprintf (stream, ";\n");
 	  fprintf (stream, "    t[%d] = ", 2 * ti->index + 1);
 	  write_java_msgstr (stream, ti->mp);
@@ -805,7 +854,7 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
       for (j = 0; j < mlp->nitems; j++)
 	{
 	  fprintf (stream, "    t.put(");
-	  write_java_string (stream, mlp->item[j]->msgid);
+	  write_java_msgid (stream, mlp->item[j]);
 	  fprintf (stream, ",");
 	  write_java_msgstr (stream, mlp->item[j]);
 	  fprintf (stream, ");\n");
@@ -822,7 +871,7 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
 	    if (mlp->item[j]->msgid_plural != NULL)
 	      {
 		fprintf (stream, "    p.put(");
-		write_java_string (stream, mlp->item[j]->msgid);
+		write_java_msgid (stream, mlp->item[j]);
 		fprintf (stream, ",");
 		write_java_string (stream, mlp->item[j]->msgid_plural);
 		fprintf (stream, ");\n");
@@ -863,7 +912,7 @@ write_java_code (FILE *stream, const char *class_name, message_list_ty *mlp,
   if (plurals)
     {
       message_ty *header_entry;
-      struct expression *plural;
+      const struct expression *plural;
       unsigned long int nplurals;
 
       header_entry = message_list_search (mlp, NULL, "");
@@ -905,25 +954,6 @@ msgdomain_write_java (message_list_ty *mlp, const char *canon_encoding,
   if (mlp->nitems == 0)
     return 0;
 
-  /* Determine whether mlp has entries with context.  */
-  {
-    bool has_context;
-    size_t j;
-
-    has_context = false;
-    for (j = 0; j < mlp->nitems; j++)
-      if (mlp->item[j]->msgctxt != NULL)
-	has_context = true;
-    if (has_context)
-      {
-	multiline_error (xstrdup (""),
-			 xstrdup (_("\
-message catalog has context dependent translations\n\
-but the Java ResourceBundle format doesn't support contexts\n")));
-	return 1;
-      }
-  }
-
   retval = 1;
 
   /* Convert the messages to Unicode.  */
@@ -951,7 +981,7 @@ but the Java ResourceBundle format doesn't support contexts\n")));
   else
     class_name = xstrdup (resource_name);
 
-  subdirs = (ndots > 0 ? (char **) xallocsa (ndots * sizeof (char *)) : NULL);
+  subdirs = (ndots > 0 ? (char **) xmalloca (ndots * sizeof (char *)) : NULL);
   {
     const char *p;
     const char *last_dir;
@@ -963,11 +993,11 @@ but the Java ResourceBundle format doesn't support contexts\n")));
       {
 	const char *q = strchr (p, '.');
 	size_t n = q - p;
-	char *part = (char *) xallocsa (n + 1);
+	char *part = (char *) xmalloca (n + 1);
 	memcpy (part, p, n);
 	part[n] = '\0';
-	subdirs[i] = concatenated_pathname (last_dir, part, NULL);
-	freesa (part);
+	subdirs[i] = concatenated_filename (last_dir, part, NULL);
+	freea (part);
 	last_dir = subdirs[i];
 	p = q + 1;
       }
@@ -975,11 +1005,11 @@ but the Java ResourceBundle format doesn't support contexts\n")));
     if (locale_name != NULL)
       {
 	char *suffix = xasprintf ("_%s.java", locale_name);
-	java_file_name = concatenated_pathname (last_dir, p, suffix);
+	java_file_name = concatenated_filename (last_dir, p, suffix);
 	free (suffix);
       }
     else
-      java_file_name = concatenated_pathname (last_dir, p, ".java");
+      java_file_name = concatenated_filename (last_dir, p, ".java");
   }
 
   /* Create the subdirectories.  This is needed because some older Java
@@ -1026,8 +1056,12 @@ but the Java ResourceBundle format doesn't support contexts\n")));
   if (compile_java_class (java_sources, 1, NULL, 0, "1.3", "1.1", directory,
 			  true, false, true, verbose))
     {
-      error (0, 0, _("\
+      if (!verbose)
+	error (0, 0, _("\
 compilation of Java class failed, please try --verbose or set $JAVAC"));
+      else
+	error (0, 0, _("\
+compilation of Java class failed, please try to set $JAVAC"));
       goto quit3;
     }
 
@@ -1040,7 +1074,7 @@ compilation of Java class failed, please try --verbose or set $JAVAC"));
     for (i = 0; i < ndots; i++)
       free (subdirs[i]);
   }
-  freesa (subdirs);
+  freea (subdirs);
   free (class_name);
  quit2:
   cleanup_temp_dir (tmpdir);

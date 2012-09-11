@@ -1,3 +1,962 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* color.c (style_file_lookup): New function.
+	(style_file_prepare): Use it.
+
+2007-10-21  Bruno Haible  <bruno@clisp.org>
+
+	Normalize the leading space of every comment line during input, not
+	during output.
+	* read-catalog-abstract.c (po_callback_comment_dispatcher): Before
+	calling po_callback_comment or po_callback_comment_dot, drop the
+	leading space.
+	* write-po.c (message_print_comment, message_print_comment_dot): Don't
+	remove the leading space of every comment line.
+	* write-stringtable.c (write_message): Likewise.
+	Suggested by Dwayne Bailey <dwayne@translate.org.za>.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c (message_merge): Set the fuzzy flag if the msgid_plural
+	changed.
+	Suggested by Chusslove Illich (Часлав Илић) <caslav.ilic@gmx.net>.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	Make msgmerge's introduction of fuzzy markers more consistent with
+	msgfmt's --check-format.
+	* format.h (check_msgid_msgstr_format_i): New declaration.
+	* format.c (check_msgid_msgstr_format_i): New function, extracted from
+	check_msgid_msgstr_format.
+	(check_msgid_msgstr_format): Use it.
+	* msgl-check.h: Include plural-eval.h.
+	(check_plural_eval): New declaration.
+	* msgl-check.c (check_plural_eval): Add const to first parameter. Make
+	non-static.
+	(check_plural): Update.
+	* msgmerge.c: Include plural-exp.h, msgl-check.h, po-xerror.h.
+	(msgfmt_check_pair_fails): Remove function.
+	(silent_error_logger, silent_xerror): New functions.
+	(message_merge): Add plural_distribution, plural_distribution_length
+	arguments. Call check_msgid_msgstr_format_i instead of
+	msgfmt_check_pair_fails.
+	(match_domain): Extract not only the plural count, but also the
+	plural expression from the header entry. Determine the plural
+	distribution from it. Pass it to message_merge.
+	Reported by Chusslove Illich (Часлав Илић) <caslav.ilic@gmx.net>.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-check.c (check_plural): If there is no header entry, or if the
+	header entry does not contain plural= and nplurals=, return a plural
+	distribution corresponding to the Germanic plural.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* format.h (check_msgid_msgstr_format): Add plural_distribution_length
+	argument.
+	* format.c (check_msgid_msgstr_format): Likewise.
+	* msgl-check.h (check_message): Likewise.
+	* msgl-check.c (check_plural_eval, check_plural, check_pair,
+	check_message): Likewise.
+	(check_message_list): Update.
+
+2007-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* plural-count.c (get_plural_count): Adapt to changed prototype of
+	extract_plural_expression.
+	* write-csharp.c (write_csharp_expression): Add const to parameter.
+	(write_csharp_code): Adapt to changed prototype of
+	extract_plural_expression.
+	* write-java.c (write_java_expression): Add const to parameter.
+	(write_java_code): Adapt to changed prototype of
+	extract_plural_expression.
+
+2007-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* hostname.c (main): In the --version output, say GPLv3+.
+	* msgattrib.c (main): Likewise.
+	* msgcat.c (main): Likewise.
+	* msgcmp.c (main): Likewise.
+	* msgcomm.c (main): Likewise.
+	* msgconv.c (main): Likewise.
+	* msgen.c (main): Likewise.
+	* msgexec.c (main): Likewise.
+	* msgfilter.c (main): Likewise.
+	* msgfmt.c (main): Likewise.
+	* msggrep.c (main): Likewise.
+	* msginit.c (main): Likewise.
+	* msgmerge.c (main): Likewise.
+	* msgunfmt.c (main): Likewise.
+	* msguniq.c (main): Likewise.
+	* recode-sr-latin.c (main): Likewise.
+	* urlget.c (main): Likewise.
+	* xgettext.c (main): Likewise.
+
+2007-09-30  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.c (package_name, package_version): New variables.
+	(long_options): Add --package-name, --package-version.
+	(main): Handle options --package-name, --package-version.
+	(usage): Document them.
+	(construct_header): Use package_name if present.
+	* msginit.c (project_id_version): Take a header argument. Return the
+	old value if already present.
+	(fields): Update.
+
+2007-09-30  Bruno Haible  <bruno@clisp.org>
+
+	* message.h (format_type): New enum value 'format_kde'.
+	(NFORMATS): Increment.
+	* message.c (format_language): Add format_kde entry.
+	(format_language_pretty): Likewise.
+	* format.h (formatstring_kde): New declaration.
+	* format-kde.c: New file.
+	* format.c (formatstring_parsers): Add formatstring_kde.
+	* x-c.c (init_flag_table_c): Also register flags for qt-format and
+	kde-format.
+	* xgettext.c (flag_table_cxx_kde): New variable.
+	(recognize_format_kde): New variable.
+	(main): Handle --kde option.
+	(usage): Document --kde option.
+	(xgettext_record_flag): Also fill flag_table_cxx_kde.
+	(remember_a_message, remember_a_message_plural): In the heuristics,
+	don't mark a string as c-format that is already known to be a
+	kde-format.
+	(language_to_extractor): Use a flag_table_cxx_kde that is different
+	from flag_table_c.
+	* Makefile.am (FORMAT_SOURCE): Add format-kde.c.
+	* FILES: Update.
+
+2007-09-09  Bruno Haible  <bruno@clisp.org>
+
+	Add support for Qt 4 format strings.
+	* format-qt.c (struct spec): Increase args_used field size to 100.
+	Add 'simple' field.
+	(format_parse): Update for Qt 4 syntax. Remove error message when the
+	same format argument is used more than once.
+	(format_check): Add check: If the msgid is simple, the msgstr must be
+	simple as well.
+	Reported by Chusslove Illich <caslav.ilic@gmx.net>.
+
+2007-09-02  Bruno Haible  <bruno@clisp.org>
+
+	Correct handling of different libexpat ABIs.
+	* x-glade.c: Include <stdint.h>.
+	(p_XML_GetCurrentLineNumber, p_XML_GetCurrentColumnNumber): New
+	variables.
+	(is_XML_LARGE_SIZE_ABI, GetCurrentLineNumber, GetCurrentColumnNumber):
+	New functions.
+	(XML_GetCurrentLineNumber, XML_GetCurrentColumnNumber): Redefine.
+	(XML_Expat_Version, XML_FeatureEnum, XML_Feature): New types.
+	(p_XML_ExpatVersionInfo, p_XML_GetFeatureList): New variables.
+	(p_XML_GetCurrentLineNumber, p_XML_GetCurrentColumnNumber): Change
+	type to 'void *'.
+	(XML_ExpatVersionInfo, XML_GetFeatureList): New macros.
+	(XML_Size_ABI): New type.
+	(get_XML_Size_ABI): New function.
+	(XML_GetCurrentLineNumber, XML_GetCurrentColumnNumber): New functions.
+	(load_libexpat): Try both version 2 and version 1. Initialize
+	p_XML_ExpatVersionInfo, p_XML_GetFeatureList.
+
+2007-09-02  Bruno Haible  <bruno@clisp.org>
+
+	Implement msgctxt for C# ResourceManagers.
+	* x-csharp.c (init_keywords): Also register GetParticularString and
+	GetParticularPluralString.
+	(init_flag_table_csharp): Update accordingly.
+	* write-csharp.c: Include xmalloca.h.
+	(write_csharp_msgid): New function.
+	(write_csharp_code): Use it instead of write_csharp_string.
+	(msgdomain_write_csharp): Remove error message if mlp has entries with
+	context.
+	* msgunfmt.cs (DumpResource.DumpMessage): Emit an msgctxt line
+	if the message contain the context separator.
+
+2007-09-01  Bruno Haible  <bruno@clisp.org>
+
+	Implement msgctxt for Java ResourceBundles.
+	* x-java.c (init_keywords): Also register pgettext and npgettext.
+	(init_flag_table_java): Update accordingly.
+	* write-java.c (msgid_hashcode): New function.
+	(compute_hashsize, compute_table_items): Use it instead of
+	string_hashcode.
+	(write_java_msgid): New function.
+	(write_java_code): Use it instead of write_java_string.
+	(msgdomain_write_java): Remove error message if mlp has entries with
+	context.
+	* gnu/gettext/DumpResource.java (dumpMessage): Emit an msgctxt line
+	if the message contain the context separator.
+	Suggested by Felix Berger.
+
+2007-09-01  Bruno Haible  <bruno@clisp.org>
+
+	* po-lex.c: Include uniwidth.h.
+
+2007-06-19  Bruno Haible  <bruno@clisp.org>
+
+	* x-c.c (phase8_get): Call free_token, so that the reference to
+	tmp.comment gets dropped.
+
+2007-08-27  Bruno Haible  <bruno@clisp.org>
+
+	* x-python.c (phase7_getuc): Interpret octal and hexadecimal escapes
+	as Unicode code points inside Unicode strings.
+	Reported and patch by Jakub Wilk <ubanus@users.sf.net>.
+
+2007-08-23  Bruno Haible  <bruno@clisp.org>
+
+	* file-list.c: Don't include getline.h.
+	* format-awk.c: Likewise.
+	* format-boost.c: Likewise.
+	* format-c.c: Likewise.
+	* format-csharp.c: Likewise.
+	* format-elisp.c: Likewise.
+	* format-gcc-internal.c: Likewise.
+	* format-java.c: Likewise.
+	* format-librep.c: Likewise.
+	* format-lisp.c: Likewise.
+	* format-pascal.c: Likewise.
+	* format-perl-brace.c: Likewise.
+	* format-perl.c: Likewise.
+	* format-php.c: Likewise.
+	* format-python.c: Likewise.
+	* format-qt.c: Likewise.
+	* format-scheme.c: Likewise.
+	* format-sh.c: Likewise.
+	* format-tcl.c: Likewise.
+	* format-ycp.c: Likewise.
+	* msginit.c: Likewise.
+	* x-perl.c: Likewise.
+
+2007-08-18  Bruno Haible  <bruno@clisp.org>
+
+	* write-csharp.c (msgdomain_write_csharp): Don't recommend to use
+	--verbose if it is already in use.
+	* write-java.c (msgdomain_write_java): Likewise.
+	Reported by Karsten Kousgaard <karsten@f-kousgaard.dk>.
+
+2007-07-07  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CPPFLAGS): Remove reference to libuniname directory.
+	(LIBUNINAME): Remove variable.
+	(xgettext_LDADD): Update.
+
+2007-07-04  Bruno Haible  <bruno@clisp.org>
+
+	Recognize the PHP string concatenation operator.
+	* x-php.c (enum token_type_ty): New elements token_type_dot,
+	token_type_operator1, token_type_operator2.
+	(struct token_ty): Add comment field.
+	(free_token): Drop reference to comment field.
+	(phase4_pushback, phase4_pushback_length): New variables.
+	(phase4_get): Renamed from x_php_lex. Return last pushed-back token if
+	available. Recognize tokens '.', '+', '-', '*', '/', '%', '++', '--',
+	'!', '~', '@'. Fill in tp->comment.
+	(phase4_unget): New function.
+	(phase5_last): New variable.
+	(x_php_lex): New function.
+	(extract_balanced): Handle the new token types. Pass token's comment
+	to remember_a_message.
+	(extract_php): Initialize phase5_last.
+	Reported by Jan Engelhardt <jengelh@computergmbh.de>.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* hostname.c (main): Use the standard --version output, see
+	<http://lists.gnu.org/archive/html/bug-gnulib/2007-03/msg00302.html>.
+	* msgattrib.c (main): Likewise.
+	* msgcat.c (main): Likewise.
+	* msgcmp.c (main): Likewise.
+	* msgcomm.c (main): Likewise.
+	* msgconv.c (main): Likewise.
+	* msgen.c (main): Likewise.
+	* msgexec.c (main): Likewise.
+	* msgfilter.c (main): Likewise.
+	* msgfmt.c (main): Likewise.
+	* msggrep.c (main): Likewise.
+	* msginit.c (main): Likewise.
+	* msgmerge.c (main): Likewise.
+	* msgunfmt.c (main): Likewise.
+	* msguniq.c (main): Likewise.
+	* recode-sr-latin.c (main): Likewise.
+	* urlget.c (main): Likewise.
+	* xgettext.c (main): Likewise.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* lang-table.c (language_table): Fix entry for Javanese.
+
+2007-06-28  Bruno Haible  <bruno@clisp.org>
+
+	* format-gcc-internal.c (format_parse): Tweak an error message.
+	Reported by Karl Eichwalder.
+
+2007-06-28  Bruno Haible  <bruno@clisp.org>
+
+	* lang-table.h (language_variant_table, language_variant_table_size):
+	New declarations.
+	* lang-table.c (language_variant_table, language_variant_table_size):
+	New variables.
+	* msginit.c (language_team_englishname): New function.
+	(language_team): Use it instead of englishname_of_language.
+	Reported by Li Daobing <lidaobing@gmail.com>.
+
+2007-06-25  Bruno Haible  <bruno@clisp.org>
+
+	Change boundary of extracted comments.
+	* x-perl.c (struct token_ty): Add comment field.
+	(free_token): Release tp->comment.
+	(extract_quotelike): Fill in tp->comment.
+	(x_perl_prelex): Set or release tp->comment when constructing tokens.
+	(x_perl_lex): Likewise.
+	(extract_balanced): Pass token's comment to remember_a_message.
+
+2007-06-18  Bruno Haible  <bruno@clisp.org>
+
+	Change boundary of extracted comments.
+	* x-ycp.c (struct token_ty): Add comment field.
+	(free_token): New function.
+	(phase5_get): Fill in tp->comment.
+	(phase8_get): Use free_token.
+	(extract_parenthesized): Pass token's comment to remember_a_message.
+	Use free_token.
+	Reported by Karl Eichwalder <ke@suse.de>.
+
+2007-06-09  Bruno Haible  <bruno@clisp.org>
+
+	* format-java.c: Include xmalloca.h instead of xallocsa.h.
+	(message_format_parse): Use xmalloca/freea instead of xallocsa/freesa.
+	* message.c: Include xmalloca.h instead of xallocsa.h.
+	(message_list_hash_insert_entry, message_list_search): Use
+	xmalloca/freea instead of xallocsa/freesa.
+	* msggrep.c: Include xmalloca.h instead of xallocsa.h.
+	(is_message_selected_no_invert): Use xmalloca/freea instead of
+	xallocsa/freesa.
+	* msginit.c: Include xmalloca.h instead of xallocsa.h.
+	(subst_string): Use xmalloca/freea instead of xallocsa/freesa.
+	* msgl-cat.c: Include xmalloca.h instead of xallocsa.h.
+	(catenate_msgdomain_list): Use xmalloca/freea instead of
+	xallocsa/freesa.
+	* msgl-charset.c: Include xmalloca.h instead of xallocsa.h.
+	(compare_po_locale_charsets): Use xmalloca/freea instead of
+	xallocsa/freesa.
+	* msgl-iconv.c: Include xmalloca.h instead of xallocsa.h.
+	(iconv_message_list_internal, is_message_list_iconvable): Use
+	xmalloca/freea instead of xallocsa/freesa.
+	* msgmerge.c: Include xmalloca.h instead of xallocsa.h.
+	(merge): Use xmalloca/freea instead of xallocsa/freesa.
+	* po-charset.c: Include xmalloca.h instead of xallocsa.h.
+	(po_lex_charset_set): Use xmalloca/freea instead of xallocsa/freesa.
+	* read-tcl.c: Include xmalloca.h instead of xallocsa.h.
+	(msgdomain_read_tcl): Use xmalloca/freea instead of xallocsa/freesa.
+	* write-java.c: Include xmalloca.h instead of xallocsa.h.
+	(compute_hashsize, msgdomain_write_java): Use xmalloca/freea instead of
+	xallocsa/freesa.
+	* write-mo.c: Include xmalloca.h instead of xallocsa.h.
+	(write_table): Use xmalloca/freea instead of xallocsa/freesa.
+	* write-po.c: Include xmalloca.h instead of xallocsa.h.
+	(msgdomain_list_print_po): Use xmalloca/freea instead of
+	xallocsa/freesa.
+	* write-tcl.c: Include xmalloca.h instead of xallocsa.h.
+	(msgdomain_write_tcl): Use xmalloca/freea instead of xallocsa/freesa.
+	* xgettext.c: Include xmalloca.h instead of xallocsa.h.
+	(flag_context_list_table_insert): Use xmalloca/freea instead of
+	xallocsa/freesa.
+
+2007-06-08  Bruno Haible  <bruno@clisp.org>
+
+	* msgattrib.c (main): Update year in --version output.
+	* msgcat.c (main): Likewise.
+	* msgcmp.c (main): Likewise.
+	* msgcomm.c (main): Likewise.
+	* msgconv.c (main): Likewise.
+	* msgen.c (main): Likewise.
+	* msgexec.c (main): Likewise.
+	* msgfilter.c (main): Likewise.
+	* msgfmt.c (main): Likewise.
+	* msggrep.c (main): Likewise.
+	* msginit.c (main): Likewise.
+	* msgmerge.c (main): Likewise.
+	* msgunfmt.c (main): Likewise.
+	* msguniq.c (main): Likewise.
+	* xgettext.c (main): Likewise.
+	* recode-sr-latin.c (main): Likewise.
+	* hostname.c (main): Likewise.
+	* urlget.c (main): Likewise.
+
+2007-06-08  Bruno Haible  <bruno@clisp.org>
+
+	* msginit.c: Include localename.h.
+	(_nl_locale_name): Remove declaration.
+	(main): Use gl_locale_name instead of _nl_locale_name.
+	* Makefile.am (msginit_LDADD): Remove localename object file.
+
+2007-05-28  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (WOE32_LDADD): New variable.
+	(LDADD, msgcmp_LDADD, msgfmt_LDADD, msgmerge_LDADD, msgunfmt_LDADD,
+	xgettext_LDADD, msgattrib_LDADD, msgcat_LDADD, msgcomm_LDADD,
+	msgconv_LDADD, msgen_LDADD, msgexec_LDADD, msgfilter_LDADD,
+	msggrep_LDADD, msginit_LDADD, msguniq_LDADD, recode_sr_latin_LDADD):
+	Include it.
+	(gettext.res): New rule.
+	(MOSTLYCLEANFILES): Add gettext.res.
+
+2007-05-27  Bruno Haible  <bruno@clisp.org>
+
+	Avoid link error; u16_mbtouc_aux is no longer a public API.
+	* x-java.c (string_buffer_append): Use u16_mbtouc instead of
+	u16_mbtouc_aux.
+	* x-python.c (mixed_string_buffer_append): Likewise.
+
+2007-05-13  Bruno Haible  <bruno@clisp.org>
+
+	* write-java.c (mkdir): Remove definition. Now done by gnulib.
+	* write-csharp.c (mkdir): Remove definition. Now done by gnulib.
+
+2007-05-13  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-check.c: Include stdio.h instead of vasprintf.h.
+	* po-lex.c: Don't include vasprintf.h.
+
+2007-03-27  Bruno Haible  <bruno@clisp.org>
+
+	* hostname.c (usage): Ask translators to specify a translation bug
+	report address.
+	* msgattrib.c (usage): Likewise.
+	* msgcat.c (usage): Likewise.
+	* msgcmp.c (usage): Likewise.
+	* msgcomm.c (usage): Likewise.
+	* msgconv.c (usage): Likewise.
+	* msgen.c (usage): Likewise.
+	* msgexec.c (usage): Likewise.
+	* msgfilter.c (usage): Likewise.
+	* msgfmt.c (usage): Likewise.
+	* msggrep.c (usage): Likewise.
+	* msginit.c (usage): Likewise.
+	* msgmerge.c (usage): Likewise.
+	* msgunfmt.c (usage): Likewise.
+	* msguniq.c (usage): Likewise.
+	* recode-sr-latin.c (usage): Likewise.
+	* urlget.c (usage): Likewise.
+	* xgettext.c (usage): Likewise.
+
+2007-03-24  Bruno Haible  <bruno@clisp.org>
+
+	* po-lex.c: Include unistr.h instead of utf8-ucs4.h.
+	* read-properties.c: Include unistr.h instead of utf16-ucs4.h,
+	ucs4-utf8.h.
+	* x-java.c: Likewise.
+	* read-stringtable.c: Include unistr.h instead of utf8-ucs4.h,
+	ucs4-utf8.h.
+	* x-csharp.c: Likewise.
+	* write-csharp.c: Include unistr.h instead of utf8-ucs4.h.
+	* write-java.c: Likewise.
+	* write-properties.c: Likewise.
+	* write-qt.c: Likewise.
+	* write-tcl.c: Likewise.
+	* x-perl.c: Likewise.
+	* x-python.c: Include unistr.h instead of utf8-ucs4.h, utf16-ucs4.h,
+	ucs4-utf8.h.
+	* x-tcl.c: Include unistr.h instead of ucs4-utf8.h.
+
+2007-03-17  Bruno Haible  <bruno@clisp.org>
+
+	* x-php.c (enum token_type_ty): New values token_type_lbracket,
+	token_type_rbracket.
+	(x_php_lex): Recognize also token_type_lbracket, token_type_rbracket.
+	(extract_balanced): Renamed from extract_parenthesized. Add 'delim'
+	argument. Handle token_type_lbracket and token_type_rbracket.
+	(extract_php): Update.
+	Reported by Robert Vock <RobertVock@gmx.de>.
+
+2007-03-10  Bruno Haible  <bruno@clisp.org>
+
+	* msginit.c (get_user_fullname): Reduce scope of local variables.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	Moved --enable-relocatable infrastructure to gnulib.
+	* Makefile.am: Remove SET_RELOCATABLE invocation.
+
+2007-02-25  Bruno Haible  <bruno@clisp.org>
+
+	* color.c: Include filename.h instead of pathname.h.
+	(style_file_prepare): Update.
+	* msginit.c: Include filename.h instead of pathname.h.
+	(project_id, project_id_version): Update.
+	* open-catalog.c: Include filename.h instead of pathname.h.
+	(try_open_catalog_file): Update.
+	* read-csharp.c: Include filename.h instead of pathname.h.
+	(msgdomain_read_csharp): Update.
+	* read-resources.c: Include filename.h instead of pathname.h.
+	(read_resources_file): Update.
+	* read-tcl.c: Include filename.h instead of pathname.h.
+	(msgdomain_read_tcl): Update.
+	* write-csharp.c: Include filename.h instead of pathname.h.
+	(msgdomain_write_csharp): Update.
+	* write-java.c Include filename.h instead of pathname.h.
+	(msgdomain_write_java): Update.
+	* write-resources.c: Include filename.h instead of pathname.h.
+	(msgdomain_write_csharp_resources): Update.
+	* write-tcl.c: Include filename.h instead of pathname.h.
+	(msgdomain_write_tcl): Update.
+	* xgettext.c: Include filename.h instead of pathname.h.
+	(main, xgettext_open): Update.
+
+2007-02-19  Bruno Haible  <bruno@clisp.org>
+
+	* file-list.c: Don't include exit.h.
+	* hostname.c: Likewise.
+	* msgattrib.c: Likewise.
+	* msgcat.c: Likewise.
+	* msgcmp.c: Likewise.
+	* msgcomm.c: Likewise.
+	* msgconv.c: Likewise.
+	* msgen.c: Likewise.
+	* msgexec.c: Likewise.
+	* msgfilter.c: Likewise.
+	* msgfmt.c: Likewise.
+	* msggrep.c: Likewise.
+	* msginit.c: Likewise.
+	* msgl-cat.c: Include <stdlib.h> instead of exit.h.
+	* msgl-charset.c: Likewise.
+	* msgl-check.c: Don't include exit.h.
+	* msgmerge.c: Likewise.
+	* msgunfmt.c: Likewise.
+	* msguniq.c: Likewise.
+	* po-lex.c: Likewise.
+	* po-xerror.c: Likewise.
+	* read-csharp.c: Likewise.
+	* read-java.c: Likewise.
+	* read-mo.c: Likewise.
+	* read-resources.c: Likewise.
+	* read-tcl.c: Likewise.
+	* recode-sr-latin.c: Likewise.
+	* urlget.c: Likewise.
+	* write-mo.c: Likewise.
+	* write-qt.c: Likewise.
+	* write-resources.c: Likewise.
+	* write-tcl.c: Include <stdlib.h> instead of exit.h.
+	* x-awk.c: Don't include exit.h.
+	* x-c.c: Likewise.
+	* x-csharp.c: Likewise.
+	* x-elisp.c: Likewise.
+	* x-glade.c: Likewise.
+	* x-java.c: Likewise.
+	* x-librep.c: Likewise.
+	* x-lisp.c: Likewise.
+	* x-perl.c: Likewise.
+	* x-php.c: Likewise.
+	* x-python.c: Likewise.
+	* x-rst.c: Include <stdlib.h> instead of exit.h.
+	* x-scheme.c: Don't include exit.h.
+	* x-sh.c: Likewise.
+	* x-smalltalk.c: Likewise.
+	* x-tcl.c: Likewise.
+	* x-ycp.c: Likewise.
+	* xgettext.c: Likewise.
+
+2007-01-28  Bruno Haible  <bruno@clisp.org>
+
+	* x-java.c (string_buffer_append_lone_surrogate): New function.
+	(string_buffer_flush_utf16_surr, string_buffer_append): Use it.
+
+2007-01-28  Bruno Haible  <bruno@clisp.org>
+
+	* x-java.c (string_buffer_flush_utf16_surr): Give a warning when
+	converting a surrogate code point to U+FFFD.
+	(string_buffer_append): Convert a lone high surrogate code point to
+	U+FFFD, and give a warning.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* msgfilter.c: Include <sys/time.h> unconditionally.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* msginit.c: Don't include strpbrk.h, use <string.h> instead.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c: Don't include stpncpy.h, use <string.h> instead.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* msgfmt.c: Don't include stpcpy.h, use <string.h> instead.
+	* msgmerge.c: Likewise.
+
+2007-01-21  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-iconv.c (convert_string, convert_msgstr, iconvable_string,
+	iconvable_msgstr): Update for changed calling convention of
+	xmem_cd_iconv.
+	* recode-sr-latin.c (process): Likewise.
+
+2007-01-07  Bruno Haible  <bruno@clisp.org>
+
+	* msgmerge.c (message_merge): Copy the obsolete bit from the ref
+	message.
+	Reported by Leonardo Fontenelle <leo.fontenelle@gmail.com>.
+
+2006-12-24  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (AM_CXXFLAGS): New variable.
+
+2006-12-23  Bruno Haible  <bruno@clisp.org>
+
+	* color.c (print_color_test): Print labels before the hue/saturation
+	rectangle. Show also a few lines that mix colors and attributes.
+
+2006-12-03  Bruno Haible  <bruno@clisp.org>
+
+	* msgcat.c: Include color.h.
+	(long_options): Add --color, --style options.
+	(main): Handle them. Invoke print_color_test when --color=test was
+	given.
+	(usage): Document --color, --style options.
+
+2006-12-01  Bruno Haible  <bruno@clisp.org>
+
+	Add styling support to the PO output routines.
+	* color.h: New file.
+	* color.c: New file.
+	* write-catalog.h (struct catalog_output_format): Add field
+	'supports_color'.
+	* write-catalog.c: Include fcntl.h, unistd.h, styled-ostream.h,
+	term-styled-ostream.h, html-styled-ostream.h, fd-ostream.h, color.h,
+	po-charset.h, msgl-iconv.h.
+	(STDOUT_FILENO): New macro.
+	(ENABLE_COLOR): New macro.
+	(msgdomain_list_print): Use a styled_ostream_t that uses the
+	style_file_name.
+	* write-po.c: Include format.h, styled-ostream.h.
+	(is_stylable, begin_css_class, end_css_class): New functions or macros.
+	(class_header, class_translated, class_untranslated, class_fuzzy,
+	class_obsolete, class_comment, class_translator_comment,
+	class_extracted_comment, class_reference_comment, class_reference,
+	class_flag_comment, class_flag, class_fuzzy_flag,
+	class_previous_comment, class_previous, class_msgid, class_msgstr,
+	class_keyword, class_string, class_text, class_escape_sequence,
+	class_format_directive, class_invalid_format_directive): New variables.
+	(ATTR_ESCAPE_SEQUENCE, ATTR_FORMAT_DIRECTIVE,
+	ATTR_INVALID_FORMAT_DIRECTIVE): New enum items.
+	(message_print_comment, message_print_comment_dot,
+	message_print_comment_filepos, message_print_comment_flags): Call
+	begin/end_css_class.
+	(memset_small): New function.
+	(wrap): Add css_class argument. Determine the extent of format
+	string directives. Call begin/end_css_class.
+	(print_blank_line): Call begin/end_css_class.
+	(message_print, message_print_obsolete): Likewise. Pass a css_class
+	argument to 'wrap'.
+	(msgdomain_list_print_po): Call begin/end_css_class.
+	(output_format_po): Update.
+	* write-properties.c (output_format_properties): Update.
+	* write-stringtable.c (output_format_stringtable): Update.
+	* Makefile.am (noinst_HEADERS): Add color.h.
+	(libgettextsrc_la_SOURCES): Add color.c.
+
+2006-11-26  Bruno Haible  <bruno@clisp.org>
+
+	* write-po.c (make_format_description_string,
+	make_c_width_description_string): Strip off the leading space.
+	(message_print_comment_flags): Print the space here.
+	* write-stringtable.c (write_message): Print the space here.
+
+2006-11-26  Bruno Haible  <bruno@clisp.org>
+
+	* write-po.c: Include write-catalog.h instead of write-properties.h,
+	write-stringtable.h.
+
+2006-11-26  Bruno Haible  <bruno@clisp.org>
+
+	* format.h (FMTDIR_START, FMTDIR_END, FMTDIR_ERROR): New enum values.
+	(FDI_SET): New macro.
+	(struct formatstring_parser): Add fdi argument to 'parse' method.
+	* format.c (check_msgid_msgstr_format): Update.
+	* format-awk.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-boost.c (format_parse): Likewise.
+	* format-c.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	(format_c_parse, format_objc_parse): Add fdi argument.
+	(get_sysdep_c_format_directives): Update.
+	* format-csharp.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-elisp.c (format_parse): Likewise.
+	* format-gcc-internal.c (format_parse): Likewise.
+	* format-java.c (message_format_parse): Add fdi argument. Invoke
+	FDI_SET.
+	(choice_format_parse): Update.
+	(format_parse): Add fdi argument.
+	* format-librep.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-lisp.c (parse_upto): Add fdi argument. Invoke FDI_SET.
+	(format_parse): Add fdi argument.
+	* format-pascal.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-perl.c (format_parse): Likewise.
+	* format-perl-brace.c (format_parse): Likewise.
+	* format-php.c (format_parse): Likewise.
+	* format-python.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	(get_python_format_unnamed_arg_count): Update.
+	* format-qt.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-scheme.c (parse_upto): Add fdi argument. Invoke FDI_SET.
+	(format_parse): Add fdi argument.
+	* format-sh.c (format_parse): Add fdi argument. Invoke FDI_SET.
+	* format-tcl.c (format_parse): Likewise.
+	* format-ycp.c (format_parse): Likewise.
+	* msgmerge.c (msgfmt_check_pair_fails): Update.
+	* read-mo.c (read_mo_file): Update.
+	* xgettext.c (set_format_flags_from_context, remember_a_message,
+	remember_a_message_plural): Update.
+
+2006-11-25  Bruno Haible  <bruno@clisp.org>
+
+	* message.h (message_list_copy, msgdomain_list_copy): New declarations.
+	* message.c (message_list_copy, msgdomain_list_copy): New functions.
+
+2006-11-25  Bruno Haible  <bruno@clisp.org>
+
+	* msgl-iconv.h (iconv_msgdomain_list): Add update_header argument.
+	* msgl-iconv.c (iconv_message_list_internal): Renamed from
+	iconv_msgdomain_list. Add update_header argument.
+	(iconv_message_list): New function.
+	(iconv_msgdomain_list): Add update_header argument.
+	* msgcmp.c (compare): Update iconv_msgdomain_list call.
+	* msgconv.c (main): Likewise.
+	* msgfilter.c (main): Likewise.
+	* msgmerge.c (merge): Likewise.
+	* xgettext.c (main): Likewise.
+
+2006-11-23  Bruno Haible  <bruno@clisp.org>
+
+	* write-catalog.h: Include ostream.h. Don't include <stdio.h>.
+	(struct catalog_output_format): Use ostream_t instead of 'FILE *'.
+	* write-catalog.c: Include ostream.h, file-ostream.h.
+	(msgdomain_list_print): Open a temporary file_ostream_t.
+	* write-po.h: Include ostream.h. Don't include <stdio.h>.
+	(message_print_comment, message_print_comment_dot,
+	message_print_comment_filepos, message_print_comment_flags): Replace
+	'FILE *' argument with an 'ostream_t' argument.
+	* write-po.c: Include ostream.h.
+	(message_print_comment, message_print_comment_dot,
+	message_print_comment_filepos, message_print_comment_flags, wrap,
+	print_blank_line, message_print, message_print_obsolete,
+	msgdomain_list_print_po): Replace 'FILE *' argument with an 'ostream_t'
+	argument.
+	* write-properties.c: Include ostream.h.
+	(write_escaped_string, write_message, write_properties,
+	msgdomain_list_print_properties): Replace 'FILE *' argument with an
+	'ostream_t' argument.
+	* write-stringtable.c: Include ostream.h, xvasprintf.h. Don't include
+	<stdio.h>.
+	(write_escaped_string, write_message, write_stringtable,
+	msgdomain_list_print_stringtable): Replace 'FILE *' argument with an
+	'ostream_t' argument.
+
+2006-11-12  Bruno Haible  <bruno@clisp.org>
+
+	* write-po.c (wrap): Indent by use of spaces, not tabs.
+
+2006-11-03  Bruno Haible  <bruno@clisp.org>
+
+	Simplify xmalloc expressions. Add overflow check in xmalloc arguments.
+	* filter-sr-latin.c (serbian_to_latin): Use XNMALLOC instead of xmalloc.
+	* format-awk.c (format_parse): Use XMALLOC instead of xmalloc.
+	* format-boost.c (format_parse): Likewise.
+	* format-c.c (format_parse): Use XMALLOC, XNMALLOC instead of xmalloc.
+	(get_sysdep_c_format_directives): Use XNMALLOC instead of xmalloc.
+	* format-csharp.c (format_parse): Use XMALLOC instead of xmalloc.
+	* format-elisp.c (format_parse): Likewise.
+	* format-gcc-internal.c (format_parse): Likewise.
+	* format-java.c (format_parse): Likewise.
+	* format-librep.c (format_parse): Likewise.
+	* format-lisp.c (copy_list): Use XMALLOC, XNMALLOC instead of xmalloc.
+	(make_unconstrained_list): Likewise.
+	(make_empty_list): Use XMALLOC instead of xmalloc.
+	(rotate_loop): Use XNMALLOC instead of xmalloc.
+	(make_intersected_list): Use XMALLOC instead of xmalloc.
+	(make_union_list): Use XMALLOC, XNMALLOC instead of xmalloc.
+	(make_repeated_list_of_lists): Likewise.
+	(make_repeated_list): Likewise.
+	(format_parse): Use XMALLOC instead of xmalloc.
+	* format-pascal.c (format_parse): Likewise.
+	* format-perl.c (format_parse): Likewise.
+	* format-perl-brace.c (format_parse): Use XMALLOC, XNMALLOC instead of
+	xmalloc.
+	* format-php.c (format_parse): Use XMALLOC instead of xmalloc.
+	* format-python.c (format_parse): Use XMALLOC, XNMALLOC instead of
+	xmalloc.
+	* format-qt.c (format_parse): Use XMALLOC instead of xmalloc.
+	* format-scheme.c (copy_list): Use XMALLOC, XNMALLOC instead of xmalloc.
+	(make_unconstrained_list): Likewise.
+	(make_empty_list): Use XMALLOC instead of xmalloc.
+	(rotate_loop): Use XNMALLOC instead of xmalloc.
+	(make_intersected_list): Use XMALLOC instead of xmalloc.
+	(make_union_list): Use XMALLOC, XNMALLOC instead of xmalloc.
+	(make_repeated_list_of_lists): Likewise.
+	(make_repeated_list): Likewise.
+	(format_parse): Use XMALLOC instead of xmalloc.
+	* format-sh.c (format_parse): Use XMALLOC, XNMALLOC instead of xmalloc.
+	* format-tcl.c (format_parse): Use XMALLOC instead of xmalloc.
+	* format-ycp.c (format_parse): Likewise.
+	* message.c (message_alloc, message_list_list_alloc, msgdomain_alloc):
+	Use XMALLOC instead of xmalloc.
+	(msgdomain_list_alloc): Use XMALLOC, XNMALLOC instead of xmalloc.
+	* msgexec.c (main): Use XNMALLOC instead of xmalloc.
+	* msgfilter.c (main, generic_filter, process_message): Likewise.
+	* msgfmt.c (add_mo_suffix): Likewise.
+	(new_domain): Use XMALLOC instead of xmalloc.
+	* msginit.c (catalogname_for_locale, language_of_locale,
+	get_user_fullname, get_field, put_field, subst_string,
+	update_msgstr_plurals): Use XNMALLOC instead of xmalloc.
+	* msgl-cat.c (catenate_msgdomain_list): Likewise.
+	* msgl-check.c (check_plural_eval): Use XCALLOC instead of xcalloc.
+	* msgl-english.c (msgdomain_list_english): Use XNMALLOC instead of
+	xmalloc.
+	* msgl-fsearch.c (new_index): Likewise.
+	(message_fuzzy_index_alloc): Use XMALLOC instead of xmalloc.
+	(mult_index_list_accumulate): Use XNMALLOC instead of xmalloc.
+	* msgl-iconv.c (iconv_message_list): Likewise.
+	* msgmerge.c (message_merge, match_domain): Likewise.
+	* po-gram-gen.y (plural_form_list): Likewise.
+	* read-catalog-abstract.c (po_parse_comment_filepos,
+	po_parse_comment_solaris_filepos): Likewise.
+	* read-mo.c (get_sysdep_string): Likewise.
+	* read-properties.c (conv_from_iso_8859_1, read_escaped_string):
+	Likewise.
+	* read-stringtable.c (conv_from_ucs4): Likewise.
+	* str-list.c (string_list_alloc): Use XMALLOC instead of xmalloc.
+	(string_list_concat, string_list_join): Use XNMALLOC instead of xmalloc.
+	* write-csharp.c (construct_class_name, msgdomain_write_csharp):
+	Likewise.
+	* write-java.c (compute_hashsize, compute_table_items): Likewise.
+	* write-mo.c: Include xsize.h.
+	(write_table): Use XNMALLOC instead of xmalloc. Use xsum, xtimes in
+	xmalloc argument.
+	* write-po.c (wrap): Use XNMALLOC instead of xmalloc.
+	* write-properties.c (conv_to_java): Likewise.
+	* write-qt.c (conv_to_iso_8859_1, conv_to_utf16): Likewise.
+	* x-elisp.c (init_token, string_of_object): Likewise.
+	(read_object): Use XMALLOC instead of xmalloc.
+	* x-librep.c (init_token, string_of_object): Use XNMALLOC instead of
+	xmalloc.
+	(read_object): Use XMALLOC instead of xmalloc.
+	* x-lisp.c (x_lisp_keyword, init_token, string_of_object): Use XNMALLOC
+	instead of xmalloc.
+	(read_object): Use XMALLOC instead of xmalloc.
+	* x-perl.c (get_here_document, extract_quotelike_pass1,
+	extract_quotelike_pass3): Use XNMALLOC instead of xmalloc.
+	(x_perl_lex): Use XMALLOC instead of xmalloc.
+	* x-po.c (strextract_add_message, extract): Use XNMALLOC instead of
+	xmalloc.
+	* x-python.c (try_to_extract_coding): Use XNMALLOC instead of xmalloc.
+	* x-scheme.c (init_token, string_of_object): Use XNMALLOC
+	instead of xmalloc.
+	(read_object): Use XMALLOC instead of xmalloc.
+	* x-sh.c (init_token, string_of_token, string_of_word): Use XNMALLOC
+	instead of xmalloc.
+	(read_word): Use XMALLOC instead of xmalloc.
+	* x-smalltalk.c (phase2_get): Use XNMALLOC instead of xmalloc.
+	* x-tcl.c (init_token, string_of_word): Use XNMALLOC instead of xmalloc.
+	(read_word): Use XMALLOC instead of xmalloc.
+	* xgettext.c: Include xsize.h.
+	(split_keywordspec): Use XNMALLOC instead of xmalloc.
+	(insert_keyword_callshape): Use XMALLOC instead of xmalloc. Use xsum,
+	xtimes to avoid overflow.
+	(flag_context_list_table_insert): Use XMALLOC instead of xmalloc.
+	(savable_comment_add): Likewise.
+	(remember_a_message_plural): Use XNMALLOC instead of xmalloc.
+	(arglist_parser_alloc, arglist_parser_clone): Use xsum, xtimes.
+	(arglist_parser_done): Use XNMALLOC instead of xmalloc.
+	(finalize_header): Likewise.
+
+2006-10-30  Bruno Haible  <bruno@clisp.org>
+
+	* plural-eval.h [C++]: Define functions without name mangling.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	Clean up libgettextpo exports in C++ mode.
+	* po-gram.h: Wrap declarations in extern "C".
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	Make it compile in C++ mode.
+	* dir-list.c (dir_list_restore): Add cast.
+	* format-c.c (format_arg_type_t): New type. Use it instead of
+	'enum format_arg_type'.
+	* format-gcc-internal.c (format_arg_type_t): New type. Use it instead of
+	'enum format_arg_type'.
+	* format-perl.c (format_arg_type_t): New type. Use it instead of
+	'enum format_arg_type'.
+	* format-lisp.c (struct segment): Move out of the scope of struct
+	format_arg_list.
+	* format-scheme.c (struct segment): Likewise.
+	* message.h (struct altstr): Move out of the scope of struct message_ty.
+	* msgl-equal.c (msgstr_equal_ignoring_potcdate): Cast memchr results.
+	* po-lex.c (mb_copy): Rename arguments to new_mbc, old_mbc.
+	* read-mo.c (enum mo_endianness): Move out of the scope of struct
+	binary_mo_file.
+	* read-po.c (this): New macro.
+	* read-properties.c (this): New macro.
+	* write-mo.c (write_table): Cast alloca result.
+	* x-glade.c (load_libexpat): Cast dlsym results.
+	* x-perl.c (get_here_document): Use xmalloc instead of
+	xrealloc (NULL...). Cast its result.
+	* x-po.c (extract_add_message): Limit the scope of variable
+	'charsetstr'.
+	* x-smalltalk.c (phase2_get): Cast xmalloc results.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	* x-awk.h: Make includable without prerequisites.
+	* x-c.h: Likewise.
+	* x-csharp.h: Likewise.
+	* x-elisp.h: Likewise.
+	* x-glade.h: Likewise.
+	* x-java.h: Likewise.
+	* x-librep.h: Likewise.
+	* x-lisp.h: Likewise.
+	* x-perl.h: Likewise.
+	* x-php.h: Likewise.
+	* x-po.h: Likewise.
+	* x-properties.h: Likewise.
+	* x-python.h: Likewise.
+	* x-rst.h: Likewise.
+	* x-scheme.h: Likewise.
+	* x-sh.h: Likewise.
+	* x-smalltalk.h: Likewise.
+	* x-stringtable.h: Likewise.
+	* x-tcl.h: Likewise.
+	* x-ycp.h: Likewise.
+	* x-awk.c: Include x-awk.h.
+	* x-c.c: Include x-c.h.
+	* x-csharp.c: Include x-csharp.h.
+	* x-elisp.c: Include x-elisp.h.
+	* x-glade.c: Include x-glade.h.
+	* x-java.c: Include x-java.h.
+	* x-librep.c: Include x-librep.h.
+	* x-lisp.c: Include x-lisp.h.
+	* x-perl.c: Include x-perl.h.
+	* x-php.c: Include x-php.h.
+	* x-po.c: Include x-po.h, x-properties.h, x-stringtable.h.
+	* x-python.c: Include x-python.h.
+	* x-rst.c: Include x-rst.h.
+	* x-scheme.c: Include x-scheme.h.
+	* x-sh.c: Include x-sh.h.
+	* x-smalltalk.c: Include x-smalltalk.h.
+	* x-tcl.c: Include x-tcl.h.
+	* x-ycp.c: Include x-ycp.h.
+	* xgettext.c: Remove extern "C" around x-*.h includes.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	* format-awk.c (format_parse): Fix bug with unnumbered argument in
+	precision field.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

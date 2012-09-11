@@ -1,12 +1,12 @@
 /* xgettext C/C++/ObjectiveC backend.
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-c.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -34,7 +36,6 @@
 #include "error-progname.h"
 #include "xalloc.h"
 #include "xvasprintf.h"
-#include "exit.h"
 #include "hash.h"
 #include "gettext.h"
 
@@ -233,6 +234,46 @@ init_flag_table_c ()
   xgettext_record_flag ("argp_error:2:c-format");
   xgettext_record_flag ("argp_failure:2:c-format");
 #endif
+
+  xgettext_record_flag ("gettext:1:pass-qt-format");
+  xgettext_record_flag ("dgettext:2:pass-qt-format");
+  xgettext_record_flag ("dcgettext:2:pass-qt-format");
+  xgettext_record_flag ("ngettext:1:pass-qt-format");
+  xgettext_record_flag ("ngettext:2:pass-qt-format");
+  xgettext_record_flag ("dngettext:2:pass-qt-format");
+  xgettext_record_flag ("dngettext:3:pass-qt-format");
+  xgettext_record_flag ("dcngettext:2:pass-qt-format");
+  xgettext_record_flag ("dcngettext:3:pass-qt-format");
+  xgettext_record_flag ("gettext_noop:1:pass-qt-format");
+  xgettext_record_flag ("pgettext:2:pass-qt-format");
+  xgettext_record_flag ("dpgettext:3:pass-qt-format");
+  xgettext_record_flag ("dcpgettext:3:pass-qt-format");
+  xgettext_record_flag ("npgettext:2:pass-qt-format");
+  xgettext_record_flag ("npgettext:3:pass-qt-format");
+  xgettext_record_flag ("dnpgettext:3:pass-qt-format");
+  xgettext_record_flag ("dnpgettext:4:pass-qt-format");
+  xgettext_record_flag ("dcnpgettext:3:pass-qt-format");
+  xgettext_record_flag ("dcnpgettext:4:pass-qt-format");
+
+  xgettext_record_flag ("gettext:1:pass-kde-format");
+  xgettext_record_flag ("dgettext:2:pass-kde-format");
+  xgettext_record_flag ("dcgettext:2:pass-kde-format");
+  xgettext_record_flag ("ngettext:1:pass-kde-format");
+  xgettext_record_flag ("ngettext:2:pass-kde-format");
+  xgettext_record_flag ("dngettext:2:pass-kde-format");
+  xgettext_record_flag ("dngettext:3:pass-kde-format");
+  xgettext_record_flag ("dcngettext:2:pass-kde-format");
+  xgettext_record_flag ("dcngettext:3:pass-kde-format");
+  xgettext_record_flag ("gettext_noop:1:pass-kde-format");
+  xgettext_record_flag ("pgettext:2:pass-kde-format");
+  xgettext_record_flag ("dpgettext:3:pass-kde-format");
+  xgettext_record_flag ("dcpgettext:3:pass-kde-format");
+  xgettext_record_flag ("npgettext:2:pass-kde-format");
+  xgettext_record_flag ("npgettext:3:pass-kde-format");
+  xgettext_record_flag ("dnpgettext:3:pass-kde-format");
+  xgettext_record_flag ("dnpgettext:4:pass-kde-format");
+  xgettext_record_flag ("dcnpgettext:3:pass-kde-format");
+  xgettext_record_flag ("dcnpgettext:4:pass-kde-format");
 
   xgettext_record_flag ("gettext:1:pass-boost-format");
   xgettext_record_flag ("dgettext:2:pass-boost-format");
@@ -1553,7 +1594,7 @@ phase8_get (token_ty *tp)
       len = strlen (tp->string);
       tp->string = xrealloc (tp->string, len + strlen (tmp.string) + 1);
       strcpy (tp->string + len, tmp.string);
-      free (tmp.string);
+      free_token (&tmp);
     }
 }
 

@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Hello.m:50
+#: Hello.m:49
 msgid "Hello, world!"
 msgstr "Olá, Mundo!"
 
-#: Hello.m:59
+#: Hello.m:58
 #, objc-format
 msgid "This program is running as process number %d."
 msgstr "Este programa está a ser executado com o número de processo %d."

@@ -1,11 +1,11 @@
 /* Copying of files.
-   Copyright (C) 2001-2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include <config.h>
@@ -25,6 +24,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -39,11 +39,17 @@
 #include "error.h"
 #include "safe-read.h"
 #include "full-write.h"
+#include "acl.h"
 #include "binary-io.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
+
+/* The results of open() in this file are not used with fchdir,
+   therefore save some unnecessary work in fchdir.c.  */
+#undef open
+#undef close
+
 
 void
 copy_file_preserving (const char *src_filename, const char *dest_filename)
@@ -80,10 +86,12 @@ copy_file_preserving (const char *src_filename, const char *dest_filename)
 	error (EXIT_FAILURE, errno, _("error writing \"%s\""), dest_filename);
     }
 
+#if !USE_ACL
   if (close (dest_fd) < 0)
     error (EXIT_FAILURE, errno, _("error writing \"%s\""), dest_filename);
   if (close (src_fd) < 0)
     error (EXIT_FAILURE, errno, _("error after reading \"%s\""), src_filename);
+#endif
 
   /* Preserve the access and modification times.  */
 #if HAVE_UTIME
@@ -110,5 +118,17 @@ copy_file_preserving (const char *src_filename, const char *dest_filename)
 #endif
 
   /* Preserve the access permissions.  */
+#if USE_ACL
+  if (copy_acl (src_filename, src_fd, dest_filename, dest_fd, mode))
+    exit (EXIT_FAILURE);
+#else
   chmod (dest_filename, mode);
+#endif
+
+#if USE_ACL
+  if (close (dest_fd) < 0)
+    error (EXIT_FAILURE, errno, _("error writing \"%s\""), dest_filename);
+  if (close (src_fd) < 0)
+    error (EXIT_FAILURE, errno, _("error after reading \"%s\""), src_filename);
+#endif
 }

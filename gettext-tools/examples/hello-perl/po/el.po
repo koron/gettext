@@ -14,16 +14,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3.1\n"
 
-#: hello-1.pl.in:18 hello-2.pl.in:13
+#: hello-1.pl.in:17 hello-2.pl.in:12
 msgid "Hello, world!"
 msgstr "Γεια σου, κόσμε!"
 
-#: hello-1.pl.in:20
+#: hello-1.pl.in:19
 #, perl-format
 msgid "This program is running as process number %d."
 msgstr "Αυτό το πρόγραμμα εκτελείται με αριθμό διεργασίας %d."
 
-#: hello-2.pl.in:15
+#: hello-2.pl.in:14
 #, perl-brace-format
 msgid "This program is running as process number {pid}."
 msgstr "Αυτό το πρόγραμμα εκτελείται με αριθμό διεργασίας {pid}."

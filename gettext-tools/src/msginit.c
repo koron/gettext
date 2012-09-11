@@ -1,11 +1,11 @@
 /* Initializes a new PO file.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -55,7 +54,6 @@
 #include "progname.h"
 #include "relocatable.h"
 #include "basename.h"
-#include "strpbrk.h"
 #include "c-strstr.h"
 #include "c-strcase.h"
 #include "message.h"
@@ -69,20 +67,19 @@
 #include "write-stringtable.h"
 #include "po-charset.h"
 #include "localcharset.h"
+#include "localename.h"
 #include "po-time.h"
 #include "plural-table.h"
 #include "lang-table.h"
 #include "xalloc.h"
-#include "xallocsa.h"
-#include "exit.h"
-#include "pathname.h"
+#include "xmalloca.h"
+#include "filename.h"
 #include "xerror.h"
 #include "xvasprintf.h"
 #include "msgl-english.h"
 #include "plural-count.h"
 #include "pipe.h"
 #include "wait-process.h"
-#include "getline.h"
 #include "xsetenv.h"
 #include "str-list.h"
 #include "propername.h"
@@ -98,7 +95,6 @@
 
 #define SIZEOF(a) (sizeof(a) / sizeof(a[0]))
 
-extern const char * _nl_locale_name (int category, const char *categoryname);
 extern const char * _nl_expand_alias (const char *name);
 
 /* Locale name.  */
@@ -258,10 +254,11 @@ main (int argc, char **argv)
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "2001-2006");
+	      "2001-2007");
       printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
@@ -281,7 +278,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
   /* Determine target locale.  */
   if (locale == NULL)
     {
-      locale = _nl_locale_name (LC_MESSAGES, "LC_MESSAGES");
+      locale = gl_locale_name (LC_MESSAGES, "LC_MESSAGES");
       if (strcmp (locale, "C") == 0)
 	{
 	  multiline_error (xstrdup (""),
@@ -409,6 +406,10 @@ Informative output:\n"));
       printf (_("\
   -V, --version               output version information and exit\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"),
 	     stdout);
     }
@@ -645,7 +646,7 @@ catalogname_for_locale (const char *locale)
     "so_SO",	/* Somali	Somalia */
     "sq_AL",	/* Albanian	Albania */
     "sr_RS",	/* Serbian	Serbia */
-    "sr_YU",	/* Serbian	Yugoslavia */
+    "sr_YU",	/* Serbian	Yugoslavia - this line can be removed in 2010 */
     "srr_SN",	/* Serer	Senegal */
     "suk_TZ",	/* Sukuma	Tanzania */
     "sus_GN",	/* Susu		Guinea */
@@ -688,7 +689,7 @@ catalogname_for_locale (const char *locale)
       if (codeset_end == NULL)
 	codeset_end = dot + strlen (dot);
 
-      shorter_locale = (char *) xmalloc (strlen (locale));
+      shorter_locale = XNMALLOC (strlen (locale), char);
       memcpy (shorter_locale, locale, dot - locale);
       strcpy (shorter_locale + (dot - locale), codeset_end);
       locale = shorter_locale;
@@ -707,7 +708,7 @@ catalogname_for_locale (const char *locale)
 	  abort ();
 
 	len = language_end - locale;
-	shorter_locale = (char *) xmalloc (len + 1);
+	shorter_locale = XNMALLOC (len + 1, char);
 	memcpy (shorter_locale, locale, len);
 	shorter_locale[len] = '\0';
 	locale = shorter_locale;
@@ -731,7 +732,7 @@ language_of_locale (const char *locale)
       char *result;
 
       len = language_end - locale;
-      result = (char *) xmalloc (len + 1);
+      result = XNMALLOC (len + 1, char);
       memcpy (result, locale, len);
       result[len] = '\0';
 
@@ -793,7 +794,7 @@ englishname_of_language ()
 {
   size_t i;
 
-  for (i = 0; i < language_table_size; i ++)
+  for (i = 0; i < language_table_size; i++)
     if (strcmp (language_table[i].code, language) == 0)
       return language_table[i].english;
 
@@ -820,7 +821,7 @@ project_id ()
   if (gettextlibdir == NULL || gettextlibdir[0] == '\0')
     gettextlibdir = relocate (LIBDIR "/gettext");
 
-  prog = concatenated_pathname (gettextlibdir, "project-id", NULL);
+  prog = concatenated_filename (gettextlibdir, "project-id", NULL);
 
   /* Call the project-id shell script.  */
   argv[0] = "/bin/sh";
@@ -870,8 +871,9 @@ failed:
 
 /* Construct the value for the Project-Id-Version field.  */
 static const char *
-project_id_version ()
+project_id_version (const char *header)
 {
+  const char *old_field;
   const char *gettextlibdir;
   char *prog;
   char *argv[4];
@@ -883,11 +885,17 @@ project_id_version ()
   size_t linelen;
   int exitstatus;
 
+  /* Return the old value if present, assuming it was already filled in by
+     xgettext.  */
+  old_field = get_field (header, "Project-Id-Version");
+  if (old_field != NULL && strcmp (old_field, "PACKAGE VERSION") != 0)
+    return old_field;
+
   gettextlibdir = getenv ("GETTEXTLIBDIR");
   if (gettextlibdir == NULL || gettextlibdir[0] == '\0')
     gettextlibdir = relocate (LIBDIR "/gettext");
 
-  prog = concatenated_pathname (gettextlibdir, "project-id", NULL);
+  prog = concatenated_filename (gettextlibdir, "project-id", NULL);
 
   /* Call the project-id shell script.  */
   argv[0] = "/bin/sh";
@@ -1005,21 +1013,22 @@ static const char *
 get_user_fullname ()
 {
   struct passwd *pwd;
-  const char *fullname;
-  const char *fullname_end;
-  char *result;
 
   pwd = get_user_pwd ();
 #if HAVE_PWD_H
   if (pwd != NULL)
     {
+      const char *fullname;
+      const char *fullname_end;
+      char *result;
+
       /* Return the pw_gecos field, upto the first comma (if any).  */
       fullname = pwd->pw_gecos;
       fullname_end = strchr (fullname, ',');
       if (fullname_end == NULL)
 	fullname_end = fullname + strlen (fullname);
 
-      result = (char *) xmalloc (fullname_end - fullname + 1);
+      result = XNMALLOC (fullname_end - fullname + 1, char);
       memcpy (result, fullname, fullname_end - fullname);
       result[fullname_end - fullname] = '\0';
 
@@ -1114,6 +1123,22 @@ last_translator ()
 }
 
 
+/* Return the name of the language used by the language team, in English.  */
+static const char *
+language_team_englishname ()
+{
+  size_t i;
+
+  /* Search for a name depending on the catalogname.  */
+  for (i = 0; i < language_variant_table_size; i++)
+    if (strcmp (language_variant_table[i].code, catalogname) == 0)
+      return language_variant_table[i].english;
+
+  /* Search for a name depending on the language only.  */
+  return englishname_of_language ();
+}
+
+
 /* Return the language team's mailing list address or homepage URL.  */
 static const char *
 language_team_address ()
@@ -1182,7 +1207,7 @@ language_team ()
     return "none";
   else
     {
-      const char *englishname = englishname_of_language ();
+      const char *englishname = language_team_englishname ();
       const char *address = language_team_address ();
 
       if (address != NULL && address[0] != '\0')
@@ -1265,7 +1290,7 @@ static struct
 }
 fields[] =
   {
-    { "Project-Id-Version", project_id_version, NULL },
+    { "Project-Id-Version", NULL, project_id_version },
     { "PO-Revision-Date", NULL, po_revision_date },
     { "Last-Translator", last_translator, NULL },
     { "Language-Team", language_team, NULL },
@@ -1300,7 +1325,7 @@ get_field (const char *header, const char *field)
 	  if (value_end == NULL)
 	    value_end = value_start + strlen (value_start);
 
-	  value = (char *) xmalloc (value_end - value_start + 1);
+	  value = XNMALLOC (value_end - value_start + 1, char);
 	  memcpy (value, value_start, value_end - value_start);
 	  value[value_end - value_start] = '\0';
 
@@ -1339,11 +1364,12 @@ put_field (const char *old_header, const char *field, const char *value)
 	  if (value_end == NULL)
 	    value_end = value_start + strlen (value_start);
 
-	  new_header = (char *) xmalloc (strlen (old_header)
-					 - (value_end - value_start)
-					 + strlen (value)
-					 + (*value_end != '\n' ? 1 : 0)
-					 + 1);
+	  new_header = XNMALLOC (strlen (old_header)
+				 - (value_end - value_start)
+				 + strlen (value)
+				 + (*value_end != '\n' ? 1 : 0)
+				 + 1,
+				 char);
 	  p = new_header;
 	  memcpy (p, old_header, value_start - old_header);
 	  p += value_start - old_header;
@@ -1363,9 +1389,10 @@ put_field (const char *old_header, const char *field, const char *value)
 	break;
     }
 
-  new_header = (char *) xmalloc (strlen (old_header) + 1
-				 + len + 2 + strlen (value) + 1
-				 + 1);
+  new_header = XNMALLOC (strlen (old_header) + 1
+			 + len + 2 + strlen (value) + 1
+			 + 1,
+			 char);
   p = new_header;
   memcpy (p, old_header, strlen (old_header));
   p += strlen (old_header);
@@ -1484,7 +1511,7 @@ subst_string (const char *str,
       size_t i;
       unsigned int j;
 
-      substlen = (size_t *) xallocsa (nsubst * sizeof (size_t));
+      substlen = (size_t *) xmalloca (nsubst * sizeof (size_t));
       for (j = 0; j < nsubst; j++)
 	{
 	  substlen[j] = strlen (subst[j][0]);
@@ -1502,7 +1529,7 @@ subst_string (const char *str,
 	      {
 		size_t replacement_len = strlen (subst[j][1]);
 		size_t new_len = strlen (str) - substlen[j] + replacement_len;
-		char *new_str = (char *) xmalloc (new_len + 1);
+		char *new_str = XNMALLOC (new_len + 1, char);
 		memcpy (new_str, str, i);
 		memcpy (new_str + i, subst[j][1], replacement_len);
 		strcpy (new_str + i + replacement_len, str + i + substlen[j]);
@@ -1517,7 +1544,7 @@ subst_string (const char *str,
 	    i++;
 	}
 
-      freesa (substlen);
+      freea (substlen);
     }
 
   return str;
@@ -1644,7 +1671,7 @@ update_msgstr_plurals (msgdomain_list_ty *mdlp)
 
       header_entry = message_list_search (mlp, NULL, "");
       nplurals = get_plural_count (header_entry ? header_entry->msgstr : NULL);
-      untranslated_plural_msgstr = (char *) xmalloc (nplurals);
+      untranslated_plural_msgstr = XNMALLOC (nplurals, char);
       memset (untranslated_plural_msgstr, '\0', nplurals);
 
       for (j = 0; j < mlp->nitems; j++)

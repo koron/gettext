@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.2\n"
 
-#: hello.awk:12
+#: hello.awk:11
 msgid "Hello, world!"
 msgstr "Hello, world!"
 
-#: hello.awk:13
+#: hello.awk:12
 #, awk-format
 msgid "This program is running as process number %d."
 msgstr "Program ini berjalan sebagai proses nomor %d"

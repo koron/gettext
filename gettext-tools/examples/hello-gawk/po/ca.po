@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.awk:12
+#: hello.awk:11
 msgid "Hello, world!"
 msgstr "Hola, món!"
 
-#: hello.awk:13
+#: hello.awk:12
 #, awk-format
 msgid "This program is running as process number %d."
 msgstr "Aquest programa està corrent amb el número de procés %d."

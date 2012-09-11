@@ -1,11 +1,11 @@
 /* Extract some translations of a translation catalog.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -57,8 +56,7 @@
 #include "str-list.h"
 #include "msgl-charset.h"
 #include "xalloc.h"
-#include "xallocsa.h"
-#include "exit.h"
+#include "xmalloca.h"
 #include "libgrep.h"
 #include "propername.h"
 #include "gettext.h"
@@ -398,10 +396,11 @@ error while reading \"%s\""), optarg);
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "2001-2006");
+	      "2001-2007");
       printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
@@ -610,6 +609,10 @@ Informative output:\n"));
       printf (_("\
   -V, --version               output version information and exit\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"),
 	     stdout);
     }
@@ -730,7 +733,7 @@ is_message_selected_no_invert (const message_ty *mp)
       length = 0;
       for (j = 0; j < mp->comment->nitems; j++)
 	length += strlen (mp->comment->item[j]) + 1;
-      total_comment = (char *) xallocsa (length);
+      total_comment = (char *) xmalloca (length);
 
       q = total_comment;
       for (j = 0; j < mp->comment->nitems; j++)
@@ -746,7 +749,7 @@ is_message_selected_no_invert (const message_ty *mp)
 
       selected = is_string_selected (3, total_comment, length);
 
-      freesa (total_comment);
+      freea (total_comment);
 
       if (selected)
 	return true;
@@ -765,7 +768,7 @@ is_message_selected_no_invert (const message_ty *mp)
       length = 0;
       for (j = 0; j < mp->comment_dot->nitems; j++)
 	length += strlen (mp->comment_dot->item[j]) + 1;
-      total_comment = (char *) xallocsa (length);
+      total_comment = (char *) xmalloca (length);
 
       q = total_comment;
       for (j = 0; j < mp->comment_dot->nitems; j++)
@@ -781,7 +784,7 @@ is_message_selected_no_invert (const message_ty *mp)
 
       selected = is_string_selected (4, total_comment, length);
 
-      freesa (total_comment);
+      freea (total_comment);
 
       if (selected)
 	return true;

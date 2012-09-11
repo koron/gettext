@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.cc:46
+#: hello.cc:45
 msgid "Hello, world!"
 msgstr "Ahoj svet!"
 
-#: hello.cc:53
+#: hello.cc:52
 #, qt-format
 msgid "This program is running as process number %1."
 msgstr "Tento program beží ako proces s číslom %1."

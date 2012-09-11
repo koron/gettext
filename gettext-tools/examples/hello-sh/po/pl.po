@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.sh:15
+#: hello.sh:14
 msgid "Hello, world!"
 msgstr "Witaj ¶wiecie!"
 
-#: hello.sh:18
+#: hello.sh:17
 #, sh-format
 msgid "This program is running as process number $pid."
 msgstr "Ten program dzia³a jako proces o numerze $pid."

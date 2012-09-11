@@ -1,11 +1,11 @@
 /* Extracts strings from C source file to Uniforum style .po file.
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, April 1995.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -44,12 +43,12 @@
 #include "basename.h"
 #include "xerror.h"
 #include "xvasprintf.h"
+#include "xsize.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "c-strstr.h"
 #include "xerror.h"
-#include "exit.h"
-#include "pathname.h"
+#include "filename.h"
 #include "c-strcase.h"
 #include "open-catalog.h"
 #include "read-catalog-abstract.h"
@@ -71,10 +70,6 @@
 #define _(str) gettext (str)
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "x-c.h"
 #include "x-po.h"
 #include "x-sh.h"
@@ -95,10 +90,6 @@ extern "C" {
 #include "x-stringtable.h"
 #include "x-rst.h"
 #include "x-glade.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 
 /* If nonzero add all comments immediately preceding one of the keywords. */
@@ -123,6 +114,12 @@ static int force_po;
 /* Copyright holder of the output file and the translations.  */
 static const char *copyright_holder = "THE PACKAGE'S COPYRIGHT HOLDER";
 
+/* Package name.  */
+static const char *package_name = NULL;
+
+/* Package version.  */
+static const char *package_version = NULL;
+
 /* Email address or URL for reports of bugs in msgids.  */
 static const char *msgid_bugs_address = NULL;
 
@@ -144,6 +141,7 @@ int xgettext_omit_header;
 /* Table of flag_context_list_ty tables.  */
 static flag_context_list_table_ty flag_table_c;
 static flag_context_list_table_ty flag_table_cxx_qt;
+static flag_context_list_table_ty flag_table_cxx_kde;
 static flag_context_list_table_ty flag_table_cxx_boost;
 static flag_context_list_table_ty flag_table_objc;
 static flag_context_list_table_ty flag_table_gcc_internal;
@@ -163,6 +161,9 @@ static flag_context_list_table_ty flag_table_php;
 
 /* If true, recognize Qt format strings.  */
 static bool recognize_format_qt;
+
+/* If true, recognize KDE format strings.  */
+static bool recognize_format_kde;
 
 /* If true, recognize Boost format strings.  */
 static bool recognize_format_boost;
@@ -190,7 +191,7 @@ static const struct option long_options[] =
 {
   { "add-comments", optional_argument, NULL, 'c' },
   { "add-location", no_argument, &line_comment, 1 },
-  { "boost", no_argument, NULL, CHAR_MAX + 10 },
+  { "boost", no_argument, NULL, CHAR_MAX + 11 },
   { "c++", no_argument, NULL, 'C' },
   { "copyright-holder", required_argument, NULL, CHAR_MAX + 1 },
   { "debug", no_argument, &do_debug, 1 },
@@ -207,6 +208,7 @@ static const struct option long_options[] =
   { "help", no_argument, NULL, 'h' },
   { "indent", no_argument, NULL, 'i' },
   { "join-existing", no_argument, NULL, 'j' },
+  { "kde", no_argument, NULL, CHAR_MAX + 10 },
   { "keyword", optional_argument, NULL, 'k' },
   { "language", required_argument, NULL, 'L' },
   { "msgid-bugs-address", required_argument, NULL, CHAR_MAX + 5 },
@@ -218,6 +220,8 @@ static const struct option long_options[] =
   { "omit-header", no_argument, &xgettext_omit_header, 1 },
   { "output", required_argument, NULL, 'o' },
   { "output-dir", required_argument, NULL, 'p' },
+  { "package-name", required_argument, NULL, CHAR_MAX + 12 },
+  { "package-version", required_argument, NULL, CHAR_MAX + 13 },
   { "properties-output", no_argument, NULL, CHAR_MAX + 6 },
   { "qt", no_argument, NULL, CHAR_MAX + 9 },
   { "sort-by-file", no_argument, NULL, 'F' },
@@ -501,8 +505,17 @@ main (int argc, char *argv[])
       case CHAR_MAX + 9:	/* --qt */
 	recognize_format_qt = true;
 	break;
-      case CHAR_MAX + 10:	/* --boost */
+      case CHAR_MAX + 10:	/* --kde */
+	recognize_format_kde = true;
+	break;
+      case CHAR_MAX + 11:	/* --boost */
 	recognize_format_boost = true;
+	break;
+      case CHAR_MAX + 12:	/* --package-name */
+	package_name = optarg;
+	break;
+      case CHAR_MAX + 13:	/* --package-version */
+	package_version = optarg;
 	break;
       default:
 	usage (EXIT_FAILURE);
@@ -515,10 +528,11 @@ main (int argc, char *argv[])
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "1995-1998, 2000-2006");
+	      "1995-1998, 2000-2007");
       printf (_("Written by %s.\n"), proper_name ("Ulrich Drepper"));
       exit (EXIT_SUCCESS);
     }
@@ -536,12 +550,18 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
     error (EXIT_FAILURE, 0, _("%s and %s are mutually exclusive"),
 	   "--sort-output", "--sort-by-file");
 
+  /* We cannot support both Qt and KDE, or Qt and Boost, or KDE and Boost
+     format strings, because there are only two formatstring parsers per
+     language, and formatstring_c is the first one for C++.  */
+  if (recognize_format_qt && recognize_format_kde)
+    error (EXIT_FAILURE, 0, _("%s and %s are mutually exclusive"),
+	   "--qt", "--kde");
   if (recognize_format_qt && recognize_format_boost)
-    /* We cannot support both Qt and Boost format strings, because there are
-       only two formatstring parsers per language, and formatstring_c is the
-       first one for C++.  */
     error (EXIT_FAILURE, 0, _("%s and %s are mutually exclusive"),
 	   "--qt", "--boost");
+  if (recognize_format_kde && recognize_format_boost)
+    error (EXIT_FAILURE, 0, _("%s and %s are mutually exclusive"),
+	   "--kde", "--boost");
 
   if (join_existing && strcmp (default_domain, "-") == 0)
     error (EXIT_FAILURE, 0, _("\
@@ -583,12 +603,12 @@ xgettext cannot work without keywords to look for"));
 	file_name = xstrdup (output_file);
       else
 	/* Please do NOT add a .po suffix! */
-	file_name = concatenated_pathname (output_dir, output_file, NULL);
+	file_name = concatenated_filename (output_dir, output_file, NULL);
     }
   else if (strcmp (default_domain, "-") == 0)
     file_name = "-";
   else
-    file_name = concatenated_pathname (output_dir, default_domain, ".po");
+    file_name = concatenated_filename (output_dir, default_domain, ".po");
 
   /* Determine list of files we have to process.  */
   if (files_from != NULL)
@@ -648,7 +668,7 @@ This version was built without iconv()."),
 
       extract_from_file (file_name, po_extractor, mdlp);
       if (!is_ascii_msgdomain_list (mdlp))
-	mdlp = iconv_msgdomain_list (mdlp, "UTF-8", file_name);
+	mdlp = iconv_msgdomain_list (mdlp, "UTF-8", true, file_name);
 
       dir_list_restore (saved_directory_list);
     }
@@ -837,6 +857,10 @@ Language specific options:\n"));
       printf (_("\
                                 (only language C++)\n"));
       printf (_("\
+      --kde                   recognize KDE 4 format strings\n"));
+      printf (_("\
+                                (only language C++)\n"));
+      printf (_("\
       --boost                 recognize Boost format strings\n"));
       printf (_("\
                                 (only language C++)\n"));
@@ -879,6 +903,10 @@ Output details:\n"));
       printf (_("\
       --foreign-user          omit FSF copyright in output for foreign user\n"));
       printf (_("\
+      --package-name=PACKAGE  set package name in output\n"));
+      printf (_("\
+      --package-version=VERSION  set package version in output\n"));
+      printf (_("\
       --msgid-bugs-address=EMAIL@ADDRESS  set report address for msgid bugs\n"));
       printf (_("\
   -m, --msgstr-prefix[=STRING]  use STRING or \"\" as prefix for msgstr entries\n"));
@@ -892,6 +920,10 @@ Informative output:\n"));
       printf (_("\
   -V, --version               output version information and exit\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"),
 	     stdout);
     }
@@ -1063,7 +1095,7 @@ split_keywordspec (const char *spec,
 	      if (p > spec && (p[-1] == ',' || p[-1] == ':'))
 		{
 		  size_t xcomment_len = xcomment_end - xcomment_start;
-		  char *xcomment = (char *) xmalloc (xcomment_len + 1);
+		  char *xcomment = XNMALLOC (xcomment_len + 1, char);
 
 		  memcpy (xcomment, xcomment_start, xcomment_len);
 		  xcomment[xcomment_len] = '\0';
@@ -1132,8 +1164,7 @@ insert_keyword_callshape (hash_table *table,
   if (hash_find_entry (table, keyword, keyword_len, &old_value))
     {
       /* Create a one-element 'struct callshapes'.  */
-      struct callshapes *shapes =
-	(struct callshapes *) xmalloc (sizeof (struct callshapes));
+      struct callshapes *shapes = XMALLOC (struct callshapes);
       shapes->nshapes = 1;
       shapes->shapes[0] = *shape;
       keyword =
@@ -1172,8 +1203,9 @@ insert_keyword_callshape (hash_table *table,
 	  /* Replace the existing 'struct callshapes' with a new one.  */
 	  struct callshapes *shapes =
 	    (struct callshapes *)
-	    xmalloc (sizeof (struct callshapes)
-		     + old_shapes->nshapes * sizeof (struct callshape));
+	    xmalloc (xsum (sizeof (struct callshapes),
+			   xtimes (old_shapes->nshapes,
+				   sizeof (struct callshape))));
 
 	  shapes->keyword = old_shapes->keyword;
 	  shapes->keyword_len = old_shapes->keyword_len;
@@ -1296,7 +1328,7 @@ flag_context_list_table_insert (flag_context_list_table_ty *table,
     {
       /* Convert NAME to upper case.  */
       size_t name_len = name_end - name_start;
-      char *name = allocated_name = (char *) xallocsa (name_len);
+      char *name = allocated_name = (char *) xmalloca (name_len);
       size_t i;
 
       for (i = 0; i < name_len; i++)
@@ -1324,8 +1356,7 @@ flag_context_list_table_insert (flag_context_list_table_ty *table,
     if (hash_find_entry (table, name_start, name_end - name_start, &entry) != 0)
       {
 	/* Create new hash table entry.  */
-	flag_context_list_ty *list =
-	  (flag_context_list_ty *) xmalloc (sizeof (flag_context_list_ty));
+	flag_context_list_ty *list = XMALLOC (flag_context_list_ty);
 	list->argnum = argnum;
 	memset (&list->flags, '\0', sizeof (list->flags));
 	switch (index)
@@ -1374,8 +1405,7 @@ flag_context_list_table_insert (flag_context_list_table_ty *table,
 	else if (lastp != NULL)
 	  {
 	    /* Add a new list entry for this argument number.  */
-	    list =
-	      (flag_context_list_ty *) xmalloc (sizeof (flag_context_list_ty));
+	    list = XMALLOC (flag_context_list_ty);
 	    list->argnum = argnum;
 	    memset (&list->flags, '\0', sizeof (list->flags));
 	    switch (index)
@@ -1400,8 +1430,7 @@ flag_context_list_table_insert (flag_context_list_table_ty *table,
 	       of the list.  Since we don't have an API for replacing the
 	       value of a key in the hash table, we have to copy the first
 	       list element.  */
-	    flag_context_list_ty *copy =
-	      (flag_context_list_ty *) xmalloc (sizeof (flag_context_list_ty));
+	    flag_context_list_ty *copy = XMALLOC (flag_context_list_ty);
 	    *copy = *list;
 
 	    list->argnum = argnum;
@@ -1425,7 +1454,7 @@ flag_context_list_table_insert (flag_context_list_table_ty *table,
   }
 
   if (allocated_name != NULL)
-    freesa (allocated_name);
+    freea (allocated_name);
 }
 
 
@@ -1533,6 +1562,9 @@ xgettext_record_flag (const char *optionstring)
 		    flag_context_list_table_insert (&flag_table_cxx_qt, 0,
 						    name_start, name_end,
 						    argnum, value, pass);
+		    flag_context_list_table_insert (&flag_table_cxx_kde, 0,
+						    name_start, name_end,
+						    argnum, value, pass);
 		    flag_context_list_table_insert (&flag_table_cxx_boost, 0,
 						    name_start, name_end,
 						    argnum, value, pass);
@@ -1629,6 +1661,11 @@ xgettext_record_flag (const char *optionstring)
 						    name_start, name_end,
 						    argnum, value, pass);
 		    break;
+		  case format_kde:
+		    flag_context_list_table_insert (&flag_table_cxx_kde, 1,
+						    name_start, name_end,
+						    argnum, value, pass);
+		    break;
 		  case format_boost:
 		    flag_context_list_table_insert (&flag_table_cxx_boost, 1,
 						    name_start, name_end,
@@ -1691,8 +1728,7 @@ savable_comment_add (const char *str)
 {
   if (savable_comment == NULL)
     {
-      savable_comment =
-	(refcounted_string_list_ty *) xmalloc (sizeof (*savable_comment));
+      savable_comment = XMALLOC (refcounted_string_list_ty);
       savable_comment->refcount = 1;
       string_list_init (&savable_comment->contents);
     }
@@ -1705,8 +1741,7 @@ savable_comment_add (const char *str)
       savable_comment->refcount--;
       oldcontents = &savable_comment->contents;
 
-      savable_comment =
-	(refcounted_string_list_ty *) xmalloc (sizeof (*savable_comment));
+      savable_comment = XMALLOC (refcounted_string_list_ty);
       savable_comment->refcount = 1;
       string_list_init (&savable_comment->contents);
       for (i = 0; i < oldcontents->nitems; i++)
@@ -1772,7 +1807,7 @@ error while opening \"%s\" for reading"), fn);
 	    error (EXIT_FAILURE, ENOENT, _("\
 error while opening \"%s\" for reading"), fn);
 
-	  new_name = concatenated_pathname (dir, fn, NULL);
+	  new_name = concatenated_filename (dir, fn, NULL);
 
 	  fp = fopen (new_name, "r");
 	  if (fp != NULL)
@@ -1911,7 +1946,7 @@ set_format_flags_from_context (enum is_format is_format[NFORMATS],
 	  {
 	    struct formatstring_parser *parser = formatstring_parsers[i];
 	    char *invalid_reason = NULL;
-	    void *descr = parser->parse (string, false, &invalid_reason);
+	    void *descr = parser->parse (string, false, NULL, &invalid_reason);
 
 	    if (descr != NULL)
 	      parser->free (descr);
@@ -2161,14 +2196,15 @@ meta information, not the empty string.\n")));
 	  && !(i == format_c && possible_format_p (is_format[format_objc]))
 	  && !(i == format_objc && possible_format_p (is_format[format_c]))
 	  /* Avoid flagging a string as c-format when it's known to be a
-	     qt-format or boost-format string.  */
+	     qt-format or kde-format or boost-format string.  */
 	  && !(i == format_c
 	       && (possible_format_p (is_format[format_qt])
+		   || possible_format_p (is_format[format_kde])
 		   || possible_format_p (is_format[format_boost]))))
 	{
 	  struct formatstring_parser *parser = formatstring_parsers[i];
 	  char *invalid_reason = NULL;
-	  void *descr = parser->parse (mp->msgid, false, &invalid_reason);
+	  void *descr = parser->parse (mp->msgid, false, NULL, &invalid_reason);
 
 	  if (descr != NULL)
 	    {
@@ -2247,7 +2283,7 @@ remember_a_message_plural (message_ty *mp, char *string,
       else
 	msgstr1 = "";
       msgstr1_len = strlen (msgstr1) + 1;
-      msgstr = (char *) xmalloc (mp->msgstr_len + msgstr1_len);
+      msgstr = XNMALLOC (mp->msgstr_len + msgstr1_len, char);
       memcpy (msgstr, mp->msgstr, mp->msgstr_len);
       memcpy (msgstr + mp->msgstr_len, msgstr1, msgstr1_len);
       mp->msgstr = msgstr;
@@ -2276,12 +2312,13 @@ remember_a_message_plural (message_ty *mp, char *string,
 	       qt-format or boost-format string.  */
 	    && !(i == format_c
 		 && (possible_format_p (mp->is_format[format_qt])
+		     || possible_format_p (mp->is_format[format_kde])
 		     || possible_format_p (mp->is_format[format_boost]))))
 	  {
 	    struct formatstring_parser *parser = formatstring_parsers[i];
 	    char *invalid_reason = NULL;
 	    void *descr =
-	      parser->parse (mp->msgid_plural, false, &invalid_reason);
+	      parser->parse (mp->msgid_plural, false, NULL, &invalid_reason);
 
 	    if (descr != NULL)
 	      {
@@ -2335,8 +2372,9 @@ arglist_parser_alloc (message_list_ty *mlp, const struct callshapes *shapes)
     {
       struct arglist_parser *ap =
 	(struct arglist_parser *)
-	xmalloc (sizeof (struct arglist_parser)
-		 + (shapes->nshapes - 1) * sizeof (struct partial_call));
+	xmalloc (xsum (sizeof (struct arglist_parser),
+		       xtimes (shapes->nshapes - 1,
+			       sizeof (struct partial_call))));
       size_t i;
 
       ap->mlp = mlp;
@@ -2378,8 +2416,8 @@ arglist_parser_clone (struct arglist_parser *ap)
 {
   struct arglist_parser *copy =
     (struct arglist_parser *)
-    xmalloc (sizeof (struct arglist_parser) - sizeof (struct partial_call)
-	     + ap->nalternatives * sizeof (struct partial_call));
+    xmalloc (xsum (sizeof (struct arglist_parser) - sizeof (struct partial_call),
+		   xtimes (ap->nalternatives, sizeof (struct partial_call))));
   size_t i;
 
   copy->mlp = ap->mlp;
@@ -2657,7 +2695,7 @@ arglist_parser_done (struct arglist_parser *ap, int argnum)
 	      else
 		{
 		  size_t ctxt_len = separator - best_cp->msgid;
-		  char *ctxt = (char *) xmalloc (ctxt_len + 1);
+		  char *ctxt = XNMALLOC (ctxt_len + 1, char);
 
 		  memcpy (ctxt, best_cp->msgid, ctxt_len);
 		  ctxt[ctxt_len] = '\0';
@@ -2682,7 +2720,7 @@ arglist_parser_done (struct arglist_parser *ap, int argnum)
 	      else
 		{
 		  size_t ctxt_len = separator - best_cp->msgid_plural;
-		  char *ctxt = (char *) xmalloc (ctxt_len + 1);
+		  char *ctxt = XNMALLOC (ctxt_len + 1, char);
 
 		  memcpy (ctxt, best_cp->msgid_plural, ctxt_len);
 		  ctxt[ctxt_len] = '\0';
@@ -2768,11 +2806,22 @@ arglist_parser_done (struct arglist_parser *ap, int argnum)
 static message_ty *
 construct_header ()
 {
+  char *project_id_version;
   time_t now;
   char *timestring;
   message_ty *mp;
   char *msgstr;
   static lex_pos_ty pos = { __FILE__, __LINE__ };
+
+  if (package_name != NULL)
+    {
+      if (package_version != NULL)
+	project_id_version = xasprintf ("%s %s", package_name, package_version);
+      else
+	project_id_version = xasprintf ("%s", package_name);
+    }
+  else
+    project_id_version = xstrdup ("PACKAGE VERSION");
 
   if (msgid_bugs_address != NULL && msgid_bugs_address[0] == '\0')
     multiline_warning (xasprintf (_("warning: ")),
@@ -2787,7 +2836,7 @@ specify an --msgid-bugs-address command line option.\n\
   timestring = po_strftime (&now);
 
   msgstr = xasprintf ("\
-Project-Id-Version: PACKAGE VERSION\n\
+Project-Id-Version: %s\n\
 Report-Msgid-Bugs-To: %s\n\
 POT-Creation-Date: %s\n\
 PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n\
@@ -2796,9 +2845,11 @@ Language-Team: LANGUAGE <LL@li.org>\n\
 MIME-Version: 1.0\n\
 Content-Type: text/plain; charset=CHARSET\n\
 Content-Transfer-Encoding: 8bit\n",
+		      project_id_version,
 		      msgid_bugs_address != NULL ? msgid_bugs_address : "",
 		      timestring);
   free (timestring);
+  free (project_id_version);
 
   mp = message_alloc (NULL, "", NULL, msgstr, strlen (msgstr) + 1, &pos);
 
@@ -2864,7 +2915,7 @@ finalize_header (msgdomain_list_ty *mdlp)
 	    if (insertpos == 0 || header->msgstr[insertpos-1] == '\n')
 	      suffix++;
 	    suffix_len = strlen (suffix);
-	    new_msgstr = (char *) xmalloc (header->msgstr_len + suffix_len);
+	    new_msgstr = XNMALLOC (header->msgstr_len + suffix_len, char);
 	    memcpy (new_msgstr, header->msgstr, insertpos);
 	    memcpy (new_msgstr + insertpos, suffix, suffix_len);
 	    memcpy (new_msgstr + insertpos + suffix_len,
@@ -2964,6 +3015,12 @@ language_to_extractor (const char *name)
 	  {
 	    result.flag_table = &flag_table_cxx_qt;
 	    result.formatstring_parser2 = &formatstring_qt;
+	  }
+	/* Likewise for --kde.  */
+	if (recognize_format_kde && strcmp (tp->name, "C++") == 0)
+	  {
+	    result.flag_table = &flag_table_cxx_kde;
+	    result.formatstring_parser2 = &formatstring_kde;
 	  }
 	/* Likewise for --boost.  */
 	if (recognize_format_boost && strcmp (tp->name, "C++") == 0)

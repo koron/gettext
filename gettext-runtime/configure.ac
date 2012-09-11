@@ -1,10 +1,10 @@
 dnl Configuration for the gettext-runtime directory of GNU gettext
-dnl Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-1999, 2000-2007 Free Software Foundation, Inc.
 dnl
-dnl This program is free software; you can redistribute it and/or modify
+dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2, or (at your option)
-dnl any later version.
+dnl the Free Software Foundation; either version 3 of the License, or
+dnl (at your option) any later version.
 dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@ dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software Foundation,
-dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Process this file with autoconf to produce a configure script.
 
@@ -63,9 +62,18 @@ dnl Make sure we see all GNU and Solaris extensions.
 gl_EARLY
 
 dnl Check for build configuration.
+
 gl_WOE32_DLL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+
+dnl On mingw and Cygwin, we can activate special Makefile rules which add
+dnl version information to the shared libraries and executables.
+case "$host_os" in
+  mingw* | cygwin*) is_woe32=yes ;;
+  *) is_woe32=no ;;
+esac
+AM_CONDITIONAL([WOE32], [test $is_woe32 = yes])
 
 dnl Checks for libraries.
 
@@ -108,7 +116,10 @@ dnl Checks for special libraries for the tests/test-lock test.
 dnl On some systems, sched_yield is in librt, rather than in libpthread.
 LIBSCHED=
 if test $gl_threads_api = posix; then
-  AC_CHECK_LIB(rt, sched_yield, [LIBSCHED=-lrt])
+  dnl Solaris has sched_yield in librt, not in libpthread or libc.
+  AC_CHECK_LIB(rt, sched_yield, [LIBSCHED=-lrt],
+    [dnl Solaris 2.5.1, 2.6 has sched_yield in libposix4, not librt.
+     AC_CHECK_LIB(posix4, sched_yield, [LIBSCHED=-lposix4])])
 fi
 AC_SUBST([LIBSCHED])
 

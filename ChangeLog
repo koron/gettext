@@ -1,3 +1,267 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* windows/windres-options (sed_extract_major, sed_extract_minor,
+	sed_extract_subminor): Use 'c' command instead of 'a' command. Needed
+	for GNU sed 3.02.
+
+2007-11-03  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): Add another check for vasnprintf.c.
+
+2007-11-01  Bruno Haible  <bruno@clisp.org>
+
+	* version.sh: Bump version number to 0.17.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): Exclude copyright header when comparing
+	localename.c, relocatable.h, relocatable.c.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Remove ulonglong.m4.
+	* Makefile.am (distcheck-hook): Remove check of ulonglong.m4.
+
+2007-10-26  Bruno Haible  <bruno@clisp.org>
+
+	* m4/libtool.m4: Update, based on libtool-1.5.24.
+	* build-aux/ltmain.sh: Update, based on libtool-1.5.24.
+
+2007-10-17  Bruno Haible  <bruno@clisp.org>
+
+	* windows/windres-options (sed_extract_major, sed_extract_minor,
+	sed_extract_subminor): Use newlines instead of semicolons. Add a
+	newline also after the last command in a braced group.
+	Needed for GNU sed-3.02, which does not like "q}".
+
+2007-10-17  Bruno Haible  <bruno@clisp.org>
+
+	* README.woe32: Recommend to set PATH. Needed so that libiconv-2.dll
+	is found during autoconfiguration.
+
+2007-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* COPYING: Replace with GPL 3.
+	* windows/gettext.rc (Comments): Update.
+	* Makefile.am (distcheck-hook): Update.
+
+2007-10-06  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add open, fopen.
+	(GNULIB_MODULES_LIBGETTEXTPO): Add fopen.
+	Reported by Mark Moriarty <mfmbusiness@earthlink.net>.
+
+2007-10-06  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/texinfo.tex: Upgrade to texinfo-4.11.
+	Needed because the original texinfo.tex does not support the
+	@documentencoding macro and the texinfo-4.11 texi2dvi then fails due to
+	this.
+
+2007-10-05  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): Update check of relocatable.h,
+	relocatable.c. Check alloca.in.h instead of alloca_.h. Remove check of
+	strdup.h.
+
+2007-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (EXTRA_DIST): Add build-aux/fixaclocal.
+
+2007-10-03  Bruno Haible  <bruno@clisp.org>
+
+	* INSTALL (Enabling Relocatability): New section, produced by
+	"LANG= LC_MESSAGES= LC_ALL= LANGUAGE= \
+	 makeinfo --no-header --no-validate --output=... relocatable.texi".
+	(Relocatable Installation): Remove section.
+
+2007-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Invoke gnulib-tool with options --tests-base=gnulib-tests
+	--with-tests.
+
+2007-10-01  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/depcomp: New file, from automake-1.10. Needed for the
+	gettext-tools/gnulib-tests directory.
+
+2007-09-29  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_CVS_ROOT): Change to read-only git mirror
+	valid since 2007-09-19.
+
+2007-09-01  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC,
+	GNULIB_MODULES_LIBGETTEXTPO): Add uniwidth/width.
+
+2007-07-07  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add uniname/uniname.
+
+2007-07-06  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Add an option --skip-gnulib.
+
+2007-06-28  Bruno Haible  <bruno@clisp.org>
+
+	* HACKING: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2007-06-09  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Use xmalloca instead of
+	xallocsa.
+	(GNULIB_MODULES_LIBGETTEXTPO): Likewise.
+
+2007-06-08  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add module 'localename'.
+	* Makefile.am (distcheck-hook): Compare also localename.c.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): Check also intlmacosx.m4.
+	* PACKAGING: Mention also intlmacosx.m4.
+
+2007-05-28  Bruno Haible  <bruno@clisp.org>
+
+	* windows/windres-options: New file.
+	* windows/gettext.rc: New file.
+	* Makefile.am (EXTRA_DIST): Add them.
+
+2007-05-27  Bruno Haible  <bruno@clisp.org>
+
+	* m4/libtool.m4 (AC_LIBTOOL_PROG_LD_SHLIBS): Fix support for Sun C 5.9
+	on Linux.
+
+2007-05-27  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add module 'openmp'.
+
+2007-05-14  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add module 'sys_stat'.
+
+2007-04-10  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add module 'locale'.
+	Reported by Dennis Schridde <devurandom@gmx.net>.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (distcheck-hook): Don't compare longdouble.m4.
+	* PACKAGING: Remove longdouble.m4 from the file list.
+
+2007-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* DEPENDENCIES: Mention dependency towards cvs.
+	Reported by Dennis Schridde <devurandom@gmx.net>.
+
+2007-03-27  Bruno Haible  <bruno@clisp.org>
+
+	* PACKAGING: Don't mention share/doc/gettext/javadoc1/ any more.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	Moved --enable-relocatable infrastructure to gnulib.
+	* autogen.sh (GNULIB_MODULES_RUNTIME_FOR_SRC): Add relocatable-prog.
+	Remove relocatable, relocwrapper.
+	(GNULIB_MODULES_TOOLS_FOR_SRC): Likewise.
+	(GNULIB_MODULES_LIBGETTEXTPO): Add relocatable-lib.
+	(GNULIB_MODULES_LIBGETTEXTPO_OTHER): Remove
+	gettext-tools-libgettextpo-misc.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC,
+	GNULIB_MODULES_LIBGETTEXTPO): Use module 'filename' instead of
+	'pathname'.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Remove gnulib-cache.m4 files before running gnulib-tool,
+	so that removed modules are really dropped.
+
+2007-02-28  Bruno Haible  <bruno@clisp.org>
+
+	Move relocatability infrastructure to gnulib.
+	* build-aux/config.libpath: Remove file.
+	* build-aux/reloc-ldflags: Remove file.
+	* build-aux/install-reloc: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove these files.
+
+2007-01-26  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add sys_time.
+
+2006-12-23  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_OTHER): Add stdint.
+
+2006-12-21  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Pass --makefile-name option to gnulib-tool for
+	gettext-tools/gnulib-lib.
+
+2006-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (EXTRA_DIST): Add build-aux/moopp.
+
+2006-12-01  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC): Add fd-ostream,
+	styled-ostream, html-styled-ostream, term-styled-ostream.
+
+2006-12-04  Bruno Haible  <bruno@clisp.org>
+
+	* DEPENDENCIES: New file.
+	* INSTALL, README: Refer to it.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2006-11-23  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_TOOLS_FOR_SRC,
+	GNULIB_MODULES_LIBGETTEXTPO): Add ostream, file-ostream.
+
+2006-11-12  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (am__tar): Override automake's definition.
+
+2006-11-12  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh: Pass --local-symlink option to all gnulib-tool
+	invocations.
+
+2006-11-08  Bruno Haible  <bruno@clisp.org>
+
+	* build-aux/install-reloc: Use canonicalize-lgpl.c instead of
+	canonicalize.c.
+
+2006-11-05  Bruno Haible  <bruno@clisp.org>
+
+	* autogen.sh (GNULIB_MODULES_RUNTIME_FOR_SRC): Renamed from
+	GNULIB_MODULES_FOR_SRC.
+	(GNULIB_MODULES_RUNTIME_OTHER): Renamed from GNULIB_MODULES_OTHER.
+	(GNULIB_MODULES_TOOLS_FOR_SRC): Renamed from GNULIB_MODULES_FOR_SRC.
+	(GNULIB_MODULES_TOOLS_FOR_LIBGREP): Renamed from
+	GNULIB_MODULES_FOR_LIBGREP.
+	(GNULIB_MODULES_TOOLS_OTHER): Renamed from GNULIB_MODULES_OTHER.
+	(GNULIB_MODULES_LIBGETTEXTPO): Renamed from
+	GNULIB_MODULES_FOR_LIBGETTEXTPO.
+	(GNULIB_MODULES_LIBGETTEXTPO_OTHER): Renamed from GNULIB_MODULES_OTHER.
+
+2006-10-27  Bruno Haible  <bruno@clisp.org>
+
+	Work around automake-1.10 annoyance.
+	* build-aux/fixaclocal: New file.
+	* autogen.sh: Use it for every aclocal invocation.
+	* Makefile.am (ACLOCAL): New macro.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: Hello.java:24
+#: Hello.java:23
 msgid "Hello, world!"
 msgstr "Hola, món!"
 
-#: Hello.java:29
+#: Hello.java:28
 #, java-format
 msgid "This program is running as process number {0}."
 msgstr "Aquest programa està corrent amb el número de procés {0}."

@@ -1,10 +1,10 @@
 dnl Configuration for the gettext-tools directory of GNU gettext
-dnl Copyright (C) 1995-1999, 2000-2006 Free Software Foundation, Inc.
+dnl Copyright (C) 1995-1999, 2000-2007 Free Software Foundation, Inc.
 dnl
-dnl This program is free software; you can redistribute it and/or modify
+dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2, or (at your option)
-dnl any later version.
+dnl the Free Software Foundation; either version 3 of the License, or
+dnl (at your option) any later version.
 dnl
 dnl This program is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@ dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software Foundation,
-dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl Process this file with autoconf to produce a configure script.
 
@@ -87,6 +86,7 @@ gl_EARLY
 gtpo_EARLY
 
 dnl Check for build configuration.
+
 gl_WOE32_DLL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
@@ -97,6 +97,14 @@ case "$host_os" in
   *) LTNOUNDEF='' ;;
 esac
 AC_SUBST([LTNOUNDEF])
+
+dnl On mingw and Cygwin, we can activate special Makefile rules which add
+dnl version information to the shared libraries and executables.
+case "$host_os" in
+  mingw* | cygwin*) is_woe32=yes ;;
+  *) is_woe32=no ;;
+esac
+AM_CONDITIONAL([WOE32], [test $is_woe32 = yes])
 
 dnl Checks for libraries.
 
@@ -111,12 +119,24 @@ dnl Test whether msgmerge must be linked against libm. This is the case on
 dnl most systems; but BeOS has all <math.h> functions in libc and doesn't have
 dnl a libm.
 MSGMERGE_LIBM=?
-AC_TRY_LINK([#include <math.h>], [static double x; x = ceil(x); x = sqrt(x);],
+AC_TRY_LINK([
+   #ifndef __NO_MATH_INLINES
+   # define __NO_MATH_INLINES 1 /* for glibc */
+   #endif
+   #include <math.h>
+   double x;],
+  [x = ceil(x); x = sqrt(x);],
   [MSGMERGE_LIBM=])
 if test "$MSGMERGE_LIBM" = "?"; then
   save_LIBS="$LIBS" 
   LIBS="$LIBS -lm"
-  AC_TRY_LINK([#include <math.h>], [static double x; x = ceil(x); x = sqrt(x);],
+  AC_TRY_LINK([
+     #ifndef __NO_MATH_INLINES
+     # define __NO_MATH_INLINES 1 /* for glibc */
+     #endif
+     #include <math.h>
+     double x;],
+    [x = ceil(x); x = sqrt(x);],
     [MSGMERGE_LIBM="-lm"])
   LIBS="$save_LIBS"
 fi
@@ -124,9 +144,6 @@ if test "$MSGMERGE_LIBM" = "?"; then
   MSGMERGE_LIBM=
 fi
 AC_SUBST([MSGMERGE_LIBM])
-
-dnl Test for compiler flags needed to support OpenMP.
-gt_OPENMP
 
 dnl Checks for header files, functions and declarations.
 gl_INIT
@@ -289,10 +306,11 @@ dnl Check for tools needed for formatting man pages.
 CROSS_COMPILING=$cross_compiling
 AC_SUBST(CROSS_COMPILING)
 
-dnl Checks for optional programs for the tests/lang-* tests.
+dnl Checks for optional programs for the tests/lang-*, tests/recode-* tests.
 gt_PROG_ANSI_CXX
 gt_LOCALE_FR
 gt_LOCALE_FR_UTF8
+gt_LOCALE_JA
 
 dnl Check whether to execute tests that rely on libasprintf.
 dnl This test must be consistent with gettext-runtime/configure.ac.
@@ -343,9 +361,6 @@ AC_CONFIG_FILES([gnulib-lib/Makefile],
 AC_CONFIG_FILES([libgrep/Makefile],
                 [FIX_MAKEFILE_COMPILE])
 
-AC_CONFIG_FILES([libuniname/Makefile],
-                [FIX_MAKEFILE_COMPILE])
-
 AC_CONFIG_FILES([src/Makefile],
                 [FIX_MAKEFILE_COMPILE])
 AC_CONFIG_FILES([src/user-email:src/user-email.sh.in])
@@ -358,6 +373,8 @@ AC_CONFIG_FILES([po/Makefile.in])
 
 AC_CONFIG_FILES([projects/Makefile])
 
+AC_CONFIG_FILES([styles/Makefile])
+
 AC_CONFIG_FILES([misc/Makefile])
 AC_CONFIG_FILES([misc/gettextize], [chmod a+x misc/gettextize])
 AC_CONFIG_FILES([misc/autopoint], [chmod a+x misc/autopoint])
@@ -369,6 +386,9 @@ AC_CONFIG_FILES([man/x-to-1])
 AC_CONFIG_FILES([m4/Makefile])
 
 AC_CONFIG_FILES([tests/Makefile],
+                [FIX_MAKEFILE_COMPILE])
+
+AC_CONFIG_FILES([gnulib-tests/Makefile],
                 [FIX_MAKEFILE_COMPILE])
 
 AC_OUTPUT

@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.2\n"
 
-#: hello.sh:15
+#: hello.sh:14
 msgid "Hello, world!"
 msgstr "Hello, world!"
 
-#: hello.sh:18
+#: hello.sh:17
 #, sh-format
 msgid "This program is running as process number $pid."
 msgstr "Program ini berjalan sebagai proses nomor $pid."

@@ -1,10 +1,10 @@
 /* Thread-local storage in multithreaded situations.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible <bruno@clisp.org>, 2005.  */
 
@@ -120,8 +119,12 @@ typedef union
       }                                                           \
     while (0)
 # define gl_tls_key_destroy(NAME) \
-    if (pthread_in_use () && pthread_key_delete ((NAME).key) != 0) \
-      abort ()
+    do                                                                 \
+      {                                                                \
+        if (pthread_in_use () && pthread_key_delete ((NAME).key) != 0) \
+          abort ();                                                    \
+      }                                                                \
+    while (0)
 
 #endif
 
@@ -189,8 +192,12 @@ typedef union
       }                                                   \
     while (0)
 # define gl_tls_key_destroy(NAME) \
-    if (pth_in_use () && !pth_key_delete ((NAME).key)) \
-      abort ()
+    do                                                     \
+      {                                                    \
+        if (pth_in_use () && !pth_key_delete ((NAME).key)) \
+          abort ();                                        \
+      }                                                    \
+    while (0)
 
 #endif
 
@@ -274,16 +281,28 @@ extern void *glthread_tls_get (thread_key_t key);
 typedef DWORD gl_tls_key_t;
 # define gl_tls_key_init(NAME, DESTRUCTOR) \
     /* The destructor is unsupported.  */    \
-    if (((NAME) = TlsAlloc ()) == (DWORD)-1) \
-      abort ()
+    do                                           \
+      {                                          \
+        if (((NAME) = TlsAlloc ()) == (DWORD)-1) \
+          abort ();                              \
+      }                                          \
+    while (0)
 # define gl_tls_get(NAME) \
     TlsGetValue (NAME)
 # define gl_tls_set(NAME, POINTER) \
-    if (!TlsSetValue (NAME, POINTER)) \
-      abort ()
+    do                                    \
+      {                                   \
+        if (!TlsSetValue (NAME, POINTER)) \
+          abort ();                       \
+      }                                   \
+    while (0)
 # define gl_tls_key_destroy(NAME) \
-    if (!TlsFree (NAME)) \
-      abort ()
+    do                       \
+      {                      \
+        if (!TlsFree (NAME)) \
+          abort ();          \
+      }                      \
+    while (0)
 
 #endif
 

@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2004-2006 Free Software Foundation, Inc.
+# Copyright (C) 2004-2007 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
 # General Public License.  As a special exception to the GNU General
@@ -25,9 +25,15 @@ AC_DEFUN([gtpo_EARLY],
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([AC_PROG_RANLIB])
+  AC_REQUIRE([AM_PROG_CC_C_O])
   AC_REQUIRE([AC_GNU_SOURCE])
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   AC_REQUIRE([gl_LOCK_EARLY])
+  dnl Some compilers (e.g., AIX 5.3 cc) need to be in c99 mode
+  dnl for the builtin va_copy to work.  With Autoconf 2.60 or later,
+  dnl AC_PROG_CC_STDC arranges for this.  With older Autoconf AC_PROG_CC_STDC
+  dnl shouldn't hurt, though installers are on their own to set c99 mode.
+  AC_REQUIRE([AC_PROG_CC_STDC])
 ])
 
 # This macro should be invoked from gettext-tools/configure.ac, in the section
@@ -36,46 +42,84 @@ AC_DEFUN([gtpo_INIT],
 [
   m4_pushdef([AC_LIBOBJ], m4_defn([gtpo_LIBOBJ]))
   m4_pushdef([AC_REPLACE_FUNCS], m4_defn([gtpo_REPLACE_FUNCS]))
+  m4_pushdef([AC_LIBSOURCES], m4_defn([gtpo_LIBSOURCES]))
   AM_CONDITIONAL([GL_COND_LIBTOOL], [true])
   gl_cond_libtool=true
   gl_source_base='libgettextpo'
   gl_FUNC_ALLOCA
-  gl_ALLOCSA
   gl_ERROR
+  m4_ifdef([AM_XGETTEXT_OPTION],
+    [AM_XGETTEXT_OPTION([--flag=error:3:c-format])
+     AM_XGETTEXT_OPTION([--flag=error_at_line:5:c-format])])
   gl_EXITFAIL
-  dnl gl_USE_SYSTEM_EXTENSIONS must be added quite early to configure.ac.
-  AC_DEFINE([GNULIB_FWRITEERROR], 1,
-    [Define to 1 when using the gnulib fwriteerror module.])
+  gl_FUNC_FOPEN
+  gl_STDIO_MODULE_INDICATOR([fopen])
+  gl_MODULE_INDICATOR([fwriteerror])
   gl_FUNC_GETDELIM
+  gl_STDIO_MODULE_INDICATOR([getdelim])
   gl_FUNC_GETLINE
-  AC_RELOCATABLE
+  gl_STDIO_MODULE_INDICATOR([getline])
+  AC_SUBST([LIBINTL])
+  AC_SUBST([LTLIBINTL])
   AM_ICONV
+  gl_ICONV_H
+  gl_FUNC_ICONV_OPEN
+  gl_INLINE
   gl_LINEBREAK
   gl_LOCALCHARSET
   gl_LOCK
+  gl_FUNC_MALLOC_POSIX
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  gl_MALLOCA
   gl_MBSWIDTH
   gl_MINMAX
+  gl_MOO
   AC_FUNC_OBSTACK
   dnl Note: AC_FUNC_OBSTACK does AC_LIBSOURCES([obstack.h, obstack.c]).
+  gl_FUNC_REALLOC_POSIX
+  gl_STDLIB_MODULE_INDICATOR([realloc-posix])
+  gl_RELOCATABLE_LIBRARY
   gl_SIZE_MAX
   gl_STDARG_H
   AM_STDBOOL_H
   gl_STDINT_H
+  gl_STDIO_H
+  gl_STDLIB_H
   gl_FUNC_STPCPY
+  gl_STRING_MODULE_INDICATOR([stpcpy])
   gl_FUNC_STRDUP
+  gl_STRING_MODULE_INDICATOR([strdup])
+  gl_FUNC_STRERROR
+  gl_STRING_MODULE_INDICATOR([strerror])
   if test $gl_cond_libtool = false; then
     gl_ltlibdeps="$gl_ltlibdeps $LTLIBICONV"
     gl_libdeps="$gl_libdeps $LIBICONV"
   fi
+  gl_HEADER_STRING_H
+  gl_FUNC_STRNLEN
+  gl_STRING_MODULE_INDICATOR([strnlen])
   gl_TLS
-  gl_UCS4_UTF
+  gl_UNISTD_H
+  gl_MODULE_INDICATOR([unistr/u16-mbtouc])
+  gl_MODULE_INDICATOR([unistr/u16-mbtouc-unsafe])
+  gl_MODULE_INDICATOR([unistr/u8-mbtouc])
+  gl_MODULE_INDICATOR([unistr/u8-mbtouc-unsafe])
+  gl_MODULE_INDICATOR([unistr/u8-uctomb])
   gl_FUNC_GLIBC_UNLOCKED_IO
-  gl_UTF_UCS4
-  gl_UTF_UCS4
   gl_FUNC_VASPRINTF
+  gl_STDIO_MODULE_INDICATOR([vasprintf])
+  m4_ifdef([AM_XGETTEXT_OPTION],
+    [AM_XGETTEXT_OPTION([--flag=asprintf:2:c-format])
+     AM_XGETTEXT_OPTION([--flag=vasprintf:2:c-format])])
+  gl_WCHAR_H
+  gl_WCTYPE_H
   gl_FUNC_WCWIDTH
+  gl_WCHAR_MODULE_INDICATOR([wcwidth])
   gl_XSIZE
   gl_XVASPRINTF
+  m4_ifdef([AM_XGETTEXT_OPTION],
+    [AM_XGETTEXT_OPTION([--flag=xasprintf:1:c-format])])
+  m4_popdef([AC_LIBSOURCES])
   m4_popdef([AC_REPLACE_FUNCS])
   m4_popdef([AC_LIBOBJ])
   AC_CONFIG_COMMANDS_PRE([
@@ -96,22 +140,40 @@ AC_DEFUN([gtpo_INIT],
 
 # Like AC_LIBOBJ, except that the module name goes
 # into gtpo_LIBOBJS instead of into LIBOBJS.
-AC_DEFUN([gtpo_LIBOBJ],
-  [gtpo_LIBOBJS="$gtpo_LIBOBJS $1.$ac_objext"])
+AC_DEFUN([gtpo_LIBOBJ], [
+  AS_LITERAL_IF([$1], [gtpo_LIBSOURCES([$1.c])])dnl
+  gtpo_LIBOBJS="$gtpo_LIBOBJS $1.$ac_objext"
+])
 
 # Like AC_REPLACE_FUNCS, except that the module name goes
 # into gtpo_LIBOBJS instead of into LIBOBJS.
-AC_DEFUN([gtpo_REPLACE_FUNCS],
-  [AC_CHECK_FUNCS([$1], , [gtpo_LIBOBJ($ac_func)])])
+AC_DEFUN([gtpo_REPLACE_FUNCS], [
+  m4_foreach_w([gl_NAME], [$1], [AC_LIBSOURCES(gl_NAME[.c])])dnl
+  AC_CHECK_FUNCS([$1], , [gtpo_LIBOBJ($ac_func)])
+])
+
+# Like AC_LIBSOURCES, except the directory where the source file is
+# expected is derived from the gnulib-tool parametrization,
+# and alloca is special cased (for the alloca-opt module).
+# We could also entirely rely on EXTRA_lib..._SOURCES.
+AC_DEFUN([gtpo_LIBSOURCES], [
+  m4_foreach([_gl_NAME], [$1], [
+    m4_if(_gl_NAME, [alloca.c], [], [
+      m4_syscmd([test -r libgettextpo/]_gl_NAME[ || test ! -d libgettextpo])dnl
+      m4_if(m4_sysval, [0], [],
+        [AC_FATAL([missing libgettextpo/]_gl_NAME)])
+    ])
+  ])
+])
 
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gtpo_FILE_LIST], [
   build-aux/config.rpath
-  lib/alloca_.h
-  lib/allocsa.c
-  lib/allocsa.h
-  lib/allocsa.valgrind
+  build-aux/link-warning.h
+  build-aux/moopp
+  doc/relocatable.texi
+  lib/alloca.in.h
   lib/basename.c
   lib/basename.h
   lib/c-ctype.c
@@ -121,15 +183,19 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/c-strncasecmp.c
   lib/c-strstr.c
   lib/c-strstr.h
-  lib/concatpath.c
+  lib/concat-filename.c
   lib/config.charset
+  lib/diffseq.h
   lib/error-progname.c
   lib/error-progname.h
   lib/error.c
   lib/error.h
-  lib/exit.h
   lib/exitfail.c
   lib/exitfail.h
+  lib/file-ostream.oo.c
+  lib/file-ostream.oo.h
+  lib/filename.h
+  lib/fopen.c
   lib/fstrcmp.c
   lib/fstrcmp.h
   lib/fwriteerror.c
@@ -137,12 +203,17 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/gcd.c
   lib/gcd.h
   lib/getdelim.c
-  lib/getdelim.h
   lib/getline.c
-  lib/getline.h
   lib/gettext.h
   lib/hash.c
   lib/hash.h
+  lib/iconv.in.h
+  lib/iconv_open-aix.gperf
+  lib/iconv_open-hpux.gperf
+  lib/iconv_open-irix.gperf
+  lib/iconv_open-osf.gperf
+  lib/iconv_open.c
+  lib/intprops.h
   lib/lbrkprop.h
   lib/linebreak.c
   lib/linebreak.h
@@ -150,43 +221,68 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/localcharset.h
   lib/lock.c
   lib/lock.h
+  lib/malloc.c
+  lib/malloca.c
+  lib/malloca.h
+  lib/malloca.valgrind
   lib/mbswidth.c
   lib/mbswidth.h
   lib/minmax.h
+  lib/moo.h
   lib/obstack.c
   lib/obstack.h
-  lib/pathname.h
+  lib/ostream.oo.c
+  lib/ostream.oo.h
   lib/progname.c
   lib/progname.h
+  lib/realloc.c
   lib/ref-add.sin
   lib/ref-del.sin
   lib/relocatable.c
   lib/relocatable.h
   lib/size_max.h
-  lib/stdbool_.h
-  lib/stdint_.h
+  lib/stdbool.in.h
+  lib/stdint.in.h
+  lib/stdio.in.h
+  lib/stdlib.in.h
   lib/stpcpy.c
-  lib/stpcpy.h
   lib/strdup.c
-  lib/strdup.h
+  lib/streq.h
+  lib/strerror.c
   lib/striconv.c
   lib/striconv.h
+  lib/string.in.h
+  lib/strnlen.c
   lib/tls.c
   lib/tls.h
-  lib/ucs4-utf8.h
+  lib/unistd.in.h
+  lib/unistr.h
+  lib/unistr/u16-mbtouc-aux.c
+  lib/unistr/u16-mbtouc-unsafe-aux.c
+  lib/unistr/u16-mbtouc-unsafe.c
+  lib/unistr/u16-mbtouc.c
+  lib/unistr/u8-mbtouc-aux.c
+  lib/unistr/u8-mbtouc-unsafe-aux.c
+  lib/unistr/u8-mbtouc-unsafe.c
+  lib/unistr/u8-mbtouc.c
+  lib/unistr/u8-uctomb-aux.c
+  lib/unistr/u8-uctomb.c
+  lib/unitypes.h
+  lib/uniwidth.h
+  lib/uniwidth/cjk.h
+  lib/uniwidth/width.c
   lib/unlocked-io.h
-  lib/utf16-ucs4.h
-  lib/utf8-ucs4.h
   lib/vasprintf.c
-  lib/vasprintf.h
-  lib/wcwidth.h
+  lib/wchar.in.h
+  lib/wctype.in.h
+  lib/wcwidth.c
   lib/xalloc.h
-  lib/xallocsa.c
-  lib/xallocsa.h
   lib/xasprintf.c
   lib/xerror.c
   lib/xerror.h
   lib/xmalloc.c
+  lib/xmalloca.c
+  lib/xmalloca.h
   lib/xsize.h
   lib/xstrdup.c
   lib/xstriconv.c
@@ -195,43 +291,56 @@ AC_DEFUN([gtpo_FILE_LIST], [
   lib/xvasprintf.h
   m4/absolute-header.m4
   m4/alloca.m4
-  m4/allocsa.m4
   m4/codeset.m4
   m4/eealloc.m4
   m4/error.m4
   m4/exitfail.m4
   m4/extensions.m4
+  m4/fopen.m4
   m4/getdelim.m4
   m4/getline.m4
   m4/glibc21.m4
+  m4/gnulib-common.m4
   m4/iconv.m4
+  m4/iconv_h.m4
+  m4/iconv_open.m4
+  m4/include_next.m4
+  m4/inline.m4
   m4/lib-ld.m4
   m4/lib-link.m4
   m4/lib-prefix.m4
   m4/linebreak.m4
   m4/localcharset.m4
   m4/lock.m4
-  m4/longdouble.m4
   m4/longlong.m4
+  m4/malloc.m4
+  m4/malloca.m4
   m4/mbrtowc.m4
   m4/mbstate_t.m4
   m4/mbswidth.m4
   m4/minmax.m4
+  m4/moo.m4
   m4/onceonly_2_57.m4
-  m4/relocatable.m4
+  m4/realloc.m4
+  m4/relocatable-lib.m4
   m4/size_max.m4
   m4/stdarg.m4
   m4/stdbool.m4
   m4/stdint.m4
+  m4/stdio_h.m4
+  m4/stdlib_h.m4
   m4/stpcpy.m4
   m4/strdup.m4
+  m4/strerror.m4
+  m4/string_h.m4
+  m4/strnlen.m4
   m4/tls.m4
-  m4/ucs4-utf.m4
-  m4/ulonglong.m4
+  m4/unistd_h.m4
   m4/unlocked-io.m4
-  m4/utf-ucs4.m4
   m4/vasprintf.m4
+  m4/wchar.m4
   m4/wchar_t.m4
+  m4/wctype.m4
   m4/wcwidth.m4
   m4/wint_t.m4
   m4/xsize.m4

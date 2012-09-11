@@ -2,10 +2,10 @@
    Copyright (C) 2006 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -92,7 +91,7 @@ typedef index_ty *index_list_ty;
 static inline index_list_ty
 new_index (index_ty idx)
 {
-  index_ty *list = (index_ty *) xmalloc ((2 + 1) * sizeof (index_ty));
+  index_ty *list = XNMALLOC (2 + 1, index_ty);
   list[IL_ALLOCATED] = 1;
   list[IL_LENGTH] = 1;
   list[2] = idx;
@@ -203,8 +202,7 @@ message_fuzzy_index_ty *
 message_fuzzy_index_alloc (const message_list_ty *mlp,
 			   const char *canon_charset)
 {
-  message_fuzzy_index_ty *findex =
-    (message_fuzzy_index_ty *) xmalloc (sizeof (message_fuzzy_index_ty));
+  message_fuzzy_index_ty *findex = XMALLOC (message_fuzzy_index_ty);
   size_t count = mlp->nitems;
   size_t j;
   size_t l;
@@ -386,8 +384,7 @@ mult_index_list_accumulate (struct mult_index_list *accu, index_list_ty list)
 	new_max = need;
       if (accu->item2 != NULL)
 	free (accu->item2);
-      accu->item2 =
-	(struct mult_index *) xmalloc (new_max * sizeof (struct mult_index));
+      accu->item2 = XNMALLOC (new_max, struct mult_index);
       accu->nitems2_max = new_max;
     }
 

@@ -1,7 +1,7 @@
 # -*- mode: po; coding: utf-8; -*- Slovenian message catalog for GNU gettext-example
 # Copyright (C) 2005 Yoyodyne, Inc.
 # Primož Peterlin <primoz.peterlin@biofiz.mf.uni-lj.si>, 2005.
-# $Id: sl.po,v 1.2 2006/04/20 14:10:34 haible Exp $
+# $Id: sl.po,v 1.3 2007/11/07 00:46:46 haible Exp $
 msgid ""
 msgstr ""
 "Project-Id-Version: hello-pascal 0.14.5\n"

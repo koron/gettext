@@ -1,12 +1,12 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,8 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _MESSAGE_H
 #define _MESSAGE_H
@@ -64,9 +63,10 @@ enum format_type
   format_php,
   format_gcc_internal,
   format_qt,
+  format_kde,
   format_boost
 };
-#define NFORMATS 21	/* Number of format_type enum values.  */
+#define NFORMATS 22	/* Number of format_type enum values.  */
 extern DLL_VARIABLE const char *const format_language[NFORMATS];
 extern DLL_VARIABLE const char *const format_language_pretty[NFORMATS];
 
@@ -96,6 +96,17 @@ enum is_wrap
 #else /* HACK - C's enum concept is so stupid */
 #define is_wrap is_format
 #endif
+
+
+struct altstr
+{
+  const char *msgstr;
+  size_t msgstr_len;
+  const char *msgstr_end;
+  string_list_ty *comment;
+  string_list_ty *comment_dot;
+  char *id;
+};
 
 
 typedef struct message_ty message_ty;
@@ -156,16 +167,7 @@ struct message_ty
 
   /* Used for combining alternative translations, in the msgcat program.  */
   int alternative_count;
-  struct altstr
-    {
-      const char *msgstr;
-      size_t msgstr_len;
-      const char *msgstr_end;
-      string_list_ty *comment;
-      string_list_ty *comment_dot;
-      char *id;
-    }
-    *alternative;
+  struct altstr *alternative;
 };
 
 extern message_ty *
@@ -223,6 +225,11 @@ extern void
    changed.  */
 extern bool
        message_list_msgids_changed (message_list_ty *mlp);
+/* Copy a message list.
+   If copy_level = 0, also copy the messages.  If copy_level = 1, share the
+   messages.  */
+extern message_list_ty *
+       message_list_copy (message_list_ty *mlp, int copy_level);
 extern message_ty *
        message_list_search (message_list_ty *mlp,
 			    const char *msgctxt, const char *msgid);
@@ -296,6 +303,11 @@ extern void
 extern message_list_ty *
        msgdomain_list_sublist (msgdomain_list_ty *mdlp, const char *domain,
 			       bool create);
+/* Copy a message domain list.
+   If copy_level = 0, also copy the messages.  If copy_level = 1, share the
+   messages but copy the domains.  If copy_level = 2, share the domains.  */
+extern msgdomain_list_ty *
+       msgdomain_list_copy (msgdomain_list_ty *mdlp, int copy_level);
 extern message_ty *
        msgdomain_list_search (msgdomain_list_ty *mdlp,
 			      const char *msgctxt, const char *msgid);

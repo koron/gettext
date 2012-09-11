@@ -1,10 +1,10 @@
 ## Makefile for the gettext-tools/libgettextpo subdirectory of GNU gettext
-## Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+## Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
 ##
-## This program is free software; you can redistribute it and/or modify
+## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 2, or (at your option)
-## any later version.
+## the Free Software Foundation; either version 3 of the License, or
+## (at your option) any later version.
 ##
 ## This program is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
 ## GNU General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software Foundation,
-## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in.
 
@@ -23,6 +22,7 @@ BUILT_SOURCES =
 MOSTLYCLEANFILES = core *.stackdump
 CLEANFILES =
 DISTCLEANFILES =
+MAINTAINERCLEANFILES =
 SUFFIXES =
 
 lib_LTLIBRARIES = libgettextpo.la
@@ -79,6 +79,7 @@ libgettextpo_la_AUXSOURCES = \
   ../src/format-php.c \
   ../src/format-gcc-internal.c \
   ../src/format-qt.c \
+  ../src/format-kde.c \
   ../src/format-boost.c \
   ../src/format.c \
   ../src/plural-exp.c \
@@ -87,14 +88,14 @@ libgettextpo_la_AUXSOURCES = \
 
 # Libtool's library version information for libgettextpo.
 # See the libtool documentation, section "Library interface versions".
-LTV_CURRENT=3
+LTV_CURRENT=4
 LTV_REVISION=0
-LTV_AGE=3
+LTV_AGE=4
 
 # How to build libgettextpo.la.
 # Don't make it depend on libgettextsrc.la or libgettextlib.la, since they
 # define an uncontrolled amount of symbols.
-libgettextpo_la_LIBADD = libgnu.la
+libgettextpo_la_LIBADD = libgnu.la $(WOE32_LDADD)
 libgettextpo_la_LDFLAGS = \
   -version-info $(LTV_CURRENT):$(LTV_REVISION):$(LTV_AGE) \
   -rpath $(libdir) \
@@ -104,6 +105,17 @@ libgettextpo_la_LDFLAGS = \
 if WOE32DLL
 libgettextpo_la_SOURCES += ../woe32dll/gettextpo-exports.c
 libgettextpo_la_LDFLAGS += -Wl,--export-all-symbols
+endif
+
+# Version information according to Woe32 conventions.
+EXTRA_DIST += libgettextpo.rc
+if WOE32
+WOE32_LDADD = libgettextpo.res
+libgettextpo.res : $(srcdir)/libgettextpo.rc
+	$(WINDRES) `$(SHELL) $(top_srcdir)/../windows/windres-options --escape $(VERSION)` -i $(srcdir)/libgettextpo.rc -o libgettextpo.res --output-format=coff
+MOSTLYCLEANFILES += libgettextpo.res
+else
+WOE32_LDADD =
 endif
 
 # Hide symbols that are defined by libgettextpo_la_AUXSOURCES or libgnu.la
@@ -131,10 +143,11 @@ config.h: $(BUILT_SOURCES)
 	      case $$f in \
 	        *.c | *.$(OBJEXT) | *.lo ) \
 	          sf=`echo "$$f" | sed -e 's,\\.[^.]*$$,,'`.c; \
+	          test -f $$sf || sf=$(srcdir)/$$sf; \
 	          of=`echo "$$f" | sed -e 's,^.*/,,' -e 's,\\.[^.]*$$,,'`.$(OBJEXT); \
-	          $(COMPILE) -c $(srcdir)/$$sf || { rm -f config.h; exit 1; }; \
+	          $(COMPILE) -c $$sf || { rm -f config.h; exit 1; }; \
 	          sh ./exported.sh $$of 1>&5; \
-	          rm -f $$of; \
+	          rm -f $$of `echo "$$of" | sed -e 's,\\.$(OBJEXT)$$,.lo,'`; \
 	          ;; \
 	      esac; \
 	    done; \

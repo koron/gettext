@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.jl.in:13
+#: hello.jl.in:12
 msgid "Hello, world!"
 msgstr "世界你好！"
 
-#: hello.jl.in:15
+#: hello.jl.in:14
 #, librep-format
 msgid "This program is running as process number %d."
 msgstr "此程序正以进程号 %d 运行。"

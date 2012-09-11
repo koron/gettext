@@ -1,11 +1,11 @@
 /* Emergency actions in case of a fatal signal.
-   Copyright (C) 2003-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include <config.h>
@@ -27,7 +26,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "sigprocmask.h"
 #include "xalloc.h"
 
 #define SIZEOF(a) (sizeof(a) / sizeof(a[0]))
@@ -206,7 +204,7 @@ at_fatal_signal (action_t action)
       size_t old_actions_allocated = actions_allocated;
       size_t new_actions_allocated = 2 * actions_allocated;
       actions_entry_t *new_actions =
-	xmalloc (new_actions_allocated * sizeof (actions_entry_t));
+	XNMALLOC (new_actions_allocated, actions_entry_t);
       size_t k;
 
       /* Don't use memcpy() here, because memcpy takes non-volatile arguments

@@ -3,10 +3,10 @@
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,16 +14,15 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _WRITE_PO_H
 #define _WRITE_PO_H
 
+#include "ostream.h"
 #include "message.h"
 
 #include <stdbool.h>
-#include <stdio.h>
 
 
 #ifdef __cplusplus
@@ -41,14 +40,14 @@ extern bool
 
 /* These functions output parts of a message, as comments.  */
 extern void
-       message_print_comment (const message_ty *mp, FILE *fp);
+       message_print_comment (const message_ty *mp, ostream_t stream);
 extern void
-       message_print_comment_dot (const message_ty *mp, FILE *fp);
+       message_print_comment_dot (const message_ty *mp, ostream_t stream);
 extern void
-       message_print_comment_filepos (const message_ty *mp, FILE *fp,
+       message_print_comment_filepos (const message_ty *mp, ostream_t stream,
 				      bool uniforum, size_t page_width);
 extern void
-       message_print_comment_flags (const message_ty *mp, FILE *fp,
+       message_print_comment_flags (const message_ty *mp, ostream_t stream,
 				    bool debug);
 
 /* These functions set some parameters for use by 'output_format_po.print'.  */

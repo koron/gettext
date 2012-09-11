@@ -1,11 +1,11 @@
 /* Public API for GNU gettext PO files.
-   Copyright (C) 2003-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -40,8 +39,8 @@
 #include "xerror.h"
 #include "po-error.h"
 #include "po-xerror.h"
-#include "vasprintf.h"
 #include "format.h"
+#include "xvasprintf.h"
 #include "msgl-check.h"
 #include "gettext.h"
 
@@ -80,7 +79,7 @@ po_file_create (void)
 {
   po_file_t file;
 
-  file = (struct po_file *) xmalloc (sizeof (struct po_file));
+  file = XMALLOC (struct po_file);
   file->mdlp = msgdomain_list_alloc (false);
   file->real_filename = _("<unnamed>");
   file->logical_filename = file->real_filename;
@@ -119,7 +118,7 @@ po_file_read (const char *filename, po_xerror_handler_t handler)
     handler->xerror2;
   gram_max_allowed_errors = UINT_MAX;
 
-  file = (struct po_file *) xmalloc (sizeof (struct po_file));
+  file = XMALLOC (struct po_file);
   file->real_filename = filename;
   file->logical_filename = filename;
   file->mdlp = read_catalog_stream (fp, file->real_filename,
@@ -137,6 +136,9 @@ po_file_read (const char *filename, po_xerror_handler_t handler)
 }
 #undef po_file_read
 
+#ifdef __cplusplus
+extern "C" po_file_t po_file_read_v2 (const char *filename, po_error_handler_t handler);
+#endif
 po_file_t
 po_file_read_v2 (const char *filename, po_error_handler_t handler)
 {
@@ -162,7 +164,7 @@ po_file_read_v2 (const char *filename, po_error_handler_t handler)
   po_multiline_error   = handler->multiline_error;
   gram_max_allowed_errors = UINT_MAX;
 
-  file = (struct po_file *) xmalloc (sizeof (struct po_file));
+  file = XMALLOC (struct po_file);
   file->real_filename = filename;
   file->logical_filename = filename;
   file->mdlp = read_catalog_stream (fp, file->real_filename,
@@ -182,6 +184,9 @@ po_file_read_v2 (const char *filename, po_error_handler_t handler)
 }
 
 /* Older version for binary backward compatibility.  */
+#ifdef __cplusplus
+extern "C" po_file_t po_file_read (const char *filename);
+#endif
 po_file_t
 po_file_read (const char *filename)
 {
@@ -200,7 +205,7 @@ po_file_read (const char *filename)
 	return NULL;
     }
 
-  file = (struct po_file *) xmalloc (sizeof (struct po_file));
+  file = XMALLOC (struct po_file);
   file->real_filename = filename;
   file->logical_filename = filename;
   file->mdlp = read_catalog_stream (fp, file->real_filename,
@@ -238,6 +243,9 @@ po_file_write (po_file_t file, const char *filename, po_xerror_handler_t handler
 #undef po_file_write
 
 /* Older version for binary backward compatibility.  */
+#ifdef __cplusplus
+extern "C" po_file_t po_file_write (po_file_t file, const char *filename, po_error_handler_t handler);
+#endif
 po_file_t
 po_file_write (po_file_t file, const char *filename, po_error_handler_t handler)
 {
@@ -279,8 +287,7 @@ po_file_domains (po_file_t file)
   if (file->domains == NULL)
     {
       size_t n = file->mdlp->nitems;
-      const char **domains =
-	(const char **) xmalloc ((n + 1) * sizeof (const char *));
+      const char **domains = XNMALLOC (n + 1, const char *);
       size_t j;
 
       for (j = 0; j < n; j++)
@@ -346,7 +353,7 @@ po_header_field (const char *header, const char *field)
 	  if (value_end == NULL)
 	    value_end = value_start + strlen (value_start);
 
-	  value = (char *) xmalloc (value_end - value_start + 1);
+	  value = XNMALLOC (value_end - value_start + 1, char);
 	  memcpy (value, value_start, value_end - value_start);
 	  value[value_end - value_start] = '\0';
 
@@ -401,7 +408,7 @@ po_header_set_field (const char *header, const char *field, const char *value)
 	    header_part3_len = header + header_len - oldvalue_end;
 	    result_len = header_part1_len + value_len + header_part3_len;
 		    /* = header_len - oldvalue_len + value_len */
-	    result = (char *) xmalloc (result_len + 1);
+	    result = XNMALLOC (result_len + 1, char);
 	    memcpy (result, header, header_part1_len);
 	    memcpy (result + header_part1_len, value, value_len);
 	    memcpy (result + header_part1_len + value_len, oldvalue_end,
@@ -425,7 +432,7 @@ po_header_set_field (const char *header, const char *field, const char *value)
 
     newline = (header_len > 0 && header[header_len - 1] != '\n' ? 1 : 0);
     result_len = header_len + newline + field_len + 2 + value_len + 1;
-    result = (char *) xmalloc (result_len + 1);
+    result = XNMALLOC (result_len + 1, char);
     memcpy (result, header, header_len);
     if (newline)
       *(result + header_len) = '\n';
@@ -452,9 +459,7 @@ po_message_iterator (po_file_t file, const char *domain)
   if (domain == NULL)
     domain = MESSAGE_DOMAIN_DEFAULT;
 
-  iterator =
-    (struct po_message_iterator *)
-    xmalloc (sizeof (struct po_message_iterator));
+  iterator = XMALLOC (struct po_message_iterator);
   iterator->file = file;
   iterator->domain = xstrdup (domain);
   iterator->mlp = msgdomain_list_sublist (file->mdlp, domain, false);
@@ -1108,6 +1113,45 @@ po_filepos_start_line (po_filepos_t filepos)
 }
 
 
+/* Return a NULL terminated array of the supported format types.  */
+
+const char * const *
+po_format_list (void)
+{
+  static const char * const * whole_list /* = NULL */;
+  if (whole_list == NULL)
+    {
+      const char **list = XNMALLOC (NFORMATS + 1, const char *);
+      size_t i;
+      for (i = 0; i < NFORMATS; i++)
+	list[i] = xasprintf ("%s-format", format_language[i]);
+      list[i] = NULL;
+      whole_list = list;
+    }
+  return whole_list;
+}
+
+
+/* Return the pretty name associated with a format type.
+   For example, for "csharp-format", return "C#".
+   Return NULL if the argument is not a supported format type.  */
+
+const char *
+po_format_pretty_name (const char *format_type)
+{
+  size_t len = strlen (format_type);
+  size_t i;
+
+  if (len >= 7 && memcmp (format_type + len - 7, "-format", 7) == 0)
+    for (i = 0; i < NFORMATS; i++)
+      if (strlen (format_language[i]) == len - 7
+	  && memcmp (format_language[i], format_type, len - 7) == 0)
+	/* The given format_type corresponds to (enum format_type) i.  */
+	return format_language_pretty[i];
+  return NULL;
+}
+
+
 /* Test whether an entire file PO file is valid, like msgfmt does it.
    If it is invalid, pass the reasons to the handler.  */
 
@@ -1215,7 +1259,7 @@ po_message_check_format (po_message_t message, po_xerror_handler_t handler)
     handler->xerror2;
 
   if (!mp->obsolete)
-    check_message (mp, &mp->pos, 0, 1, NULL, 0, 0, 0, 0);
+    check_message (mp, &mp->pos, 0, 1, NULL, 0, 0, 0, 0, 0);
 
   /* Restore error handler.  */
   po_xerror  = textmode_xerror;
@@ -1246,6 +1290,9 @@ po_error_logger (const char *format, ...)
 /* Test whether the message translation is a valid format string if the message
    is marked as being a format string.  If it is invalid, pass the reasons to
    the handler.  */
+#ifdef __cplusplus
+extern "C" void po_message_check_format (po_message_t message, po_error_handler_t handler);
+#endif
 void
 po_message_check_format (po_message_t message, po_error_handler_t handler)
 {
@@ -1256,7 +1303,7 @@ po_message_check_format (po_message_t message, po_error_handler_t handler)
 
   check_msgid_msgstr_format (mp->msgid, mp->msgid_plural,
 			     mp->msgstr, mp->msgstr_len,
-			     mp->is_format, NULL, po_error_logger);
+			     mp->is_format, NULL, 0, po_error_logger);
 
   /* Restore error handler.  */
   po_error = error;

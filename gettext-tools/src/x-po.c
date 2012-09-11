@@ -3,10 +3,10 @@
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,16 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+
+/* Specification.  */
+#include "x-po.h"
+#include "x-properties.h"
+#include "x-stringtable.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,23 +75,25 @@ extract_add_message (default_catalog_reader_ty *this,
      because the old header may contain a charset= directive.  */
   if (msgctxt == NULL && *msgid == '\0' && !xgettext_omit_header)
     {
-      const char *charsetstr = strstr (msgstr, "charset=");
+      {
+	const char *charsetstr = strstr (msgstr, "charset=");
 
-      if (charsetstr != NULL)
-	{
-	  size_t len;
-	  char *charset;
+	if (charsetstr != NULL)
+	  {
+	    size_t len;
+	    char *charset;
 
-	  charsetstr += strlen ("charset=");
-	  len = strcspn (charsetstr, " \t\n");
-	  charset = (char *) xmalloc (len + 1);
-	  memcpy (charset, charsetstr, len);
-	  charset[len] = '\0';
+	    charsetstr += strlen ("charset=");
+	    len = strcspn (charsetstr, " \t\n");
+	    charset = XNMALLOC (len + 1, char);
+	    memcpy (charset, charsetstr, len);
+	    charset[len] = '\0';
 
-	  if (header_charset != NULL)
-	    free (header_charset);
-	  header_charset = charset;
-	}
+	    if (header_charset != NULL)
+	      free (header_charset);
+	    header_charset = charset;
+	  }
+      }
 
      discard:
       if (msgctxt != NULL)
@@ -189,7 +195,7 @@ extract (FILE *fp,
 		      len1 = charsetstr - header;
 		      len2 = strlen (header_charset);
 		      len3 = (header + strlen (header)) - (charsetstr + len);
-		      new_header = (char *) xmalloc (len1 + len2 + len3 + 1);
+		      new_header = XNMALLOC (len1 + len2 + len3 + 1, char);
 		      memcpy (new_header, header, len1);
 		      memcpy (new_header + len1, header_charset, len2);
 		      memcpy (new_header + len1 + len2, charsetstr + len, len3 + 1);

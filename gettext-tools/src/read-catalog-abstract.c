@@ -1,12 +1,12 @@
 /* Reading PO files, abstract class.
-   Copyright (C) 1995-1996, 1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1996, 1998, 2000-2007 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,8 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -407,7 +406,7 @@ po_parse_comment_filepos (const char *s)
 			/* Parsed a GNU style file comment with spaces.  */
 			const char *string_end = s;
 			size_t string_length = string_end - string_start;
-			char *string = (char *) xmalloc (string_length + 1);
+			char *string = XNMALLOC (string_length + 1, char);
 
 			memcpy (string, string_start, string_length);
 			string[string_length] = '\0';
@@ -449,7 +448,7 @@ po_parse_comment_filepos (const char *s)
 		      /* Parsed a GNU style file comment with spaces.  */
 		      const char *string_end = s - 1;
 		      size_t string_length = string_end - string_start;
-		      char *string = (char *) xmalloc (string_length + 1);
+		      char *string = XNMALLOC (string_length + 1, char);
 
 		      memcpy (string, string_start, string_length);
 		      string[string_length] = '\0';
@@ -502,7 +501,7 @@ po_parse_comment_filepos (const char *s)
 
 		  {
 		    size_t string_length = string_end - string_start;
-		    char *string = (char *) xmalloc (string_length + 1);
+		    char *string = XNMALLOC (string_length + 1, char);
 
 		    memcpy (string, string_start, string_length);
 		    string[string_length] = '\0';
@@ -521,7 +520,7 @@ po_parse_comment_filepos (const char *s)
 	  {
 	    const char *string_end = s;
 	    size_t string_length = string_end - string_start;
-	    char *string = (char *) xmalloc (string_length + 1);
+	    char *string = XNMALLOC (string_length + 1, char);
 
 	    memcpy (string, string_start, string_length);
 	    string[string_length] = '\0';
@@ -620,7 +619,7 @@ po_parse_comment_solaris_filepos (const char *s)
 			      /* Parsed a Sun style file comment.  */
 			      size_t string_length = string_end - string_start;
 			      char *string =
-				(char *) xmalloc (string_length + 1);
+				XNMALLOC (string_length + 1, char);
 
 			      memcpy (string, string_start, string_length);
 			      string[string_length] = '\0';
@@ -650,7 +649,14 @@ void
 po_callback_comment_dispatcher (const char *s)
 {
   if (*s == '.')
-    po_callback_comment_dot (s + 1);
+    {
+      s++;
+      /* There is usually a space before the comment.  People don't
+	 consider it part of the comment, therefore remove it here.  */
+      if (*s == ' ')
+	s++;
+      po_callback_comment_dot (s);
+    }
   else if (*s == ':')
     {
       /* Parse the file location string.  The appropriate callback will be
@@ -670,6 +676,12 @@ po_callback_comment_dispatcher (const char *s)
       if (po_parse_comment_solaris_filepos (s))
 	/* Do nothing, it is a Sun-style file pos line.  */ ;
       else
-	po_callback_comment (s);
+	{
+	  /* There is usually a space before the comment.  People don't
+	     consider it part of the comment, therefore remove it here.  */
+	  if (*s == ' ')
+	    s++;
+	  po_callback_comment (s);
+	}
     }
 }

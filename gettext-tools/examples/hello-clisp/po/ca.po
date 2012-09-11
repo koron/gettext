@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.lisp.in:12
+#: hello.lisp.in:11
 msgid "Hello, world!"
 msgstr "Hola, món!"
 
-#: hello.lisp.in:14
+#: hello.lisp.in:13
 #, lisp-format
 msgid "This program is running as process number ~D."
 msgstr "Aquest programa està corrent amb el número de procés ~D."

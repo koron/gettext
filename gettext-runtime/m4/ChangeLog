@@ -1,3 +1,162 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* ulonglong.m4: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* uintmax_t.m4 (gl_AC_TYPE_UINTMAX_T): Use
+	AC_TYPE_UNSIGNED_LONG_LONG_INT instead of gl_AC_TYPE_UNSIGNED_LONG_LONG.
+	* longlong.m4 (gl_AC_TYPE_LONG_LONG): Remove macro.
+	* ulonglong.m4 (gl_AC_TYPE_UNSIGNED_LONG_LONG): Remove macro.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* longlong.m4 (_AC_TYPE_LONG_LONG_SNIPPET): New macro, extracted from
+	AC_TYPE_LONG_LONG_INT and AC_TYPE_UNSIGNED_LONG_LONG_INT.
+	(AC_TYPE_LONG_LONG_INT): Use it.
+	(AC_TYPE_UNSIGNED_LONG_LONG_INT): Moved here from ulonglong.m4. Use it
+	as well.
+	* ulonglong.m4 (AC_TYPE_UNSIGNED_LONG_LONG_INT): Remove macro; moved to
+	longlong.m4.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* po.m4 (AM_PO_SUBDIRS): Initialize XGETTEXT_EXTRA_OPTIONS.
+	(AM_XGETTEXT_OPTION_INIT, AM_XGETTEXT_OPTION): New macros.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* po.m4 (AM_PO_SUBDIRS): Set GETTEXT_MACRO_VERSION to 0.17.
+
+2007-10-27  Bruno Haible  <bruno@clisp.org>
+
+	* intl.m4 (AM_INTL_SUBDIR): Set and AC_SUBST LTLIBC.
+
+2007-10-22  Bruno Haible  <bruno@clisp.org>
+
+	* ulonglong.m4 (AC_TYPE_UNSIGNED_LONG_LONG_INT): Use -1ull, not
+	-1u, in preprocessor expression, so that we don't test for the bug
+	in HP-UX 11.00 cpp.  Testing for this bug caused problems; see
+	<http://lists.gnu.org/archive/html/bug-gnulib/2007-10/msg00329.html>.
+
+2007-10-16  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Check for 64-bit int errors in HP-UX 10.20 preprocessor.
+	Problem reported by H.Merijn Brand in
+	<http://lists.gnu.org/archive/html/bug-tar/2007-10/msg00018.html>.
+	* longlong.m4 (AC_TYPE_LONG_LONG_INT): Check preprocessor too.
+	* ulonglong.m4 (AC_TYPE_UNSIGNED_LONG_LONG_INT): Likewise.
+
+2007-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* intl.m4 (AM_INTL_SUBDIR): Set WOE32DLL on mingw like on Cygwin.
+	Fixes incomplete 2006-05-15 patch.
+	Patch from Charles Wilson.
+
+2007-09-12  Bruno Haible  <bruno@clisp.org>
+
+	* lock.m4: Don't provide an AC_USE_SYSTEM_EXTENSIONS definition.
+	(gl_LOCK_EARLY_BODY): Use AC_GNU_SOURCE when AC_USE_SYSTEM_EXTENSIONS
+	is not defined.
+
+2007-09-12  Eric Blake  <ebb9@byu.net>
+
+	* lock.m4 (gl_LOCK_EARLY_BODY): AC_GNU_SOURCE will be obsolete in
+	Autoconf 2.62; use AC_USE_SYSTEM_EXTENSIONS instead, but provide
+	fallback, so that lock.m4 can be used in gettext without extensions
+	module.
+
+2007-09-08  Bruno Haible  <bruno@clisp.org>
+
+	* po.m4 (AM_PO_SUBDIRS): Define GETTEXT_MACRO_VERSION.
+	Suggested by Daniel Leidert <daniel.leidert.spam@gmx.net>.
+
+2007-08-26  Bruno Haible  <bruno@clisp.org>
+
+	* intl.m4 (gl_INTL_SUBDIR_CORE): Avoid an "unused variable" warning
+	in the _NL_LOCALE_NAME test.
+	Mentioned by Marti Raudsepp <marti@juffo.org>.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* intlmacosx.m4: New file, extracted from gettext.m4.
+	* gettext.m4 (gt_INTL_MACOSX): Remove macro, moved to intlmacosx.m4.
+	* Makefile.am (EXTRA_DIST): Add intlmacosx.m4.
+
+2007-05-28  Bruno Haible  <bruno@clisp.org>
+
+	* intl.m4 (AM_INTL_SUBDIR): Substitute variables WOE32, WINDRES.
+
+2007-05-27  Bruno Haible  <bruno@clisp.org>
+
+	* iconv.m4: Update from gnulib.
+	2007-05-27  Bruno Haible  <bruno@clisp.org>
+		* iconv.m4 (AM_ICONV_LINK): Fix 2007-03-31 patch.
+
+2007-05-20  Bruno Haible  <bruno@clisp.org>
+
+	* iconv.m4: Update from gnulib.
+	2007-03-31  Bruno Haible  <bruno@clisp.org>
+		* iconv.m4 (AM_ICONV_LINK): Fix 2007-03-29 patch. Test also
+		against a bug in HP-UX iconv_open().
+	2007-03-29  Bruno Haible  <bruno@clisp.org>
+		* iconv.m4 (AM_ICONV_LINK): Require AC_CANONICAL_HOST. Test
+		against a bug in AIX iconv().
+
+	* longlong.m4: Update from gnulib.
+	2006-11-08  Bruno Haible  <bruno@clisp.org>
+		* longlong.m4 (AC_TYPE_LONG_LONG_INT): Set
+		ac_cv_type_long_long_int to 'yes' instead of 'cross-compiling'.
+	2006-11-07  Paul Eggert  <eggert@cs.ucla.edu>
+		* longlong.m4 (AC_TYPE_LONG_LONG_INT): Detect bug in Tandem
+		NonStop Kernel (OSS) cc -O circa 2004, reported by Matthew
+		Woehlke.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	Assume the 'long double' type.
+	* longdouble.m4: Remove file.
+	* intl.m4: Remove gt_TYPE_LONGDOUBLE invocation.
+	* Makefile.am (EXTRA_DIST): Remove longdouble.m4.
+
+2007-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* intdiv0.m4 (gt_INTDIV0): Avoid performing the test for real on x86
+	or x86_64 platforms running MacOS X.
+	Reported by Ryan Schmidt <@ryandesign.com>.
+
+2007-04-02  Bruno Haible  <bruno@clisp.org>
+
+	* intdiv0.m4 (gt_INTDIV0): When cross-compiling, treat x86_64 like
+	i386.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	* printf-posix.m4 (gt_PRINTF_POSIX): Treat BeOS like NetBSD and Woe32
+	systems.
+
+2007-02-13  Bruno Haible  <bruno@clisp.org>
+
+	* intdiv0.m4 (gt_INTDIV0): Assume ANSI C. Fix underquoting bug.
+	Reported by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+2007-01-10  Eric Blake  <ebb9@byu.net>
+
+	* wint_t.m4 (gt_TYPE_WINT_T): Include <stddef.h> before <wchar.h>, to
+	work around BSDI bug in BSD/OS 4.0.1.
+	Reported by Chris McGuire.
+
+2006-11-21  Bruno Haible  <bruno@clisp.org>
+
+	* size_max.m4 (gl_SIZE_MAX): Use AC_COMPUTE_INT instead of
+	_AC_COMPUTE_INT.
+	(AC_COMPUTE_INT): Add fallback definition for autoconf < 2.61.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

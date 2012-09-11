@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.2\n"
 
-#: hello.php:13
+#: hello.php:12
 msgid "Hello, world!"
 msgstr "Hello, world!"
 
-#: hello.php:15
+#: hello.php:14
 #, php-format
 msgid "This program is running as process number %d."
 msgstr "Program ini berjalan sebagai proses nomor %d"

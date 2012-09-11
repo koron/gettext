@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3.1\n"
 
-#: hello.cc:40
+#: hello.cc:39
 msgid "Hello, world!"
 msgstr "Γεια σου, κόσμε!"
 
-#: hello.cc:41
+#: hello.cc:40
 #, c-format
 msgid "This program is running as process number %d."
 msgstr "Αυτό το πρόγραμμα εκτελείται με αριθμό διεργασίας %d."

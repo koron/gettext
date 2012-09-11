@@ -1,3 +1,54 @@
+Version 0.17 - November 2007
+
+* License:
+  The gettext related programs and tools are now licensed under the GPL
+  version 3, instead of the GPL version 2. The libintl library continues
+  to be licensed under LGPL.
+
+* PO file format:
+  The Project-Id-Version field in the header entry may now already be filled
+  in the POT file. In this case, the translators don't need to fill it in.
+  xgettext has new options --package-name and --package-version that allow
+  to specify the package name and version from a Makefile.
+
+* Colorized PO files:
+  The msgcat program has new options --color and --style that produce a
+  colorized PO file output, where keywords, strings, comments, or format
+  directives can be highlighted.  See the documentation section
+  "Highlighting parts of PO files" for more info.
+
+* gettextize now has a --po-dir option that allows several PO directories to
+  be updated all together.
+
+* Programming languages support:
+  - Contexts (msgctxt) are now also supported for Java and C#.
+  - C# with Qt: The support for Qt format strings has been updated for Qt 4.
+  - C++ with KDE:
+    xgettext has a new option --kde that triggers the recognition and marking
+    of KDE 4 format strings.
+
+* Autoconf macros:
+  - A new macro AM_XGETTEXT_OPTION can be used as an alternative to modifying
+    po/Makevars.
+
+* libgettextpo library:
+  - New functions are available for querying the list of supported format
+    types.
+  - The functions po_message_comments and po_message_extracted_comments
+    return a multiline string where each line no longer starts with a redundant
+    space. The leading space in every comment line is now stripped while
+    reading the PO file.
+  - Conversely, when you pass a multiline string to the function
+    po_message_set_comments or po_message_set_extracted_comments, you normally
+    don't pass a space at the beginning of each line, because such spaces are
+    no longer trimmed during output.
+
+* Documentation:
+  - The "Users" chapter has been completely rewritten.
+  - New section "Highlighting parts of PO files".
+  - A complete example showing the use of GNU gettext in Java with the Qt/Jambi
+    GUI toolkit has been added.
+
 Version 0.16.1 - November 2006
 
 * Bug fix in the gettext.m4 autoconf macros.
@@ -38,7 +89,8 @@ Version 0.16 - October 2006
   symlinking behaviour by specifying the --symlink option.
 
 * Autoconf macros:
-  - The gettext autoconf macros now require autoconf 2.52 or newer.
+  - The gettext autoconf macros now require autoconf 2.52 or newer and
+    GNU m4 1.4.5 or newer.
   - A new autoconf macro AM_GNU_GETTEXT_INTL_SUBDIR is added. It allows to
     specify the presence of an intl/ subdirectory outside the AM_GNU_GETTEXT
     invocation.

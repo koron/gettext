@@ -1,11 +1,11 @@
 /* Checking of messages in PO files.
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, April 1995.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -26,6 +25,7 @@
 #include <limits.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -39,8 +39,6 @@
 #include "plural-eval.h"
 #include "plural-table.h"
 #include "c-strstr.h"
-#include "vasprintf.h"
-#include "exit.h"
 #include "message.h"
 #include "gettext.h"
 
@@ -50,15 +48,18 @@
 
 
 /* Check the values returned by plural_eval.
+   Signals the errors through po_xerror.
    Return the number of errors that were seen.
    If no errors, returns in *PLURAL_DISTRIBUTION either NULL or an array
    of length NPLURALS_VALUE describing which plural formula values appear
-   infinitely often.  */
-static int
-check_plural_eval (struct expression *plural_expr,
+   infinitely often and in *PLURAL_DISTRIBUTION_LENGTH the length of this
+   array.  */
+int
+check_plural_eval (const struct expression *plural_expr,
 		   unsigned long nplurals_value,
 		   const message_ty *header,
-		   unsigned char **plural_distribution)
+		   unsigned char **plural_distribution,
+		   unsigned long *plural_distribution_length)
 {
   /* Do as if the plural formula assumes a value N infinitely often if it
      assumes it at least 5 times.  */
@@ -67,7 +68,7 @@ check_plural_eval (struct expression *plural_expr,
 
   /* Allocate a distribution array.  */
   if (nplurals_value <= 100)
-    distribution = (unsigned char *) xcalloc (nplurals_value, 1);
+    distribution = XCALLOC (nplurals_value, unsigned char);
   else
     /* nplurals_value is nonsense.  Don't risk an out-of-memory.  */
     distribution = NULL;
@@ -120,7 +121,10 @@ check_plural_eval (struct expression *plural_expr,
 
 	  for (val = 0; val < nplurals_value; val++)
 	    distribution[val] = (distribution[val] == OFTEN ? 1 : 0);
+	  *plural_distribution_length = nplurals_value;
 	}
+      else
+	*plural_distribution_length = 0;
       *plural_distribution = distribution;
 
       return 0;
@@ -198,9 +202,12 @@ plural_help (const char *nullentry)
 /* Perform plural expression checking.
    Return the number of errors that were seen.
    If no errors, returns in *PLURAL_DISTRIBUTION either NULL or an array
-   describing which plural formula values appear infinitely often.  */
+   describing which plural formula values appear infinitely often and in
+   *PLURAL_DISTRIBUTION_LENGTH the length of this array.  */
 static int
-check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
+check_plural (message_list_ty *mlp,
+	      unsigned char **plural_distribution,
+	      unsigned long *plural_distribution_length)
 {
   int seen_errors = 0;
   const message_ty *has_plural;
@@ -211,6 +218,7 @@ check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
   size_t j;
   message_ty *header;
   unsigned char *distribution = NULL;
+  unsigned long distribution_length = 0;
 
   /* Determine whether mlp has plural entries.  */
   has_plural = NULL;
@@ -315,7 +323,7 @@ check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
 	  const char *endp;
 	  unsigned long int nplurals_value;
 	  struct parse_args args;
-	  struct expression *plural_expr;
+	  const struct expression *plural_expr;
 
 	  /* First check the number.  */
 	  nplurals += 9;
@@ -371,7 +379,7 @@ check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
 	  if (!seen_errors)
 	    seen_errors =
 	      check_plural_eval (plural_expr, nplurals_value, header,
-				 &distribution);
+				 &distribution, &distribution_length);
 
 	  /* Check the number of plurals of the translations.  */
 	  if (!seen_errors)
@@ -413,12 +421,22 @@ check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
 		 max_nplurals = n = min_nplurals.  */
 	    }
 	}
+      else
+	goto no_plural;
     }
-  else if (has_plural != NULL)
+  else
     {
-      po_xerror (PO_SEVERITY_ERROR, has_plural, NULL, 0, 0, false,
-		 _("message catalog has plural form translations, but lacks a header entry with \"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\""));
-      seen_errors++;
+      if (has_plural != NULL)
+	{
+	  po_xerror (PO_SEVERITY_ERROR, has_plural, NULL, 0, 0, false,
+		     _("message catalog has plural form translations, but lacks a header entry with \"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\""));
+	  seen_errors++;
+	}
+     no_plural:
+      /* By default, the Germanic formula (n != 1) is used.  */
+      distribution = XCALLOC (2, unsigned char);
+      distribution[1] = 1;
+      distribution_length = 2;
     }
 
   /* distribution is not needed if we report errors.
@@ -429,8 +447,10 @@ check_plural (message_list_ty *mlp, unsigned char **plural_distribution)
     {
       free (distribution);
       distribution = NULL;
+      distribution_length = 0;
     }
   *plural_distribution = distribution;
+  *plural_distribution_length = distribution_length;
 
   return seen_errors;
 }
@@ -462,7 +482,9 @@ formatstring_error_logger (const char *format, ...)
 /* Perform miscellaneous checks on a message.
    PLURAL_DISTRIBUTION is either NULL or an array of nplurals elements,
    PLURAL_DISTRIBUTION[j] being true if the value j appears to be assumed
-   infinitely often by the plural formula.  */
+   infinitely often by the plural formula.
+   PLURAL_DISTRIBUTION_LENGTH is the length of the PLURAL_DISTRIBUTION
+   array.  */
 static int
 check_pair (const message_ty *mp,
 	    const char *msgid,
@@ -471,7 +493,9 @@ check_pair (const message_ty *mp,
 	    const char *msgstr, size_t msgstr_len,
 	    const enum is_format is_format[NFORMATS],
 	    int check_newlines,
-	    int check_format_strings, const unsigned char *plural_distribution,
+	    int check_format_strings,
+	    const unsigned char *plural_distribution,
+	    unsigned long plural_distribution_length,
 	    int check_compatibility,
 	    int check_accelerators, char accelerator_char)
 {
@@ -589,6 +613,7 @@ plural handling is a GNU gettext extension"));
       seen_errors +=
 	check_msgid_msgstr_format (msgid, msgid_plural, msgstr, msgstr_len,
 				   is_format, plural_distribution,
+				   plural_distribution_length,
 				   formatstring_error_logger);
     }
 
@@ -714,12 +739,15 @@ some header fields still have the initial default value\n"));
    PLURAL_DISTRIBUTION is either NULL or an array of nplurals elements,
    PLURAL_DISTRIBUTION[j] being true if the value j appears to be assumed
    infinitely often by the plural formula.
+   PLURAL_DISTRIBUTION_LENGTH is the length of the PLURAL_DISTRIBUTION array.
    Return the number of errors that were seen.  */
 int
 check_message (const message_ty *mp,
 	       const lex_pos_ty *msgid_pos,
 	       int check_newlines,
-	       int check_format_strings, const unsigned char *plural_distribution,
+	       int check_format_strings,
+	       const unsigned char *plural_distribution,
+	       unsigned long plural_distribution_length,
 	       int check_header,
 	       int check_compatibility,
 	       int check_accelerators, char accelerator_char)
@@ -732,7 +760,8 @@ check_message (const message_ty *mp,
 		     mp->msgstr, mp->msgstr_len,
 		     mp->is_format,
 		     check_newlines,
-		     check_format_strings, plural_distribution,
+		     check_format_strings,
+		     plural_distribution, plural_distribution_length,
 		     check_compatibility,
 		     check_accelerators, accelerator_char);
 }
@@ -750,10 +779,12 @@ check_message_list (message_list_ty *mlp,
 {
   int seen_errors = 0;
   unsigned char *plural_distribution = NULL;
+  unsigned long plural_distribution_length = 0;
   size_t j;
 
   if (check_header)
-    seen_errors += check_plural (mlp, &plural_distribution);
+    seen_errors +=
+      check_plural (mlp, &plural_distribution, &plural_distribution_length);
 
   for (j = 0; j < mlp->nitems; j++)
     {
@@ -762,7 +793,9 @@ check_message_list (message_list_ty *mlp,
       if (!mp->obsolete)
 	seen_errors += check_message (mp, &mp->pos,
 				      check_newlines,
-				      check_format_strings, plural_distribution,
+				      check_format_strings,
+				      plural_distribution,
+				      plural_distribution_length,
 				      check_header, check_compatibility,
 				      check_accelerators, accelerator_char);
     }

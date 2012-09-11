@@ -1,10 +1,10 @@
 /* Iterating through multibyte strings: macros for multi-byte encodings.
-   Copyright (C) 2001, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2007 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible <bruno@clisp.org>.  */
 
@@ -73,6 +72,9 @@
    mbui_reloc (iter, ptrdiff)
      relocates iterator when the string is moved by ptrdiff bytes.
 
+   mbui_copy (&destiter, &srciter)
+     copies srciter to destiter.
+
    Here are the function prototypes of the macros.
 
    extern void		mbui_init (mbui_iterator_t iter, const char *startptr);
@@ -81,6 +83,7 @@
    extern mbchar_t	mbui_cur (mbui_iterator_t iter);
    extern const char *	mbui_cur_ptr (mbui_iterator_t iter);
    extern void		mbui_reloc (mbui_iterator_t iter, ptrdiff_t ptrdiff);
+   extern void		mbui_copy (mbui_iterator_t *new, const mbui_iterator_t *old);
  */
 
 #ifndef _MBUITER_H
@@ -88,7 +91,9 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
    <wchar.h>.
@@ -182,6 +187,17 @@ mbuiter_multi_reloc (struct mbuiter_multi *iter, ptrdiff_t ptrdiff)
   iter->cur.ptr += ptrdiff;
 }
 
+static inline void
+mbuiter_multi_copy (struct mbuiter_multi *new_iter, const struct mbuiter_multi *old_iter)
+{
+  if ((new_iter->in_shift = old_iter->in_shift))
+    memcpy (&new_iter->state, &old_iter->state, sizeof (mbstate_t));
+  else
+    memset (&new_iter->state, 0, sizeof (mbstate_t));
+  new_iter->next_done = old_iter->next_done;
+  mb_copy (&new_iter->cur, &old_iter->cur);
+}
+
 /* Iteration macros.  */
 typedef struct mbuiter_multi mbui_iterator_t;
 #define mbui_init(iter, startptr) \
@@ -199,5 +215,8 @@ typedef struct mbuiter_multi mbui_iterator_t;
 
 /* Relocation.  */
 #define mbui_reloc(iter, ptrdiff) mbuiter_multi_reloc (&iter, ptrdiff)
+
+/* Copying an iterator.  */
+#define mbui_copy mbuiter_multi_copy
 
 #endif /* _MBUITER_H */

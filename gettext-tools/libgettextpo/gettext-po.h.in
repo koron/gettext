@@ -1,11 +1,11 @@
 /* Public API for GNU gettext PO files - contained in libgettextpo.
-   Copyright (C) 2003-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _GETTEXT_PO_H
 #define _GETTEXT_PO_H 1
@@ -29,7 +28,7 @@ extern "C" {
 /* =========================== Meta Information ============================ */
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBGETTEXTPO_VERSION 0x001000
+#define LIBGETTEXTPO_VERSION 0x001100
 extern int libgettextpo_version;
 
 /* ================================= Types ================================= */
@@ -311,6 +310,17 @@ extern const char * po_filepos_file (po_filepos_t filepos);
 /* Return the line number where the string starts, or (size_t)(-1) if no line
    number is available.  */
 extern size_t po_filepos_start_line (po_filepos_t filepos);
+
+
+/* ============================ Format type API ============================= */
+
+/* Return a NULL terminated array of the supported format types.  */
+extern const char * const * po_format_list (void);
+
+/* Return the pretty name associated with a format type.
+   For example, for "csharp-format", return "C#".
+   Return NULL if the argument is not a supported format type.  */
+extern const char * po_format_pretty_name (const char *format_type);
 
 
 /* ============================= Checking API ============================== */

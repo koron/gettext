@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3\n"
 
-#: hello.tcl:12
+#: hello.tcl:11
 msgid "Hello, world!"
 msgstr "Здравствуй, мир!"
 
-#: hello.tcl:13
+#: hello.tcl:12
 #, tcl-format
 msgid "This program is running as process number %d."
 msgstr "Эта программа выполняется как процесс под номером %d."

@@ -1,10 +1,10 @@
 ## Makefile for the gettext-tools/tests subdirectory of GNU gettext
-## Copyright (C) 1995-1997, 2001-2006 Free Software Foundation, Inc.
+## Copyright (C) 1995-1997, 2001-2007 Free Software Foundation, Inc.
 ##
-## This program is free software; you can redistribute it and/or modify
+## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 2, or (at your option)
-## any later version.
+## the Free Software Foundation; either version 3 of the License, or
+## (at your option) any later version.
 ##
 ## This program is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
 ## GNU General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software Foundation,
-## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in.
 
@@ -54,7 +53,7 @@ TESTS = gettext-1 gettext-2 gettext-3 gettext-4 gettext-5 gettext-6 gettext-7 \
 	msgmerge-1 msgmerge-2 msgmerge-3 msgmerge-4 msgmerge-5 msgmerge-6 \
 	msgmerge-7 msgmerge-8 msgmerge-9 msgmerge-10 msgmerge-11 msgmerge-12 \
 	msgmerge-13 msgmerge-14 msgmerge-15 msgmerge-16 msgmerge-17 \
-	msgmerge-18 msgmerge-19 \
+	msgmerge-18 msgmerge-19 msgmerge-20 msgmerge-21 msgmerge-22 \
 	msgmerge-compendium-1 msgmerge-compendium-2 msgmerge-compendium-3 \
 	msgmerge-compendium-4 msgmerge-compendium-5 msgmerge-compendium-6 \
 	msgmerge-properties-1 msgmerge-properties-2 \
@@ -68,31 +67,35 @@ TESTS = gettext-1 gettext-2 gettext-3 gettext-4 gettext-5 gettext-6 gettext-7 \
 	recode-sr-latin-1 recode-sr-latin-2 \
 	xgettext-1 xgettext-2 xgettext-3 xgettext-4 xgettext-5 xgettext-6 \
 	xgettext-7 xgettext-8 xgettext-9 \
-	xgettext-awk-1 \
+	xgettext-awk-1 xgettext-awk-2 \
 	xgettext-c-1 xgettext-c-2 xgettext-c-3 xgettext-c-4 xgettext-c-5 \
 	xgettext-c-6 xgettext-c-7 xgettext-c-8 xgettext-c-9 xgettext-c-10 \
 	xgettext-c-11 xgettext-c-12 xgettext-c-13 xgettext-c-14 xgettext-c-15 \
+	xgettext-c-16 xgettext-c-17 \
 	xgettext-csharp-1 xgettext-csharp-2 xgettext-csharp-3 \
-	xgettext-csharp-4 xgettext-csharp-5 \
-	xgettext-elisp-1 \
+	xgettext-csharp-4 xgettext-csharp-5 xgettext-csharp-6 \
+	xgettext-csharp-7 \
+	xgettext-elisp-1 xgettext-elisp-2 \
 	xgettext-glade-1 xgettext-glade-2 xgettext-glade-3 \
 	xgettext-java-1 xgettext-java-2 xgettext-java-3 xgettext-java-4 \
-	xgettext-java-5 \
-	xgettext-librep-1 \
-	xgettext-lisp-1 \
+	xgettext-java-5 xgettext-java-6 xgettext-java-7 \
+	xgettext-librep-1 xgettext-librep-2 \
+	xgettext-lisp-1 xgettext-lisp-2 \
 	xgettext-objc-1 xgettext-objc-2 \
 	xgettext-perl-1 xgettext-perl-2 xgettext-perl-3 xgettext-perl-4 \
-	xgettext-perl-5 xgettext-perl-6 \
-	xgettext-php-1 xgettext-php-2 \
+	xgettext-perl-5 xgettext-perl-6 xgettext-perl-7 \
+	xgettext-php-1 xgettext-php-2 xgettext-php-3 xgettext-php-4 \
 	xgettext-po-1 \
 	xgettext-properties-1 \
 	xgettext-python-1 xgettext-python-2 xgettext-python-3 \
-	xgettext-scheme-1 xgettext-scheme-2 \
+	xgettext-python-4 \
+	xgettext-scheme-1 xgettext-scheme-2 xgettext-scheme-3 \
 	xgettext-sh-1 xgettext-sh-2 xgettext-sh-3 xgettext-sh-4 xgettext-sh-5 \
-	xgettext-smalltalk-1 \
+	xgettext-sh-6 \
+	xgettext-smalltalk-1 xgettext-smalltalk-2 \
 	xgettext-stringtable-1 \
-	xgettext-tcl-1 xgettext-tcl-2 \
-	xgettext-ycp-1 xgettext-ycp-2 xgettext-ycp-3 \
+	xgettext-tcl-1 xgettext-tcl-2 xgettext-tcl-3 \
+	xgettext-ycp-1 xgettext-ycp-2 xgettext-ycp-3 xgettext-ycp-4 \
 	format-awk-1 format-awk-2 \
 	format-boost-1 format-boost-2 \
 	format-c-1 format-c-2 format-c-3 format-c-4 format-c-5 \
@@ -100,6 +103,7 @@ TESTS = gettext-1 gettext-2 gettext-3 gettext-4 gettext-5 gettext-6 gettext-7 \
 	format-elisp-1 format-elisp-2 \
 	format-gcc-internal-1 format-gcc-internal-2 \
 	format-java-1 format-java-2 \
+	format-kde-1 format-kde-2 \
 	format-librep-1 format-librep-2 \
 	format-lisp-1 format-lisp-2 \
 	format-php-1 format-php-2 \
@@ -135,7 +139,7 @@ XGETTEXT = ../src/xgettext
 # For debugging memory leaks and memory allocation bugs.
 # You should build with --disable-shared when using valgrind.
 CHECKER =
-#CHECKER = valgrind --tool=memcheck --suppressions=$(srcdir)/../gnulib-lib/allocsa.valgrind --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes
+#CHECKER = valgrind --tool=memcheck --suppressions=$(srcdir)/../gnulib-lib/malloca.valgrind --num-callers=20 --leak-check=yes --leak-resolution=high --show-reachable=yes
 #CHECKER = valgrind --tool=massif --format=html --depth=10 --alloc-fn=xmalloc --alloc-fn=xrealloc --stacks=no
 
 TESTS_ENVIRONMENT = top_srcdir=$(top_srcdir) \
@@ -171,8 +175,10 @@ TESTS_ENVIRONMENT = top_srcdir=$(top_srcdir) \
 		    BUILDCSHARP='@BUILDCSHARP@' \
 		    TESTCSHARP='@TESTCSHARP@' \
 		    TESTLIBASPRINTF='@TESTLIBASPRINTF@' \
+		    GLIBC2='@GLIBC2@' \
 		    LOCALE_FR='@LOCALE_FR@' \
 		    LOCALE_FR_UTF8='@LOCALE_FR_UTF8@' \
+		    LOCALE_JA='@LOCALE_JA@' \
 		    host_os='@host_os@' \
 		    CONFIG_SHELL='$(SHELL)' \
 		    $(SHELL)

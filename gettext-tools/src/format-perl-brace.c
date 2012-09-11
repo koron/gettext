@@ -1,11 +1,11 @@
 /* Perl brace format strings.
-   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -60,8 +59,10 @@ named_arg_compare (const void *p1, const void *p2)
 }
 
 static void *
-format_parse (const char *format, bool translated, char **invalid_reason)
+format_parse (const char *format, bool translated, char *fdi,
+	      char **invalid_reason)
 {
+  const char *const format_start = format;
   struct spec spec;
   struct spec *result;
 
@@ -91,7 +92,9 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		const char *name_end = f;
 		size_t n = name_end - name_start;
 
-		name = (char *) xmalloc (n + 1);
+		FDI_SET (format - 1, FMTDIR_START);
+
+		name = XNMALLOC (n + 1, char);
 		memcpy (name, name_start, n);
 		name[n] = '\0';
 
@@ -104,6 +107,8 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 		  }
 		spec.named[spec.named_arg_count].name = name;
 		spec.named_arg_count++;
+
+		FDI_SET (f, FMTDIR_END);
 
 		format = ++f;
 	      }
@@ -131,7 +136,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
       spec.named_arg_count = j;
     }
 
-  result = (struct spec *) xmalloc (sizeof (struct spec));
+  result = XMALLOC (struct spec);
   *result = spec;
   return result;
 }
@@ -224,7 +229,6 @@ struct formatstring_parser formatstring_perl_brace =
    format_parse for strings read from standard input.  */
 
 #include <stdio.h>
-#include "getline.h"
 
 static void
 format_print (void *descr)
@@ -266,7 +270,7 @@ main ()
 	line[--line_len] = '\0';
 
       invalid_reason = NULL;
-      descr = format_parse (line, false, &invalid_reason);
+      descr = format_parse (line, false, NULL, &invalid_reason);
 
       format_print (descr);
       printf ("\n");
@@ -283,7 +287,7 @@ main ()
 /*
  * For Emacs M-x compile
  * Local Variables:
- * compile-command: "/bin/sh ../libtool --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../lib -I../intl -DHAVE_CONFIG_H -DTEST format-perl-brace.c ../lib/libgettextlib.la"
+ * compile-command: "/bin/sh ../libtool --tag=CC --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../gnulib-lib -I../intl -DHAVE_CONFIG_H -DTEST format-perl-brace.c ../gnulib-lib/libgettextlib.la"
  * End:
  */
 

@@ -14,16 +14,16 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello-1.pl.in:18 hello-2.pl.in:13
+#: hello-1.pl.in:17 hello-2.pl.in:12
 msgid "Hello, world!"
 msgstr "Hello, világ!"
 
-#: hello-1.pl.in:20
+#: hello-1.pl.in:19
 #, perl-format
 msgid "This program is running as process number %d."
 msgstr "Ez a program a %d processz azonosítóval fut."
 
-#: hello-2.pl.in:15
+#: hello-2.pl.in:14
 #, perl-brace-format
 msgid "This program is running as process number {pid}."
 msgstr "Ez a program a {pid} processz azonosítóval fut."

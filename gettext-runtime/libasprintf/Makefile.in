@@ -45,16 +45,15 @@ DIST_COMMON = README $(am__configure_deps) $(include_HEADERS) \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure ../../build-aux/compile \
 	../../build-aux/config.guess ../../build-aux/config.rpath \
-	../../build-aux/config.sub ../../build-aux/elisp-comp \
-	../../build-aux/install-sh ../../build-aux/ltmain.sh \
-	../../build-aux/mdate-sh ../../build-aux/missing \
-	../../build-aux/mkinstalldirs ../../build-aux/texinfo.tex \
-	../../build-aux/ylwrap AUTHORS COPYING COPYING.LIB ChangeLog \
-	INSTALL NEWS
+	../../build-aux/config.sub ../../build-aux/depcomp \
+	../../build-aux/elisp-comp ../../build-aux/install-sh \
+	../../build-aux/ltmain.sh ../../build-aux/mdate-sh \
+	../../build-aux/missing ../../build-aux/mkinstalldirs \
+	../../build-aux/texinfo.tex ../../build-aux/ylwrap AUTHORS \
+	COPYING COPYING.LIB ChangeLog INSTALL NEWS
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../m4/intmax.m4 \
 	$(top_srcdir)/../m4/inttypes_h.m4 \
-	$(top_srcdir)/../m4/longdouble.m4 \
 	$(top_srcdir)/../m4/longlong.m4 \
 	$(top_srcdir)/../m4/printf-posix.m4 \
 	$(top_srcdir)/../m4/size_max.m4 \
@@ -134,7 +133,7 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = @ACLOCAL@
+ACLOCAL = ../../build-aux/fixaclocal @ACLOCAL@
 ALLOCA = @ALLOCA@
 ALLOCA_H = @ALLOCA_H@
 AMTAR = @AMTAR@
@@ -154,7 +153,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = @DEFS@
+DEFS = -DIN_LIBASPRINTF @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 
@@ -199,6 +198,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 RANLIB = @RANLIB@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -261,7 +261,7 @@ ACLOCAL_AMFLAGS = -I ../../m4 -I ../m4
 # >>> gnulib module alloca.
 
 # Woe32 support.
-EXTRA_DIST = autosprintf.h.in $(lib_asprintf_EXTRASOURCES) alloca_.h \
+EXTRA_DIST = autosprintf.h.in $(lib_asprintf_EXTRASOURCES) alloca.in.h \
 	texi2html autosprintf_all.html README.woe32
 
 # Temporary index files. automake removes only the predefined ones by itself.
@@ -965,8 +965,8 @@ libasprintf.la: $(libasprintf_la_OBJECTS) $(libasprintf_la_DEPENDENCIES)
 # The following is needed in order to create an <alloca.h> when the system
 # doesn't have one that works with the given compiler.
 all-local $(libasprintf_la_OBJECTS): @ALLOCA_H@
-alloca.h: alloca_.h
-	cp $(srcdir)/alloca_.h alloca.h
+alloca.h: alloca.in.h
+	cp $(srcdir)/alloca.in.h alloca.h
 # <<< gnulib module alloca.
 
 # Clean up after Solaris cc.
@@ -1018,7 +1018,7 @@ html-local: $(HTMLS)
 # Override of automake's definition.
 # We want to use texi2html, not makeinfo --html.
 autosprintf_all.html: autosprintf.texi
-	$(TEXI2HTML) -expandinfo -number -monolithic `if test -f autosprintf.texi; then echo autosprintf.texi; else echo $(srcdir)/autosprintf.texi; fi`
+	$(TEXI2HTML) -number -monolithic `if test -f autosprintf.texi; then echo autosprintf.texi; else echo $(srcdir)/autosprintf.texi; fi`
 	mv autosprintf.html autosprintf_all.html
 
 # The install-html target is already defined by automake.

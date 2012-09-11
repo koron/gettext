@@ -1,11 +1,11 @@
 /* xgettext C# backend.
-   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +13,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-csharp.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -35,11 +37,9 @@
 #include "xalloc.h"
 #include "xerror.h"
 #include "xvasprintf.h"
-#include "exit.h"
 #include "hash.h"
 #include "po-charset.h"
-#include "utf8-ucs4.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -104,6 +104,8 @@ init_keywords ()
 	 xgettext.texi!  */
       x_csharp_keyword ("GetString");	/* Resource{Manager,Set}.GetString */
       x_csharp_keyword ("GetPluralString:1,2");	/* GettextResource{Manager,Set}.GetPluralString */
+      x_csharp_keyword ("GetParticularString:1c,2"); /* Resource{Manager,Set}.GetParticularString */
+      x_csharp_keyword ("GetParticularPluralString:1c,2,3"); /* Resource{Manager,Set}.GetParticularPluralString */
       default_keywords = false;
     }
 }
@@ -114,6 +116,9 @@ init_flag_table_csharp ()
   xgettext_record_flag ("GetString:1:pass-csharp-format");
   xgettext_record_flag ("GetPluralString:1:pass-csharp-format");
   xgettext_record_flag ("GetPluralString:2:pass-csharp-format");
+  xgettext_record_flag ("GetParticularString:2:pass-csharp-format");
+  xgettext_record_flag ("GetParticularPluralString:2:pass-csharp-format");
+  xgettext_record_flag ("GetParticularPluralString:3:pass-csharp-format");
   xgettext_record_flag ("String.Format:1:csharp-format");
 }
 

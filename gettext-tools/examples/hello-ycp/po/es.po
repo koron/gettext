@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.ycp:16
+#: hello.ycp:15
 msgid "Hello, world!"
 msgstr "¡Hola, mundo!"
 
-#: hello.ycp:20
+#: hello.ycp:19
 #, ycp-format
 msgid "This program is running as process number %1."
 msgstr "Este programa está corriendo como el proceso número %1."

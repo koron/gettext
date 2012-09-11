@@ -43,6 +43,8 @@ class Program {
     Console.WriteLine(catalog.GetString("'Your command, please?', asked the waiter."));
     Console.WriteLine(String.Format(catalog.GetPluralString("a piece of cake","{0} pieces of cake",n), n));
     Console.WriteLine(String.Format(catalog.GetString("{0} is replaced by {1}."), "FF", "EUR"));
+    Console.WriteLine(String.Format(catalog.GetParticularPluralString("++","a piece of cake","{0} pieces of cake",n), n));
+    Console.WriteLine(String.Format(catalog.GetParticularString("++","{0} is replaced by {1}."), "FF", "EUR"));
   }
 }
 EOF
@@ -51,9 +53,12 @@ tmpfiles="$tmpfiles program.exe"
 : ${CSHARPCOMP="/bin/sh ../csharpcomp.sh"}
 ${CSHARPCOMP} -o program.exe -L ../../gettext-runtime/intl-csharp -l GNU.Gettext program.cs || exit 1
 
-tmpfiles="$tmpfiles prog.pot"
+tmpfiles="$tmpfiles prog.tmp prog.pot"
 : ${XGETTEXT=xgettext}
-${XGETTEXT} -o prog.pot --omit-header --no-location program.cs
+${XGETTEXT} -o prog.tmp --omit-header --no-location program.cs
+test $? = 0 || { rm -fr $tmpfiles; exit 1; }
+tr -d '\r' < prog.tmp > prog.pot
+test $? = 0 || { rm -fr $tmpfiles; exit 1; }
 
 tmpfiles="$tmpfiles prog.ok"
 cat <<EOF > prog.ok
@@ -67,6 +72,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, csharp-format
+msgid "{0} is replaced by {1}."
+msgstr ""
+
+#, csharp-format
+msgctxt "++"
+msgid "a piece of cake"
+msgid_plural "{0} pieces of cake"
+msgstr[0] ""
+msgstr[1] ""
+
+#, csharp-format
+msgctxt "++"
 msgid "{0} is replaced by {1}."
 msgstr ""
 EOF
@@ -95,11 +112,28 @@ msgstr[1] "{0} morceaux de gateau"
 #, csharp-format
 msgid "{0} is replaced by {1}."
 msgstr "{1} remplace {0}."
+
+# Euphemistic formulation.
+#, csharp-format
+msgctxt "++"
+msgid "a piece of cake"
+msgid_plural "{0} pieces of cake"
+msgstr[0] "un morceau de gateau succulent"
+msgstr[1] "{0} morceaux de gateau succulent"
+
+# Euphemistic formulation.
+#, csharp-format
+msgctxt "++"
+msgid "{0} is replaced by {1}."
+msgstr "Le nouveau {1} remplace le vieux {0}."
 EOF
 
-tmpfiles="$tmpfiles fr.po.new"
+tmpfiles="$tmpfiles fr.po.tmp fr.po.new"
 : ${MSGMERGE=msgmerge}
-${MSGMERGE} -q -o fr.po.new fr.po prog.pot
+${MSGMERGE} -q -o fr.po.tmp fr.po prog.pot
+test $? = 0 || { rm -fr $tmpfiles; exit 1; }
+tr -d '\r' < fr.po.tmp > fr.po.new
+test $? = 0 || { rm -fr $tmpfiles; exit 1; }
 
 : ${DIFF=diff}
 ${DIFF} fr.po fr.po.new || exit 1
@@ -143,11 +177,15 @@ cat <<\EOF > prog.ok
 «Votre commande, s'il vous plait», dit le garçon.
 2 morceaux de gateau
 EUR remplace FF.
+2 morceaux de gateau succulent
+Le nouveau EUR remplace le vieux FF.
 EOF
 cat <<\EOF > prog.oku
 Â«Votre commande, s'il vous plaitÂ», dit le garÃ§on.
 2 morceaux de gateau
 EUR remplace FF.
+2 morceaux de gateau succulent
+Le nouveau EUR remplace le vieux FF.
 EOF
 
 : ${LOCALE_FR=fr_FR}

@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Hello.m:50
+#: Hello.m:49
 msgid "Hello, world!"
 msgstr "你好！"
 
-#: Hello.m:59
+#: Hello.m:58
 #, objc-format
 msgid "This program is running as process number %d."
 msgstr "本程式正在執行中，進程編號為 %d。"

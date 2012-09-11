@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.ycp:16
+#: hello.ycp:15
 msgid "Hello, world!"
 msgstr "你好！"
 
-#: hello.ycp:20
+#: hello.ycp:19
 #, ycp-format
 msgid "This program is running as process number %1."
 msgstr "本程式正在執行中，進程編號為 %1。"

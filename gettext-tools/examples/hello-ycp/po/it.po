@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.ycp:16
+#: hello.ycp:15
 msgid "Hello, world!"
 msgstr "Salve, mondo!"
 
-#: hello.ycp:20
+#: hello.ycp:19
 #, ycp-format
 msgid "This program is running as process number %1."
 msgstr "Questo programma è in esecuzione con numero di processo %1."

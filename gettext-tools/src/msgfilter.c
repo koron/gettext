@@ -1,11 +1,11 @@
 /* Edit translations using a subprocess.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -30,11 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-
-#if HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
-
+#include <sys/time.h>
 #include <unistd.h>
 #if defined _MSC_VER || defined __MINGW32__
 # include <io.h>
@@ -63,7 +58,6 @@
 #include "write-stringtable.h"
 #include "msgl-charset.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "findprog.h"
 #include "pipe.h"
 #include "wait-process.h"
@@ -284,10 +278,11 @@ main (int argc, char **argv)
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "2001-2006");
+	      "2001-2007");
       printf (_("Written by %s.\n"), proper_name ("Bruno Haible"));
       exit (EXIT_SUCCESS);
     }
@@ -312,7 +307,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
 
   /* Build argument list for the program.  */
   sub_argc = argc - optind;
-  sub_argv = (char **) xmalloc ((sub_argc + 1) * sizeof (char *));
+  sub_argv = XNMALLOC (sub_argc + 1, char *);
   for (i = 0; i < sub_argc; i++)
     sub_argv[i] = argv[optind + i];
   sub_argv[i] = NULL;
@@ -354,7 +349,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
       filter = serbian_to_latin;
 
       /* Convert the input to UTF-8 first.  */
-      result = iconv_msgdomain_list (result, po_charset_utf8, input_file);
+      result = iconv_msgdomain_list (result, po_charset_utf8, true, input_file);
     }
   else
     {
@@ -486,6 +481,10 @@ Informative output:\n"));
       printf (_("\
   -V, --version               output version information and exit\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"),
 	     stdout);
     }
@@ -618,7 +617,7 @@ generic_filter (const char *str, size_t len, char **resultp, size_t *lengthp)
   }
 
   allocated = len + (len >> 2) + 1;
-  result = (char *) xmalloc (allocated);
+  result = XNMALLOC (allocated, char);
   length = 0;
 
   for (;;)
@@ -776,7 +775,7 @@ process_message (message_ty *mp)
        p += strlen (p) + 1, nsubstrings++);
 
   /* Process each NUL delimited substring separately.  */
-  substrings = (char **) xmalloc (nsubstrings * sizeof (char *));
+  substrings = XNMALLOC (nsubstrings, char *);
   for (p = msgstr, k = 0, total_len = 0; k < nsubstrings; k++)
     {
       char *result;
@@ -792,7 +791,7 @@ process_message (message_ty *mp)
     }
 
   /* Concatenate the results, including the NUL after each.  */
-  total_str = (char *) xmalloc (total_len);
+  total_str = XNMALLOC (total_len, char);
   for (k = 0, q = total_str; k < nsubstrings; k++)
     {
       size_t length = strlen (substrings[k]);

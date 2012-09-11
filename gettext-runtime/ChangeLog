@@ -1,3 +1,21 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-05-28  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac (WOE32): New conditional.
+
+2007-04-13  Bruno Haible  <bruno@clisp.org>
+
+	* configure.ac: For LIBSCHED, try also -lposix4.
+	Reported by Arto C. Nirkko <anirkko@insel.ch>.
+
+2006-10-27  Bruno Haible  <bruno@clisp.org>
+
+	Work around automake-1.10 annoyance.
+	* Makefile.am (ACLOCAL): New macro.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

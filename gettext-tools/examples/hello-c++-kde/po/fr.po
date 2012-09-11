@@ -2,7 +2,7 @@
 # Copyright © 2006 Yoyodyne, Inc.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, 2006.
 # Christophe Combelles <ccomb@free.fr>, 2006
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU hello-c++-kde 0.15-pre5\n"

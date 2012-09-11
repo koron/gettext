@@ -1,11 +1,11 @@
 /* Charset handling while reading PO files.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -28,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "xvasprintf.h"
 #include "po-xerror.h"
 #include "basename.h"
@@ -471,7 +470,7 @@ po_lex_charset_set (const char *header_entry, const char *filename)
 
       charsetstr += strlen ("charset=");
       len = strcspn (charsetstr, " \t\n");
-      charset = (char *) xallocsa (len + 1);
+      charset = (char *) xmalloca (len + 1);
       memcpy (charset, charsetstr, len);
       charset[len] = '\0';
 
@@ -629,7 +628,7 @@ would fix this problem.\n");
 #endif
 	    }
 	}
-      freesa (charset);
+      freea (charset);
     }
   else
     {

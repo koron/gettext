@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.cc:46
+#: hello.cc:45
 msgid "Hello, world!"
 msgstr "Hallo Welt!"
 
-#: hello.cc:53
+#: hello.cc:52
 #, qt-format
 msgid "This program is running as process number %1."
 msgstr "Dieses Programm läuft mit der Prozess-Nummer %1."

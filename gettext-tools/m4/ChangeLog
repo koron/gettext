@@ -1,3 +1,55 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Remove ulonglong.m4.
+
+2007-10-25  Bruno Haible  <bruno@clisp.org>
+
+	* restrict.m4: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2007-10-17  Bruno Haible  <bruno@clisp.org>
+
+	* locale-ja.m4 (gt_LOCALE_JA): On Cygwin, don't allow locale names
+	without encoding suffix.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Add intlmacosx.m4.
+
+2007-05-27  Bruno Haible  <bruno@clisp.org>
+
+	* openmp.m4: Remove file.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2007-05-14  Bruno Haible  <bruno@clisp.org>
+
+	* restrict.m4: New file, taken from autoconf CVS.
+	* Makefile.am (EXTRA_DIST): Add it.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (aclocal_DATA): Remove longdouble.m4.
+
+2007-02-12  Bruno Haible  <bruno@clisp.org>
+
+	* locale-fr.m4: Remove file, moved to gnulib.
+	* Makefile.am (EXTRA_DIST): Remove it.
+
+2007-02-12  Bruno Haible  <bruno@clisp.org>
+
+	* locale-fr.m4 (gt_LOCALE_FR): Fix m4 quoting bug.
+	* locale-ja.m4 (gt_LOCALE_JA): Likewise.
+	Reported by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+2006-12-10  Bruno Haible  <bruno@clisp.org>
+
+	* locale-ja.m4: New file.
+	* Makefile.am (EXTRA_DIST): Add it.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

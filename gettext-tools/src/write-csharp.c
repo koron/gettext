@@ -1,11 +1,11 @@
 /* Writing C# satellite assemblies.
-   Copyright (C) 2003-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -71,13 +70,6 @@
 # define S_IXOTH (S_IXUSR >> 6)
 #endif
 
-#ifdef __MINGW32__
-# include <io.h>
-/* mingw's _mkdir() function has 1 argument, but we pass 2 arguments.
-   Therefore we have to disable the argument count checking.  */
-# define mkdir ((int (*)()) _mkdir)
-#endif
-
 #include "c-ctype.h"
 #include "relocatable.h"
 #include "error.h"
@@ -89,10 +81,11 @@
 #include "plural-exp.h"
 #include "po-charset.h"
 #include "xalloc.h"
-#include "pathname.h"
+#include "xmalloca.h"
+#include "filename.h"
 #include "fwriteerror.h"
 #include "clean-temp.h"
-#include "utf8-ucs4.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -133,7 +126,7 @@ construct_class_name (const char *resource_name)
       static const char hexdigit[] = "0123456789abcdef";
       const char *str = resource_name;
       const char *str_limit = str + strlen (str);
-      char *class_name = (char *) xmalloc (12 + 6 * (str_limit - str) + 1);
+      char *class_name = XNMALLOC (12 + 6 * (str_limit - str) + 1, char);
       char *b;
 
       b = class_name;
@@ -223,6 +216,35 @@ write_csharp_string (FILE *stream, const char *str)
 }
 
 
+/* Write a (msgctxt, msgid) pair as a string in C# Unicode notation to the
+   given stream.  */
+static void
+write_csharp_msgid (FILE *stream, message_ty *mp)
+{
+  const char *msgctxt = mp->msgctxt;
+  const char *msgid = mp->msgid;
+
+  if (msgctxt == NULL)
+    write_csharp_string (stream, msgid);
+  else
+    {
+      size_t msgctxt_len = strlen (msgctxt);
+      size_t msgid_len = strlen (msgid);
+      size_t combined_len = msgctxt_len + 1 + msgid_len;
+      char *combined;
+
+      combined = (char *) xmalloca (combined_len);
+      memcpy (combined, msgctxt, msgctxt_len);
+      combined[msgctxt_len] = MSGCTXT_SEPARATOR;
+      memcpy (combined + msgctxt_len + 1, msgid, msgid_len + 1);
+
+      write_csharp_string (stream, combined);
+
+      freea (combined);
+    }
+}
+
+
 /* Write C# code that returns the value for a message.  If the message
    has plural forms, it is an expression of type System.String[], otherwise it
    is an expression of type System.String.  */
@@ -293,7 +315,7 @@ is_expression_boolean (struct expression *exp)
 /* Write C# code that evaluates a plural expression according to the C rules.
    The variable is called 'n'.  */
 static void
-write_csharp_expression (FILE *stream, struct expression *exp, bool as_boolean)
+write_csharp_expression (FILE *stream, const struct expression *exp, bool as_boolean)
 {
   /* We use parentheses everywhere.  This frees us from tracking the priority
      of arithmetic operators.  */
@@ -530,7 +552,7 @@ write_csharp_code (FILE *stream, const char *culture_name, const char *class_nam
   for (j = 0; j < mlp->nitems; j++)
     {
       fprintf (stream, "    t.Add(");
-      write_csharp_string (stream, mlp->item[j]->msgid);
+      write_csharp_msgid (stream, mlp->item[j]);
       fprintf (stream, ",");
       write_csharp_msgstr (stream, mlp->item[j]);
       fprintf (stream, ");\n");
@@ -546,7 +568,7 @@ write_csharp_code (FILE *stream, const char *culture_name, const char *class_nam
 	if (mlp->item[j]->msgid_plural != NULL)
 	  {
 	    fprintf (stream, "    t.Add(");
-	    write_csharp_string (stream, mlp->item[j]->msgid);
+	    write_csharp_msgid (stream, mlp->item[j]);
 	    fprintf (stream, ",");
 	    write_csharp_string (stream, mlp->item[j]->msgid_plural);
 	    fprintf (stream, ");\n");
@@ -559,7 +581,7 @@ write_csharp_code (FILE *stream, const char *culture_name, const char *class_nam
   if (plurals)
     {
       message_ty *header_entry;
-      struct expression *plural;
+      const struct expression *plural;
       unsigned long int nplurals;
 
       header_entry = message_list_search (mlp, NULL, "");
@@ -602,25 +624,6 @@ msgdomain_write_csharp (message_list_ty *mlp, const char *canon_encoding,
   /* If no entry for this resource/domain, don't even create the file.  */
   if (mlp->nitems == 0)
     return 0;
-
-  /* Determine whether mlp has entries with context.  */
-  {
-    bool has_context;
-    size_t j;
-
-    has_context = false;
-    for (j = 0; j < mlp->nitems; j++)
-      if (mlp->item[j]->msgctxt != NULL)
-	has_context = true;
-    if (has_context)
-      {
-	multiline_error (xstrdup (""),
-			 xstrdup (_("\
-message catalog has context dependent translations\n\
-but the C# .dll format doesn't support contexts\n")));
-	return 1;
-      }
-  }
 
   retval = 1;
 
@@ -673,7 +676,7 @@ but the C# .dll format doesn't support contexts\n")));
   /* Compute the output file name.  This code must be kept consistent with
      intl.cs, function GetSatelliteAssembly().  */
   {
-    char *output_dir = concatenated_pathname (directory, culture_name, NULL);
+    char *output_dir = concatenated_filename (directory, culture_name, NULL);
     struct stat statbuf;
 
     /* Try to create the output directory if it does not yet exist.  */
@@ -688,7 +691,7 @@ but the C# .dll format doesn't support contexts\n")));
 	}
 
     output_file =
-      concatenated_pathname (output_dir, resource_name, ".resources.dll");
+      concatenated_filename (output_dir, resource_name, ".resources.dll");
 
     free (output_dir);
   }
@@ -700,7 +703,7 @@ but the C# .dll format doesn't support contexts\n")));
     char *p;
 
     class_name =
-      (char *) xmalloc (strlen (class_name_part1) + 1 + strlen (culture_name) + 1);
+      XNMALLOC (strlen (class_name_part1) + 1 + strlen (culture_name) + 1, char);
     sprintf (class_name, "%s_%s", class_name_part1, culture_name);
     for (p = class_name + strlen (class_name_part1) + 1; *p != '\0'; p++)
       if (*p == '-')
@@ -711,7 +714,7 @@ but the C# .dll format doesn't support contexts\n")));
   /* Compute the temporary C# file name.  It must end in ".cs", so that
      the C# compiler recognizes that it is C# source code.  */
   csharp_file_name =
-    concatenated_pathname (tmpdir->dir_name, "resset.cs", NULL);
+    concatenated_filename (tmpdir->dir_name, "resset.cs", NULL);
 
   /* Create the C# file.  */
   register_temp_file (tmpdir, csharp_file_name);
@@ -744,7 +747,10 @@ but the C# .dll format doesn't support contexts\n")));
   if (compile_csharp_class (csharp_sources, 1, libdirs, 1, libraries, 1,
 			    output_file, true, false, verbose))
     {
-      error (0, 0, _("compilation of C# class failed, please try --verbose"));
+      if (!verbose)
+	error (0, 0, _("compilation of C# class failed, please try --verbose"));
+      else
+	error (0, 0, _("compilation of C# class failed"));
       goto quit3;
     }
 

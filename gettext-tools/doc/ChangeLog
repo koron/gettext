@@ -1,3 +1,179 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Remove ulonglong.m4 from the file list.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (AM_XGETTEXT_OPTION): New section.
+	(po/Makevers): Refer to it.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Talk about configure.ac instead of configure.in.
+	(configure.ac): Renamed from configure.in.
+	(Autoconf macros for use in configure.ac): Renamed from "Autoconf
+	macros for use in configure.in".
+	* gettextize.texi: Talk about configure.ac instead of configure.in.
+
+2007-10-28  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (The --style option): Document the predefined styles.
+	(Style rules): Mark .added, .changed, .removed as not yet implemented.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Java): Mention the hello-java-qtjambi example.
+
+2007-10-05  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Enforce normal indentation of the first paragraph of each
+	section.
+
+2007-09-30  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi: Document options --package-name, --package-version.
+	* gettext.texi (Header Entry): Mention that the Project-Id-Version may
+	already be filled in.
+
+2007-09-30  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (PO Files): Mention kde-format.
+	(kde-format): New subsection.
+	(qt-format): Update for Qt 4.
+	* xgettext.texi: Document --kde option.
+
+2007-09-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Compendium): Upgrade node from a subsection to a
+	section.
+
+2007-09-09  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Using Compendia): Use "msgattrib --no-obsolete"
+	instead of "sed -e '/^#~/d'".
+	Suggested by Benno Schulenberg <bensberg@justemail.net>.
+
+2007-09-02  Bruno Haible  <bruno@clisp.org>
+
+	* msggrep.texi: Add some examples.
+	* msgfilter.texi: Likewise.
+	Suggested by Guido at <https://savannah.gnu.org/bugs/?18293>.
+
+2007-09-02  Bruno Haible  <bruno@clisp.org>
+
+	Implement msgctxt for C# ResourceManagers.
+	* gettext.texi (Java): Mention GetParticularString and
+	GetParticularPluralString.
+	* xgettext.texi (--keyword): Update defaults for C#.
+
+2007-09-01  Bruno Haible  <bruno@clisp.org>
+
+	Implement msgctxt for Java ResourceBundles.
+	* gettext.texi (Java): Mention pgettext and npgettext.
+	* xgettext.texi (--keyword): Update defaults for Java.
+	Suggested by Felix Berger.
+
+2007-08-18  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Why): Don't oppose commercial software to free
+	software.
+	Reported by Kaloian Doganov <kaloian@doganov.org>.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Fix English typo.
+	Reported by Benno Schulenberg <bensberg@justemail.net>.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Installing Localizations, Header Entry, Trans Intro 0,
+	Trans Intro 1, Organization, Mailing Lists, Prerequisites): Update
+	email addresses and URLs after the Translation Project moved.
+	* FAQ.html: Likewise.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Locale Names): Explain the variant syntax.
+	Reported by Karl Berry <karl@freefriends.org>.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Mention also intlmacosx.m4.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* xgettext.texi: Mention some caveats.
+	Reported by Ariel Shkedi <asgettext@dsgml.com>.
+
+2007-06-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Users): Chapter completely rewritten.
+	Reported by Karl Berry <karl@freefriends.org>.
+
+2007-06-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Triggering): Talk about gnulib instead of the gettext
+	source code.
+	(Loading Catalogs): Update footnote.
+
+2007-06-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Aspects): Talk about POSIX:2001 instead of SUSV2.
+
+2007-06-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Talk about "locale categories" instead of "locale
+	facets" everwhere, and instead of "locales" where appropriate.
+	(Aspects): Explain the term "locale categories".
+	Reported by Karl Berry <karl@freefriends.org>.
+
+2007-05-05  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (ifmakeinfo): Remove alias.
+	(makeinfo): New variable.
+
+2007-05-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Overview of GNU gettext): Put @ifhtml outside @example,
+	not @inside. Fixes an indentation problem of the first line when
+	"makeinfo --html" is used.
+	Reported by Noah Slater <nslater@gmail.com>.
+
+2007-05-04  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi: Make the @documentencoding command unconditional.
+
+2007-05-03  Bruno Haible  <bruno@clisp.org>
+
+	Add support for both "makeinfo --html" and texi2html.
+	* gettext.texi (ifmakeinfo): New alias.
+	(Top): Use it instead of @ifinfo.
+
+2007-05-03  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Bug Report Address): Fix cross references.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (aclocal): Remove longdouble.m4 from the file list.
+
+2007-03-27  Bruno Haible  <bruno@clisp.org>
+
+	* gettext.texi (Bug Report Address): New section.
+
+2006-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.texi: Document the --po-dir option.
+
+2006-12-03  Bruno Haible  <bruno@clisp.org>
+
+	* msgcat.texi: Document the --color and --style options.
+	* gettext.texi (Colorizing): New section.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

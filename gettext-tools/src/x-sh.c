@@ -1,11 +1,11 @@
 /* xgettext sh backend.
-   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,12 +13,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-sh.h"
 
 #include <errno.h>
 #include <limits.h>
@@ -32,7 +34,6 @@
 #include "x-sh.h"
 #include "error.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "hash.h"
 #include "gettext.h"
 
@@ -241,7 +242,7 @@ static inline void
 init_token (struct token *tp)
 {
   tp->allocated = 10;
-  tp->chars = (char *) xmalloc (tp->allocated * sizeof (char));
+  tp->chars = XNMALLOC (tp->allocated, char);
   tp->charcount = 0;
 }
 
@@ -271,7 +272,7 @@ string_of_token (const struct token *tp)
   int n;
 
   n = tp->charcount;
-  str = (char *) xmalloc (n + 1);
+  str = XNMALLOC (n + 1, char);
   memcpy (str, tp->chars, n);
   str[n] = '\0';
   return str;
@@ -462,7 +463,7 @@ string_of_word (const struct word *wp)
   if (!(wp->type == t_string))
     abort ();
   n = wp->token->charcount;
-  str = (char *) xmalloc (n + 1);
+  str = XNMALLOC (n + 1, char);
   memcpy (str, wp->token->chars, n);
   str[n] = '\0';
   return str;
@@ -804,7 +805,7 @@ read_word (struct word *wp, int looking_for, flag_context_ty context)
     }
 
   wp->type = t_string;
-  wp->token = (struct token *) xmalloc (sizeof (struct token));
+  wp->token = XMALLOC (struct token);
   init_token (wp->token);
   wp->line_number_at_start = line_number;
   all_unquoted_digits = true;

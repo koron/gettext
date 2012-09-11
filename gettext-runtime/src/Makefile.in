@@ -34,45 +34,58 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = gettext$(EXEEXT) ngettext$(EXEEXT) envsubst$(EXEEXT)
+@WOE32_TRUE@am__append_1 = gettext.res
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/gettext.sh.in ChangeLog
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/alloca.m4 \
-	$(top_srcdir)/gnulib-m4/allocsa.m4 \
 	$(top_srcdir)/gnulib-m4/atexit.m4 \
-	$(top_srcdir)/gnulib-m4/canonicalize.m4 \
+	$(top_srcdir)/gnulib-m4/canonicalize-lgpl.m4 \
 	$(top_srcdir)/gnulib-m4/csharp.m4 \
 	$(top_srcdir)/gnulib-m4/csharpcomp.m4 \
 	$(top_srcdir)/gnulib-m4/eealloc.m4 \
 	$(top_srcdir)/gnulib-m4/error.m4 \
 	$(top_srcdir)/gnulib-m4/extensions.m4 \
 	$(top_srcdir)/gnulib-m4/getopt.m4 \
+	$(top_srcdir)/gnulib-m4/gnulib-common.m4 \
 	$(top_srcdir)/gnulib-m4/gnulib-comp.m4 \
+	$(top_srcdir)/gnulib-m4/iconv_h.m4 \
+	$(top_srcdir)/gnulib-m4/iconv_open.m4 \
+	$(top_srcdir)/gnulib-m4/include_next.m4 \
 	$(top_srcdir)/gnulib-m4/java.m4 \
 	$(top_srcdir)/gnulib-m4/javacomp.m4 \
 	$(top_srcdir)/gnulib-m4/localcharset.m4 \
+	$(top_srcdir)/gnulib-m4/malloc.m4 \
+	$(top_srcdir)/gnulib-m4/malloca.m4 \
 	$(top_srcdir)/gnulib-m4/mbchar.m4 \
 	$(top_srcdir)/gnulib-m4/mbiter.m4 \
 	$(top_srcdir)/gnulib-m4/mbrtowc.m4 \
+	$(top_srcdir)/gnulib-m4/mbslen.m4 \
+	$(top_srcdir)/gnulib-m4/mbsstr.m4 \
 	$(top_srcdir)/gnulib-m4/memchr.m4 \
 	$(top_srcdir)/gnulib-m4/memmove.m4 \
 	$(top_srcdir)/gnulib-m4/onceonly_2_57.m4 \
 	$(top_srcdir)/gnulib-m4/pathmax.m4 \
 	$(top_srcdir)/gnulib-m4/readlink.m4 \
+	$(top_srcdir)/gnulib-m4/relocatable-lib.m4 \
 	$(top_srcdir)/gnulib-m4/relocatable.m4 \
 	$(top_srcdir)/gnulib-m4/setenv.m4 \
 	$(top_srcdir)/gnulib-m4/ssize_t.m4 \
 	$(top_srcdir)/gnulib-m4/stdbool.m4 \
+	$(top_srcdir)/gnulib-m4/stdint.m4 \
+	$(top_srcdir)/gnulib-m4/stdlib_h.m4 \
 	$(top_srcdir)/gnulib-m4/strdup.m4 \
 	$(top_srcdir)/gnulib-m4/strerror.m4 \
-	$(top_srcdir)/gnulib-m4/strstr.m4 \
+	$(top_srcdir)/gnulib-m4/string_h.m4 \
+	$(top_srcdir)/gnulib-m4/strnlen.m4 \
 	$(top_srcdir)/gnulib-m4/strtol.m4 \
 	$(top_srcdir)/gnulib-m4/strtoul.m4 \
 	$(top_srcdir)/gnulib-m4/unistd_h.m4 \
 	$(top_srcdir)/gnulib-m4/unlocked-io.m4 \
+	$(top_srcdir)/gnulib-m4/wchar.m4 \
+	$(top_srcdir)/gnulib-m4/wctype.m4 \
 	$(top_srcdir)/gnulib-m4/wcwidth.m4 \
-	$(top_srcdir)/gnulib-m4/xreadlink.m4 \
 	$(top_srcdir)/../m4/fixautomake.m4 \
 	$(top_srcdir)/../m4/libtool.m4 \
 	$(top_srcdir)/../m4/woe32-dll.m4 \
@@ -83,14 +96,14 @@ am__aclocal_m4_deps = $(top_srcdir)/gnulib-m4/alloca.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glibc2.m4 \
 	$(top_srcdir)/m4/glibc21.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intdiv0.m4 $(top_srcdir)/m4/intl.m4 \
-	$(top_srcdir)/m4/intmax.m4 $(top_srcdir)/m4/inttypes-pri.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intmax.m4 \
+	$(top_srcdir)/m4/inttypes-pri.m4 \
 	$(top_srcdir)/m4/inttypes_h.m4 $(top_srcdir)/m4/lcmessage.m4 \
-	$(top_srcdir)/m4/lock.m4 $(top_srcdir)/m4/longdouble.m4 \
-	$(top_srcdir)/m4/longlong.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/printf-posix.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/size_max.m4 \
-	$(top_srcdir)/m4/stdint_h.m4 $(top_srcdir)/m4/uintmax_t.m4 \
-	$(top_srcdir)/m4/ulonglong.m4 $(top_srcdir)/m4/visibility.m4 \
+	$(top_srcdir)/m4/lock.m4 $(top_srcdir)/m4/longlong.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/printf-posix.m4 $(top_srcdir)/m4/progtest.m4 \
+	$(top_srcdir)/m4/size_max.m4 $(top_srcdir)/m4/stdint_h.m4 \
+	$(top_srcdir)/m4/uintmax_t.m4 $(top_srcdir)/m4/visibility.m4 \
 	$(top_srcdir)/m4/wchar_t.m4 $(top_srcdir)/m4/wint_t.m4 \
 	$(top_srcdir)/m4/xsize.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -104,21 +117,22 @@ PROGRAMS = $(bin_PROGRAMS)
 am_envsubst_OBJECTS = envsubst-envsubst.$(OBJEXT)
 envsubst_OBJECTS = $(am_envsubst_OBJECTS)
 envsubst_LDADD = $(LDADD)
-envsubst_DEPENDENCIES = ../gnulib-lib/libgrt.a
+@WOE32_TRUE@am__DEPENDENCIES_1 = gettext.res
+envsubst_DEPENDENCIES = ../gnulib-lib/libgrt.a $(am__DEPENDENCIES_1)
 envsubst_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(envsubst_CFLAGS) $(CFLAGS) \
 	$(envsubst_LDFLAGS) $(LDFLAGS) -o $@
 am_gettext_OBJECTS = gettext-gettext.$(OBJEXT)
 gettext_OBJECTS = $(am_gettext_OBJECTS)
 gettext_LDADD = $(LDADD)
-gettext_DEPENDENCIES = ../gnulib-lib/libgrt.a
+gettext_DEPENDENCIES = ../gnulib-lib/libgrt.a $(am__DEPENDENCIES_1)
 gettext_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(gettext_CFLAGS) $(CFLAGS) \
 	$(gettext_LDFLAGS) $(LDFLAGS) -o $@
 am_ngettext_OBJECTS = ngettext-ngettext.$(OBJEXT)
 ngettext_OBJECTS = $(am_ngettext_OBJECTS)
 ngettext_LDADD = $(LDADD)
-ngettext_DEPENDENCIES = ../gnulib-lib/libgrt.a
+ngettext_DEPENDENCIES = ../gnulib-lib/libgrt.a $(am__DEPENDENCIES_1)
 ngettext_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(ngettext_CFLAGS) $(CFLAGS) \
 	$(ngettext_LDFLAGS) $(LDFLAGS) -o $@
@@ -152,6 +166,11 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BITSIZEOF_PTRDIFF_T = @BITSIZEOF_PTRDIFF_T@
+BITSIZEOF_SIG_ATOMIC_T = @BITSIZEOF_SIG_ATOMIC_T@
+BITSIZEOF_SIZE_T = @BITSIZEOF_SIZE_T@
+BITSIZEOF_WCHAR_T = @BITSIZEOF_WCHAR_T@
+BITSIZEOF_WINT_T = @BITSIZEOF_WINT_T@
 BUILDCSHARP = @BUILDCSHARP@
 BUILDJAVA = @BUILDJAVA@
 BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
@@ -187,33 +206,126 @@ F77 = @F77@
 FFLAGS = @FFLAGS@
 GENCAT = @GENCAT@
 GETOPT_H = @GETOPT_H@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GLIBC2 = @GLIBC2@
 GLIBC21 = @GLIBC21@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
+GNULIB_CALLOC_POSIX = @GNULIB_CALLOC_POSIX@
+GNULIB_CHOWN = @GNULIB_CHOWN@
+GNULIB_DUP2 = @GNULIB_DUP2@
+GNULIB_FCHDIR = @GNULIB_FCHDIR@
+GNULIB_FTRUNCATE = @GNULIB_FTRUNCATE@
+GNULIB_GETCWD = @GNULIB_GETCWD@
+GNULIB_GETLOGIN_R = @GNULIB_GETLOGIN_R@
+GNULIB_GETSUBOPT = @GNULIB_GETSUBOPT@
+GNULIB_LCHOWN = @GNULIB_LCHOWN@
+GNULIB_LSEEK = @GNULIB_LSEEK@
+GNULIB_MALLOC_POSIX = @GNULIB_MALLOC_POSIX@
+GNULIB_MBSCASECMP = @GNULIB_MBSCASECMP@
+GNULIB_MBSCASESTR = @GNULIB_MBSCASESTR@
+GNULIB_MBSCHR = @GNULIB_MBSCHR@
+GNULIB_MBSCSPN = @GNULIB_MBSCSPN@
+GNULIB_MBSLEN = @GNULIB_MBSLEN@
+GNULIB_MBSNCASECMP = @GNULIB_MBSNCASECMP@
+GNULIB_MBSNLEN = @GNULIB_MBSNLEN@
+GNULIB_MBSPBRK = @GNULIB_MBSPBRK@
+GNULIB_MBSPCASECMP = @GNULIB_MBSPCASECMP@
+GNULIB_MBSRCHR = @GNULIB_MBSRCHR@
+GNULIB_MBSSEP = @GNULIB_MBSSEP@
+GNULIB_MBSSPN = @GNULIB_MBSSPN@
+GNULIB_MBSSTR = @GNULIB_MBSSTR@
+GNULIB_MBSTOK_R = @GNULIB_MBSTOK_R@
+GNULIB_MEMMEM = @GNULIB_MEMMEM@
+GNULIB_MEMPCPY = @GNULIB_MEMPCPY@
+GNULIB_MEMRCHR = @GNULIB_MEMRCHR@
+GNULIB_MKDTEMP = @GNULIB_MKDTEMP@
+GNULIB_MKSTEMP = @GNULIB_MKSTEMP@
+GNULIB_PUTENV = @GNULIB_PUTENV@
+GNULIB_READLINK = @GNULIB_READLINK@
+GNULIB_REALLOC_POSIX = @GNULIB_REALLOC_POSIX@
+GNULIB_SLEEP = @GNULIB_SLEEP@
+GNULIB_STPCPY = @GNULIB_STPCPY@
+GNULIB_STPNCPY = @GNULIB_STPNCPY@
+GNULIB_STRCASESTR = @GNULIB_STRCASESTR@
+GNULIB_STRCHRNUL = @GNULIB_STRCHRNUL@
+GNULIB_STRDUP = @GNULIB_STRDUP@
+GNULIB_STRERROR = @GNULIB_STRERROR@
+GNULIB_STRNDUP = @GNULIB_STRNDUP@
+GNULIB_STRNLEN = @GNULIB_STRNLEN@
+GNULIB_STRPBRK = @GNULIB_STRPBRK@
+GNULIB_STRSEP = @GNULIB_STRSEP@
+GNULIB_STRTOK_R = @GNULIB_STRTOK_R@
+GNULIB_WCWIDTH = @GNULIB_WCWIDTH@
 GREP = @GREP@
 HAVE_ASPRINTF = @HAVE_ASPRINTF@
+HAVE_CALLOC_POSIX = @HAVE_CALLOC_POSIX@
 HAVE_CSC = @HAVE_CSC@
 HAVE_CSCC = @HAVE_CSCC@
 HAVE_CSCC_IN_PATH = @HAVE_CSCC_IN_PATH@
 HAVE_CSC_IN_PATH = @HAVE_CSC_IN_PATH@
+HAVE_DECL_GETLOGIN_R = @HAVE_DECL_GETLOGIN_R@
+HAVE_DECL_MEMMEM = @HAVE_DECL_MEMMEM@
+HAVE_DECL_MEMRCHR = @HAVE_DECL_MEMRCHR@
+HAVE_DECL_STRDUP = @HAVE_DECL_STRDUP@
+HAVE_DECL_STRERROR = @HAVE_DECL_STRERROR@
+HAVE_DECL_STRNCASECMP = @HAVE_DECL_STRNCASECMP@
+HAVE_DECL_STRNDUP = @HAVE_DECL_STRNDUP@
+HAVE_DECL_STRNLEN = @HAVE_DECL_STRNLEN@
+HAVE_DECL_STRTOK_R = @HAVE_DECL_STRTOK_R@
+HAVE_DECL_WCWIDTH = @HAVE_DECL_WCWIDTH@
+HAVE_DUP2 = @HAVE_DUP2@
+HAVE_FTRUNCATE = @HAVE_FTRUNCATE@
 HAVE_GCJ_C = @HAVE_GCJ_C@
 HAVE_GCJ_IN_PATH = @HAVE_GCJ_IN_PATH@
+HAVE_GETSUBOPT = @HAVE_GETSUBOPT@
+HAVE_INTTYPES_H = @HAVE_INTTYPES_H@
+HAVE_ISWCNTRL = @HAVE_ISWCNTRL@
 HAVE_JAVAC = @HAVE_JAVAC@
 HAVE_JAVAC_ENVVAR = @HAVE_JAVAC_ENVVAR@
 HAVE_JAVAC_IN_PATH = @HAVE_JAVAC_IN_PATH@
 HAVE_JIKES = @HAVE_JIKES@
 HAVE_JIKES_IN_PATH = @HAVE_JIKES_IN_PATH@
+HAVE_LONG_LONG_INT = @HAVE_LONG_LONG_INT@
+HAVE_MALLOC_POSIX = @HAVE_MALLOC_POSIX@
 HAVE_MCS = @HAVE_MCS@
 HAVE_MCS_IN_PATH = @HAVE_MCS_IN_PATH@
+HAVE_MEMPCPY = @HAVE_MEMPCPY@
+HAVE_MKDTEMP = @HAVE_MKDTEMP@
 HAVE_POSIX_PRINTF = @HAVE_POSIX_PRINTF@
+HAVE_READLINK = @HAVE_READLINK@
+HAVE_REALLOC_POSIX = @HAVE_REALLOC_POSIX@
+HAVE_SIGNED_SIG_ATOMIC_T = @HAVE_SIGNED_SIG_ATOMIC_T@
+HAVE_SIGNED_WCHAR_T = @HAVE_SIGNED_WCHAR_T@
+HAVE_SIGNED_WINT_T = @HAVE_SIGNED_WINT_T@
+HAVE_SLEEP = @HAVE_SLEEP@
 HAVE_SNPRINTF = @HAVE_SNPRINTF@
+HAVE_STDINT_H = @HAVE_STDINT_H@
+HAVE_STPCPY = @HAVE_STPCPY@
+HAVE_STPNCPY = @HAVE_STPNCPY@
+HAVE_STRCASECMP = @HAVE_STRCASECMP@
+HAVE_STRCASESTR = @HAVE_STRCASESTR@
+HAVE_STRCHRNUL = @HAVE_STRCHRNUL@
+HAVE_STRNDUP = @HAVE_STRNDUP@
+HAVE_STRPBRK = @HAVE_STRPBRK@
+HAVE_STRSEP = @HAVE_STRSEP@
+HAVE_SYS_BITYPES_H = @HAVE_SYS_BITYPES_H@
+HAVE_SYS_INTTYPES_H = @HAVE_SYS_INTTYPES_H@
+HAVE_SYS_TYPES_H = @HAVE_SYS_TYPES_H@
+HAVE_UNISTD_H = @HAVE_UNISTD_H@
+HAVE_UNSIGNED_LONG_LONG_INT = @HAVE_UNSIGNED_LONG_LONG_INT@
 HAVE_VISIBILITY = @HAVE_VISIBILITY@
+HAVE_WCHAR_H = @HAVE_WCHAR_H@
+HAVE_WCTYPE_H = @HAVE_WCTYPE_H@
+HAVE_WINT_T = @HAVE_WINT_T@
 HAVE_WPRINTF = @HAVE_WPRINTF@
 HAVE__BOOL = @HAVE__BOOL@
+ICONV_H = @ICONV_H@
+INCLUDE_NEXT = @INCLUDE_NEXT@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM_ENV = @INSTALL_PROGRAM_ENV@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
@@ -232,11 +344,13 @@ LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
 LIBOBJS = @LIBOBJS@
 LIBPTH = @LIBPTH@
+LIBPTH_PREFIX = @LIBPTH_PREFIX@
 LIBS = @LIBS@
 LIBSCHED = @LIBSCHED@
 LIBTHREAD = @LIBTHREAD@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIBC = @LTLIBC@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBMULTITHREAD = @LTLIBMULTITHREAD@
@@ -248,6 +362,13 @@ MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+NEXT_ICONV_H = @NEXT_ICONV_H@
+NEXT_STDINT_H = @NEXT_STDINT_H@
+NEXT_STDLIB_H = @NEXT_STDLIB_H@
+NEXT_STRING_H = @NEXT_STRING_H@
+NEXT_UNISTD_H = @NEXT_UNISTD_H@
+NEXT_WCHAR_H = @NEXT_WCHAR_H@
+NEXT_WCTYPE_H = @NEXT_WCTYPE_H@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -260,20 +381,49 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 POSUB = @POSUB@
 PRI_MACROS_BROKEN = @PRI_MACROS_BROKEN@
+PTRDIFF_T_SUFFIX = @PTRDIFF_T_SUFFIX@
 RANLIB = @RANLIB@
 RELOCATABLE = @RELOCATABLE@
+RELOCATABLE_BUILD_DIR = ../gnulib-lib
+RELOCATABLE_CONFIG_H_DIR = ..
+RELOCATABLE_LDFLAGS = @RELOCATABLE_LDFLAGS@
+
+# Support for relocatability.
+RELOCATABLE_LIBRARY_PATH = $(libdir)
+RELOCATABLE_SRC_DIR = $(top_srcdir)/gnulib-lib
+REPLACE_CHOWN = @REPLACE_CHOWN@
+REPLACE_FCHDIR = @REPLACE_FCHDIR@
+REPLACE_GETCWD = @REPLACE_GETCWD@
+REPLACE_ICONV = @REPLACE_ICONV@
+REPLACE_ICONV_OPEN = @REPLACE_ICONV_OPEN@
+REPLACE_ICONV_UTF = @REPLACE_ICONV_UTF@
+REPLACE_LCHOWN = @REPLACE_LCHOWN@
+REPLACE_LSEEK = @REPLACE_LSEEK@
+REPLACE_MKSTEMP = @REPLACE_MKSTEMP@
+REPLACE_PUTENV = @REPLACE_PUTENV@
+REPLACE_STRERROR = @REPLACE_STRERROR@
+REPLACE_WCWIDTH = @REPLACE_WCWIDTH@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
-SET_RELOCATABLE = @SET_RELOCATABLE@
 SHELL = @SHELL@
+SIG_ATOMIC_T_SUFFIX = @SIG_ATOMIC_T_SUFFIX@
+SIZE_T_SUFFIX = @SIZE_T_SUFFIX@
 STDBOOL_H = @STDBOOL_H@
+STDINT_H = @STDINT_H@
 STRIP = @STRIP@
-UNISTD_H = @UNISTD_H@
 USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+WCHAR_H = @WCHAR_H@
+WCHAR_T_SUFFIX = @WCHAR_T_SUFFIX@
+WCTYPE_H = @WCTYPE_H@
+WINDRES = @WINDRES@
+WINT_T_SUFFIX = @WINT_T_SUFFIX@
+WOE32 = @WOE32@
 WOE32DLL = @WOE32DLL@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 YACC = @YACC@
 YFLAGS = @YFLAGS@
 abs_builddir = @abs_builddir@
@@ -332,6 +482,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.5 gnits no-dependencies
 EXTRA_DIST = 
+MOSTLYCLEANFILES = core *.stackdump $(am__append_1)
+CLEANFILES = 
 DISTCLEANFILES = gettext.sh
 RM = rm -f
 AM_CPPFLAGS = \
@@ -348,7 +500,7 @@ envsubst_SOURCES = envsubst.c
 
 # Link dependencies.
 # Need @LTLIBICONV@ because striconv.c uses iconv().
-LDADD = ../gnulib-lib/libgrt.a @LTLIBINTL@ @LTLIBICONV@
+LDADD = ../gnulib-lib/libgrt.a @LTLIBINTL@ @LTLIBICONV@ $(WOE32_LDADD)
 
 # Specify installation directory, for --enable-relocatable.
 gettext_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
@@ -360,12 +512,10 @@ envsubst_CFLAGS = -DINSTALLDIR=\"$(bindir)\"
 
 # For installing gettext.sh in $(bindir).
 bin_SCRIPTS = gettext.sh
+@WOE32_FALSE@WOE32_LDADD = 
 
-# Support for relocatability.
-RELOCATABLE_LIBRARY_PATH = $(libdir)
-RELOCATABLE_SRC_DIR = $(top_srcdir)/gnulib-lib
-RELOCATABLE_BUILD_DIR = ../gnulib-lib
-RELOCATABLE_CONFIG_H_DIR = ..
+# Version information according to Woe32 conventions.
+@WOE32_TRUE@WOE32_LDADD = gettext.res
 all: all-am
 
 .SUFFIXES:
@@ -624,8 +774,10 @@ install-strip:
 	  `test -z '$(STRIP)' || \
 	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -708,7 +860,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-binSCRIPTS
 
-@SET_RELOCATABLE@
+@WOE32_TRUE@gettext.res : $(top_srcdir)/../windows/gettext.rc
+@WOE32_TRUE@	$(WINDRES) `$(SHELL) $(top_srcdir)/../windows/windres-options --escape $(VERSION)` -i $(top_srcdir)/../windows/gettext.rc -o gettext.res --output-format=coff
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -637,6 +637,7 @@ AMTAR
 am__tar
 am__untar
 USE_NLS
+GETTEXT_MACRO_VERSION
 MSGFMT
 GMSGFMT
 MSGFMT_015
@@ -644,6 +645,7 @@ GMSGFMT_015
 XGETTEXT
 XGETTEXT_015
 MSGMERGE
+XGETTEXT_EXTRA_OPTIONS
 aclocaldir
 LIBOBJS
 LTLIBOBJS'
@@ -2149,6 +2151,9 @@ echo "${ECHO_T}$USE_NLS" >&6; }
 
 
 
+      GETTEXT_MACRO_VERSION=0.17
+
+
 
 
 # Prepare PATH_SEPARATOR.
@@ -2422,6 +2427,9 @@ fi
 
 
         test -n "$localedir" || localedir='${datadir}/locale'
+
+
+    test -n "${XGETTEXT_EXTRA_OPTIONS+set}" || XGETTEXT_EXTRA_OPTIONS=
 
 
   ac_config_commands="$ac_config_commands po-directories"
@@ -3147,6 +3155,7 @@ AMTAR!$AMTAR$ac_delim
 am__tar!$am__tar$ac_delim
 am__untar!$am__untar$ac_delim
 USE_NLS!$USE_NLS$ac_delim
+GETTEXT_MACRO_VERSION!$GETTEXT_MACRO_VERSION$ac_delim
 MSGFMT!$MSGFMT$ac_delim
 GMSGFMT!$GMSGFMT$ac_delim
 MSGFMT_015!$MSGFMT_015$ac_delim
@@ -3154,12 +3163,13 @@ GMSGFMT_015!$GMSGFMT_015$ac_delim
 XGETTEXT!$XGETTEXT$ac_delim
 XGETTEXT_015!$XGETTEXT_015$ac_delim
 MSGMERGE!$MSGMERGE$ac_delim
+XGETTEXT_EXTRA_OPTIONS!$XGETTEXT_EXTRA_OPTIONS$ac_delim
 aclocaldir!$aclocaldir$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 70; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 72; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

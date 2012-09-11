@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.scm:16
+#: hello.scm:15
 msgid "Hello, world!"
 msgstr "Dia duit, a dhomhain!"
 
-#: hello.scm:18
+#: hello.scm:17
 #, scheme-format
 msgid "This program is running as process number ~D."
 msgstr "Tá an clár seo á rith mar phróiseas ~D."

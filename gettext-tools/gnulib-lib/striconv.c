@@ -1,5 +1,5 @@
 /* Charset conversion.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible and Simon Josefsson.
 
    This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,6 @@
 # include <limits.h>
 #endif
 
-#include "strdup.h"
 #include "c-strcase.h"
 
 #ifndef SIZE_MAX
@@ -51,7 +50,7 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
 
   /* Avoid glibc-2.1 bug and Solaris 2.7-2.9 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
   /* Set to the initial state.  */
   iconv (cd, NULL, NULL, NULL, NULL);
 # endif
@@ -59,7 +58,10 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
   /* Determine the length we need.  */
   {
     size_t count = 0;
-    char tmpbuf[tmpbufsize];
+    /* The alignment is needed when converting e.g. to glibc's WCHAR_T or
+       libiconv's UCS-4-INTERNAL encoding.  */
+    union { unsigned int align; char buf[tmpbufsize]; } tmp;
+# define tmpbuf tmp.buf
     const char *inptr = src;
     size_t insize = srclen;
 
@@ -95,7 +97,7 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
       }
     /* Avoid glibc-2.1 bug and Solaris 2.7 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
     {
       char *outptr = tmpbuf;
       size_t outsize = tmpbufsize;
@@ -107,6 +109,7 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
     }
 # endif
     length = count;
+# undef tmpbuf
   }
 
   if (length == 0)
@@ -114,18 +117,21 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
       *lengthp = 0;
       return 0;
     }
-  result = (*resultp != NULL ? realloc (*resultp, length) : malloc (length));
-  if (result == NULL)
+  if (*resultp != NULL && *lengthp >= length)
+    result = *resultp;
+  else
     {
-      errno = ENOMEM;
-      return -1;
+      result = (char *) malloc (length);
+      if (result == NULL)
+	{
+	  errno = ENOMEM;
+	  return -1;
+	}
     }
-  *resultp = result;
-  *lengthp = length;
 
   /* Avoid glibc-2.1 bug and Solaris 2.7-2.9 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
   /* Return to the initial state.  */
   iconv (cd, NULL, NULL, NULL, NULL);
 # endif
@@ -148,7 +154,7 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
 	    if (errno == EINVAL)
 	      break;
 	    else
-	      return -1;
+	      goto fail;
 	  }
 # if !defined _LIBICONV_VERSION && !defined __GLIBC__
 	/* Irix iconv() inserts a NUL byte if it cannot convert.
@@ -158,25 +164,39 @@ mem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
 	else if (res > 0)
 	  {
 	    errno = EILSEQ;
-	    return -1;
+	    goto fail;
 	  }
 # endif
       }
     /* Avoid glibc-2.1 bug and Solaris 2.7 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
     {
       size_t res = iconv (cd, NULL, NULL, &outptr, &outsize);
 
       if (res == (size_t)(-1))
-	return -1;
+	goto fail;
     }
 # endif
     if (outsize != 0)
       abort ();
   }
 
+  *resultp = result;
+  *lengthp = length;
+
   return 0;
+
+ fail:
+  {
+    if (result != *resultp)
+      {
+	int saved_errno = errno;
+	free (result);
+	errno = saved_errno;
+      }
+    return -1;
+  }
 # undef tmpbufsize
 }
 
@@ -187,21 +207,24 @@ str_cd_iconv (const char *src, iconv_t cd)
      to a trailing NUL byte in the output.  But not for UTF-7.  So that this
      function is usable for UTF-7, we have to exclude the NUL byte from the
      conversion and add it by hand afterwards.  */
-# if PROBABLY_SLOWER
+# if !defined _LIBICONV_VERSION && !defined __GLIBC__
+  /* Irix iconv() inserts a NUL byte if it cannot convert.
+     NetBSD iconv() inserts a question mark if it cannot convert.
+     Only GNU libiconv and GNU libc are known to prefer to fail rather
+     than doing a lossy conversion.  For other iconv() implementations,
+     we have to look at the number of irreversible conversions returned;
+     but this information is lost when iconv() returns for an E2BIG reason.
+     Therefore we cannot use the second, faster algorithm.  */
 
   char *result = NULL;
-  size_t length;
+  size_t length = 0;
   int retval = mem_cd_iconv (src, strlen (src), cd, &result, &length);
   char *final_result;
 
   if (retval < 0)
     {
       if (result != NULL)
-	{
-	  int saved_errno = errno;
-	  free (result);
-	  errno = saved_errno;
-	}
+	abort ();
       return NULL;
     }
 
@@ -220,7 +243,10 @@ str_cd_iconv (const char *src, iconv_t cd)
   return final_result;
 
 # else
-
+  /* This algorithm is likely faster than the one above.  But it may produce
+     iconv() returns for an E2BIG reason, when the output size guess is too
+     small.  Therefore it can only be used when we don't need the number of
+     irreversible conversions performed.  */
   char *result;
   size_t result_size;
   size_t length;
@@ -247,7 +273,7 @@ str_cd_iconv (const char *src, iconv_t cd)
 
   /* Avoid glibc-2.1 bug and Solaris 2.7-2.9 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
   /* Set to the initial state.  */
   iconv (cd, NULL, NULL, NULL, NULL);
 # endif
@@ -294,23 +320,12 @@ str_cd_iconv (const char *src, iconv_t cd)
 	    else
 	      goto failed;
 	  }
-# if !defined _LIBICONV_VERSION && !defined __GLIBC__
-	/* Irix iconv() inserts a NUL byte if it cannot convert.
-	   NetBSD iconv() inserts a question mark if it cannot convert.
-	   Only GNU libiconv and GNU libc are known to prefer to fail rather
-	   than doing a lossy conversion.  */
-	else if (res > 0)
-	  {
-	    errno = EILSEQ;
-	    goto failed;
-	  }
-# endif
 	else
 	  break;
       }
     /* Avoid glibc-2.1 bug and Solaris 2.7 bug.  */
 # if defined _LIBICONV_VERSION \
-    || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
+     || !((__GLIBC__ - 0 == 2 && __GLIBC_MINOR__ - 0 <= 1) || defined __sun)
     for (;;)
       {
 	/* Here outptr + outbytes_remaining = result + result_size - 1.  */
@@ -381,8 +396,14 @@ str_cd_iconv (const char *src, iconv_t cd)
 char *
 str_iconv (const char *src, const char *from_codeset, const char *to_codeset)
 {
-  if (c_strcasecmp (from_codeset, to_codeset) == 0)
-    return strdup (src);
+  if (*src == '\0' || c_strcasecmp (from_codeset, to_codeset) == 0)
+    {
+      char *result = strdup (src);
+
+      if (result == NULL)
+	errno = ENOMEM;
+      return result;
+    }
   else
     {
 #if HAVE_ICONV

@@ -1,12 +1,12 @@
 /* xgettext PHP backend.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <bruno@clisp.org>, 2002.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-php.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -31,7 +33,6 @@
 #include "x-php.h"
 #include "error.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -40,7 +41,8 @@
 
 
 /* The PHP syntax is defined in phpdoc/manual/langref.html.
-   See also php-4.1.0/Zend/zend_language_scanner.l.
+   See also php-4.1.0/Zend/zend_language_scanner.l
+   and      php-4.1.0/Zend/zend_language_parser.y.
    Note that variable and function names can contain bytes in the range
    0x7f..0xff; see
      http://www.php.net/manual/en/language.variables.php
@@ -737,6 +739,11 @@ enum token_type_ty
   token_type_lparen,		/* ( */
   token_type_rparen,		/* ) */
   token_type_comma,		/* , */
+  token_type_lbracket,		/* [ */
+  token_type_rbracket,		/* ] */
+  token_type_dot,		/* . */
+  token_type_operator1,		/* * / % ++ -- */
+  token_type_operator2,		/* + - ! ~ @ */
   token_type_string_literal,	/* "abc" */
   token_type_symbol,		/* symbol, number */
   token_type_other		/* misc. operator */
@@ -748,6 +755,7 @@ struct token_ty
 {
   token_type_ty type;
   char *string;		/* for token_type_string_literal, token_type_symbol */
+  refcounted_string_list_ty *comment;	/* for token_type_string_literal */
   int line_number;
 };
 
@@ -758,19 +766,29 @@ free_token (token_ty *tp)
 {
   if (tp->type == token_type_string_literal || tp->type == token_type_symbol)
     free (tp->string);
+  if (tp->type == token_type_string_literal)
+    drop_reference (tp->comment);
 }
 
 
 /* 4. Combine characters into tokens.  Discard whitespace.  */
 
+static token_ty phase4_pushback[3];
+static int phase4_pushback_length;
+
 static void
-x_php_lex (token_ty *tp)
+phase4_get (token_ty *tp)
 {
   static char *buffer;
   static int bufmax;
   int bufpos;
   int c;
 
+  if (phase4_pushback_length)
+    {
+      *tp = phase4_pushback[--phase4_pushback_length];
+      return;
+    }
   tp->string = NULL;
 
   for (;;)
@@ -923,6 +941,7 @@ x_php_lex (token_ty *tp)
 	  buffer[bufpos] = 0;
 	  tp->type = token_type_string_literal;
 	  tp->string = xstrdup (buffer);
+	  tp->comment = add_reference (savable_comment);
 	  return;
 
 	case '"':
@@ -1059,7 +1078,10 @@ x_php_lex (token_ty *tp)
 	    }
 	  buffer[bufpos] = 0;
 	  if (tp->type == token_type_string_literal)
-	    tp->string = xstrdup (buffer);
+	    {
+	      tp->string = xstrdup (buffer);
+	      tp->comment = add_reference (savable_comment);
+	    }
 	  return;
 
 	case '?':
@@ -1071,10 +1093,13 @@ x_php_lex (token_ty *tp)
 		/* ?> and %> terminate PHP mode and switch back to HTML
 		   mode.  */
 		skip_html ();
+		tp->type = token_type_other;
 	      }
 	    else
-	      phase1_ungetc (c2);
-	    tp->type = token_type_other;
+	      {
+		phase1_ungetc (c2);
+		tp->type = (c == '%' ? token_type_operator1 : token_type_other);
+	      }
 	    return;
 	  }
 
@@ -1088,6 +1113,45 @@ x_php_lex (token_ty *tp)
 
 	case ',':
 	  tp->type = token_type_comma;
+	  return;
+
+	case '[':
+	  tp->type = token_type_lbracket;
+	  return;
+
+	case ']':
+	  tp->type = token_type_rbracket;
+	  return;
+
+	case '.':
+	  tp->type = token_type_dot;
+	  return;
+
+	case '*':
+	case '/':
+	  tp->type = token_type_operator1;
+	  return;
+
+	case '+':
+	case '-':
+	  {
+	    int c2 = phase1_getc ();
+	    if (c2 == c)
+	      /* ++ or -- */
+	      tp->type = token_type_operator1;
+	    else
+	      /* + or - */
+	      {
+		phase1_ungetc (c2);
+		tp->type = token_type_operator2;
+	      }
+	    return;
+	  }
+
+	case '!':
+	case '~':
+	case '@':
+	  tp->type = token_type_operator2;
 	  return;
 
 	case '<':
@@ -1236,6 +1300,88 @@ x_php_lex (token_ty *tp)
     }
 }
 
+/* Supports 3 tokens of pushback.  */
+static void
+phase4_unget (token_ty *tp)
+{
+  if (tp->type != token_type_eof)
+    {
+      if (phase4_pushback_length == SIZEOF (phase4_pushback))
+	abort ();
+      phase4_pushback[phase4_pushback_length++] = *tp;
+    }
+}
+
+
+/* 5. Compile-time optimization of string literal concatenation.
+   Combine "string1" . ... . "stringN" to the concatenated string if
+     - the token before this expression is none of
+       '+' '-' '.' '*' '/' '%' '!' '~' '++' '--' ')' '@'
+       (because then the first string could be part of an expression with
+       the same or higher precedence as '.', such as an additive,
+       multiplicative, negation, preincrement, or cast expression),
+     - the token after this expression is none of
+       '*' '/' '%' '++' '--'
+       (because then the last string could be part of an expression with
+       higher precedence as '.', such as a multiplicative or postincrement
+       expression).  */
+
+static token_type_ty phase5_last;
+
+static void
+x_php_lex (token_ty *tp)
+{
+  phase4_get (tp);
+  if (tp->type == token_type_string_literal
+      && !(phase5_last == token_type_dot
+	   || phase5_last == token_type_operator1
+	   || phase5_last == token_type_operator2
+	   || phase5_last == token_type_rparen))
+    {
+      char *sum = tp->string;
+      size_t sum_len = strlen (sum);
+
+      for (;;)
+	{
+	  token_ty token2;
+
+	  phase4_get (&token2);
+	  if (token2.type == token_type_dot)
+	    {
+	      token_ty token3;
+
+	      phase4_get (&token3);
+	      if (token3.type == token_type_string_literal)
+		{
+		  token_ty token_after;
+
+		  phase4_get (&token_after);
+		  if (token_after.type != token_type_operator1)
+		    {
+		      char *addend = token3.string;
+		      size_t addend_len = strlen (addend);
+
+		      sum = (char *) xrealloc (sum, sum_len + addend_len + 1);
+		      memcpy (sum + sum_len, addend, addend_len + 1);
+		      sum_len += addend_len;
+
+		      phase4_unget (&token_after);
+		      free_token (&token3);
+		      free_token (&token2);
+		      continue;
+		    }
+		  phase4_unget (&token_after);
+		}
+	      phase4_unget (&token3);
+	    }
+	  phase4_unget (&token2);
+	  break;
+	}
+      tp->string = sum;
+    }
+  phase5_last = tp->type;
+}
+
 
 /* ========================= Extracting strings.  ========================== */
 
@@ -1259,14 +1405,17 @@ static flag_context_list_table_ty *flag_context_list_table;
    and msgid_plural can contain subexpressions of the same form.  */
 
 
-/* Extract messages until the next balanced closing parenthesis.
+/* Extract messages until the next balanced closing parenthesis or bracket.
    Extracted messages are added to MLP.
+   DELIM can be either token_type_rparen or token_type_rbracket, or
+   token_type_eof to accept both.
    Return true upon eof, false upon closing parenthesis.  */
 static bool
-extract_parenthesized (message_list_ty *mlp,
-		       flag_context_ty outer_context,
-		       flag_context_list_iterator_ty context_iter,
-		       struct arglist_parser *argparser)
+extract_balanced (message_list_ty *mlp,
+		  token_type_ty delim,
+		  flag_context_ty outer_context,
+		  flag_context_list_iterator_ty context_iter,
+		  struct arglist_parser *argparser)
 {
   /* Current argument number.  */
   int arg = 1;
@@ -1315,9 +1464,10 @@ extract_parenthesized (message_list_ty *mlp,
 	  continue;
 
 	case token_type_lparen:
-	  if (extract_parenthesized (mlp, inner_context, next_context_iter,
-				     arglist_parser_alloc (mlp,
-							   state ? next_shapes : NULL)))
+	  if (extract_balanced (mlp, token_type_rparen,
+				inner_context, next_context_iter,
+				arglist_parser_alloc (mlp,
+						      state ? next_shapes : NULL)))
 	    {
 	      arglist_parser_done (argparser, arg);
 	      return true;
@@ -1327,8 +1477,14 @@ extract_parenthesized (message_list_ty *mlp,
 	  continue;
 
 	case token_type_rparen:
-	  arglist_parser_done (argparser, arg);
-	  return false;
+	  if (delim == token_type_rparen || delim == token_type_eof)
+	    {
+	      arglist_parser_done (argparser, arg);
+	      return false;
+	    }
+	  next_context_iter = null_context_list_iterator;
+	  state = 0;
+	  continue;
 
 	case token_type_comma:
 	  arg++;
@@ -1340,6 +1496,25 @@ extract_parenthesized (message_list_ty *mlp,
 	  state = 0;
 	  continue;
 
+	case token_type_lbracket:
+	  if (extract_balanced (mlp, token_type_rbracket,
+				null_context, null_context_list_iterator,
+				arglist_parser_alloc (mlp, NULL)))
+	    {
+	      arglist_parser_done (argparser, arg);
+	      return true;
+	    }
+
+	case token_type_rbracket:
+	  if (delim == token_type_rbracket || delim == token_type_eof)
+	    {
+	      arglist_parser_done (argparser, arg);
+	      return false;
+	    }
+	  next_context_iter = null_context_list_iterator;
+	  state = 0;
+	  continue;
+
 	case token_type_string_literal:
 	  {
 	    lex_pos_ty pos;
@@ -1348,17 +1523,21 @@ extract_parenthesized (message_list_ty *mlp,
 
 	    if (extract_all)
 	      remember_a_message (mlp, NULL, token.string, inner_context,
-				  &pos, savable_comment);
+				  &pos, token.comment);
 	    else
 	      arglist_parser_remember (argparser, arg, token.string,
 				       inner_context,
 				       pos.file_name, pos.line_number,
-				       savable_comment);
+				       token.comment);
+	    drop_reference (token.comment);
 	  }
 	  next_context_iter = null_context_list_iterator;
 	  state = 0;
 	  continue;
 
+	case token_type_dot:
+	case token_type_operator1:
+	case token_type_operator2:
 	case token_type_other:
 	  next_context_iter = null_context_list_iterator;
 	  state = 0;
@@ -1391,6 +1570,8 @@ extract_php (FILE *f,
   last_comment_line = -1;
   last_non_comment_line = -1;
 
+  phase5_last = token_type_eof;
+
   flag_context_list_table = flag_table;
 
   init_keywords ();
@@ -1398,10 +1579,11 @@ extract_php (FILE *f,
   /* Initial mode is HTML mode, not PHP mode.  */
   skip_html ();
 
-  /* Eat tokens until eof is seen.  When extract_parenthesized returns
+  /* Eat tokens until eof is seen.  When extract_balanced returns
      due to an unbalanced closing parenthesis, just restart it.  */
-  while (!extract_parenthesized (mlp, null_context, null_context_list_iterator,
-				 arglist_parser_alloc (mlp, NULL)))
+  while (!extract_balanced (mlp, token_type_eof,
+			    null_context, null_context_list_iterator,
+			    arglist_parser_alloc (mlp, NULL)))
     ;
 
   /* Close scanner.  */

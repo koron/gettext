@@ -1,10 +1,18 @@
 \input texinfo          @c -*-texinfo-*-
 @c %**start of header
-@c The @documentencoding is needed for makeinfo, but not for texi2html.
-@c @ifhtml
-@c @documentencoding UTF-8
-@c @end ifhtml
 @setfilename gettext.info
+@c The @ifset makeinfo ... @end ifset conditional evaluates to true in makeinfo
+@c for info and html output, but to false in texi2html.
+@ifnottex
+@ifclear texi2html
+@set makeinfo
+@end ifclear
+@end ifnottex
+@c The @documentencoding is needed for makeinfo; texi2html 1.52
+@c doesn't recognize it.
+@ifset makeinfo
+@documentencoding UTF-8
+@end ifset
 @settitle GNU @code{gettext} utilities
 @finalout
 @c Indices:
@@ -31,6 +39,9 @@
 @syncodeindex ev em
 @syncodeindex fn cp
 @syncodeindex kw cp
+@ifclear texi2html
+@firstparagraphindent insert
+@end ifclear
 @c %**end of header
 
 @include version.texi
@@ -68,7 +79,7 @@ This file provides documentation for GNU @code{gettext} utilities.
 It also serves as a reference for the free Translation Project.
 
 @copying
-Copyright (C) 1995-1998, 2001-2006 Free Software Foundation, Inc.
+Copyright (C) 1995-1998, 2001-2007 Free Software Foundation, Inc.
 
 This manual is free documentation.  It is dually licensed under the
 GNU FDL and the GNU GPL.  This means that you can redistribute this
@@ -103,7 +114,7 @@ A copy of the license is included in @ref{GNU GPL}.
 @page
 @vskip 0pt plus 1filll
 @c @insertcopying
-Copyright (C) 1995-1998, 2001-2006 Free Software Foundation, Inc.
+Copyright (C) 1995-1998, 2001-2007 Free Software Foundation, Inc.
 
 This manual is free documentation.  It is dually licensed under the
 GNU FDL and the GNU GPL.  This means that you can redistribute this
@@ -130,7 +141,7 @@ A copy of the license is included in @ref{GNU GPL}.
 @contents
 @end ifnottex
 
-@ifinfo
+@ifset makeinfo
 @node Top, Introduction, (dir), (dir)
 @top GNU @code{gettext} utilities
 
@@ -179,8 +190,16 @@ Introduction
 
 The User's View
 
-* Matrix::                      The Current @file{ABOUT-NLS} Matrix
-* End Users::                   Magic for End Users
+* System Installation::         Questions During Operating System Installation
+* Setting the GUI Locale::      How to Specify the Locale Used by GUI Programs
+* Setting the POSIX Locale::    How to Specify the Locale According to POSIX
+* Installing Localizations::    How to Install Additional Translations
+
+Setting the POSIX Locale
+
+* Locale Names::                How a Locale Specification Looks Like
+* Locale Environment Variables:: Which Environment Variable Specfies What
+* The LANGUAGE variable::       How to Specify a Priority List of Languages
 
 Preparing Program Sources
 
@@ -191,6 +210,7 @@ Preparing Program Sources
 * Marking::                     Marking Translatable Strings
 * c-format Flag::               Telling something about the following string
 * Special cases::               Special Cases of Translatable Strings
+* Bug Report Address::          Letting Users Report Translation Bugs
 * Names::                       Marking Proper Names for Translation
 * Libraries::                   Preparing Library Sources
 
@@ -212,6 +232,7 @@ Editing PO Files
 * KBabel::                      KDE's PO File Editor
 * Gtranslator::                 GNOME's PO File Editor
 * PO Mode::                     Emacs's PO File Editor
+* Compendium::                  Using Translation Compendia
 
 Emacs's PO File Editor
 
@@ -228,7 +249,6 @@ Emacs's PO File Editor
 * Subedit::                     Mode for Editing Translations
 * C Sources Context::           C Sources Context
 * Auxiliary::                   Consulting Auxiliary PO Files
-* Compendium::                  Using Translation Compendia
 
 Using Translation Compendia
 
@@ -247,7 +267,16 @@ Manipulating PO Files
 * msgattrib Invocation::        Invoking the @code{msgattrib} Program
 * msgen Invocation::            Invoking the @code{msgen} Program
 * msgexec Invocation::          Invoking the @code{msgexec} Program
+* Colorizing::                  Highlighting parts of PO files
 * libgettextpo::                Writing your own programs that process PO files
+
+Highlighting parts of PO files
+
+* The --color option::          Triggering colorized output
+* The TERM variable::           The environment variable @code{TERM}
+* The --style option::          The @code{--style} option
+* Style rules::                 Style rules for PO files
+* Customizing less::            Customizing @code{less} for viewing PO files
 
 Producing Binary MO Files
 
@@ -312,7 +341,7 @@ The Maintainer's View
 * Prerequisites::               Prerequisite Works
 * gettextize Invocation::       Invoking the @code{gettextize} Program
 * Adjusting Files::             Files You Must Create or Alter
-* autoconf macros::             Autoconf macros for use in @file{configure.in}
+* autoconf macros::             Autoconf macros for use in @file{configure.ac}
 * CVS Issues::                  Integrating with CVS
 * Release Management::          Creating a Distribution Tarball
 
@@ -322,7 +351,7 @@ Files You Must Create or Alter
 * po/LINGUAS::                  @file{LINGUAS} in @file{po/}
 * po/Makevars::                 @file{Makevars} in @file{po/}
 * po/Rules-*::                  Extending @file{Makefile} in @file{po/}
-* configure.in::                @file{configure.in} at top level
+* configure.ac::                @file{configure.ac} at top level
 * config.guess::                @file{config.guess}, @file{config.sub} at top level
 * mkinstalldirs::               @file{mkinstalldirs} at top level
 * aclocal::                     @file{aclocal.m4} at top level
@@ -332,7 +361,7 @@ Files You Must Create or Alter
 * src/Makefile::                @file{Makefile.in} in @file{src/}
 * lib/gettext.h::               @file{gettext.h} in @file{lib/}
 
-Autoconf macros for use in @file{configure.in}
+Autoconf macros for use in @file{configure.ac}
 
 * AM_GNU_GETTEXT::              AM_GNU_GETTEXT in @file{gettext.m4}
 * AM_GNU_GETTEXT_VERSION::      AM_GNU_GETTEXT_VERSION in @file{gettext.m4}
@@ -377,6 +406,7 @@ The Translator's View
 * php-format::                  PHP Format Strings
 * gcc-internal-format::         GCC internal Format Strings
 * qt-format::                   Qt Format Strings
+* kde-format::                  KDE Format Strings
 * boost-format::                Boost Format Strings
 
 Individual Programming Languages
@@ -450,7 +480,7 @@ Licenses
 @end detailmenu
 @end menu
 
-@end ifinfo
+@end ifset
 
 @node Introduction, Users, Top, Top
 @chapter Introduction
@@ -503,7 +533,7 @@ Please include the manual's edition number and update date in your messages.
 
 Usually, programs are written and documented in English, and use
 English at execution time to interact with users.  This is true
-not only of GNU software, but also of a great deal of commercial
+not only of GNU software, but also of a great deal of proprietary
 and free software.  Using a common language is quite handy for
 communication between developers, maintainers and users from all
 countries.  On the other hand, most people are less comfortable with
@@ -706,7 +736,7 @@ numbers, the symbols for currency, etc.  These local @dfn{rules} are
 termed the country's locale.  The locale represents the knowledge
 needed to support the country's native attributes.
 
-@cindex locale facets
+@cindex locale categories
 There are a few major areas which may vary between countries and
 hence, define what a locale must describe.  The following list helps
 putting multi-lingual messages into the proper context of other tasks
@@ -718,7 +748,7 @@ related to locales.  See the GNU @code{libc} manual for details.
 @cindex codeset
 @cindex encoding
 @cindex character encoding
-@cindex locale facet, LC_CTYPE
+@cindex locale category, LC_CTYPE
 
 The codeset most commonly used through out the USA and most English
 speaking parts of the world is the ASCII codeset.  However, there are
@@ -733,7 +763,7 @@ the codeset.
 
 @item Currency
 @cindex currency symbols
-@cindex locale facet, LC_MONETARY
+@cindex locale category, LC_MONETARY
 
 The symbols used vary from country to country as does the position
 used by the symbol.  Software needs to be able to transparently
@@ -741,7 +771,7 @@ display currency figures in the native mode for each locale.
 
 @item Dates
 @cindex date format
-@cindex locale facet, LC_TIME
+@cindex locale category, LC_TIME
 
 The format of date varies between locales.  For example, Christmas day
 in 1994 is written as 12/25/94 in the USA and as 25/12/94 in Australia.
@@ -754,7 +784,7 @@ of the Daylight Saving correction vary widely between countries.
 
 @item Numbers
 @cindex number format
-@cindex locale facet, LC_NUMERIC
+@cindex locale category, LC_NUMERIC
 
 Numbers can be represented differently in different locales.
 For example, the following numbers are all written correctly for
@@ -773,7 +803,7 @@ about how numbers are spelled in full.
 
 @item Messages
 @cindex messages
-@cindex locale facet, LC_MESSAGES
+@cindex locale category, LC_MESSAGES
 
 The most obvious area is the language support within a locale.  This is
 where GNU @code{gettext} provides the means for developers and users to
@@ -782,9 +812,21 @@ the user.
 
 @end table
 
+@cindex locale categories
+These areas of cultural conventions are called @emph{locale categories}.
+It is an unfortunate term; @emph{locale aspects} or @emph{locale feature
+categories} would be a better term, because each ``locale category''
+describes an area or task that requires localization.  The concrete data
+that describes the cultural conventions for such an area and for a particular
+culture is also called a @emph{locale category}.  In this sense, a locale
+is composed of several locale categories: the locale category describing
+the codeset, the locale category describing the formatting of numbers,
+the locale category containing the translated messages, and so on.
+
 @cindex Linux
 Components of locale outside of message handling are standardized in
-the ISO C standard and the SUSV2 specification.  GNU @code{libc}
+the ISO C standard and the POSIX:2001 standard (also known as the SUSV3
+specification).  GNU @code{libc}
 fully implements this, and most other modern systems provide a more
 or less reasonable support for at least some of the missing components.
 
@@ -836,8 +878,8 @@ read while keeping an eye on the diagram.  Having a clear understanding
 of these interrelations will surely help programmers, translators
 and maintainers.
 
-@example
 @ifhtml
+@example
 @group
 Original C Sources ───> Preparation ───> Marked C Sources ───╮
                                                              │
@@ -860,8 +902,10 @@ Original C Sources ───> Preparation ───> Marked C Sources ───�
 │                                              ├───> "Hello world!"
 ╰───────> install ───> /.../bin/PROGRAM ───────╯
 @end group
+@end example
 @end ifhtml
 @ifnothtml
+@example
 @group
 Original C Sources ---> Preparation ---> Marked C Sources ---.
                                                              |
@@ -884,8 +928,8 @@ Original C Sources ---> Preparation ---> Marked C Sources ---.
 |                                              +---> "Hello world!"
 `-------> install ---> /.../bin/PROGRAM -------'
 @end group
-@end ifnothtml
 @end example
+@end ifnothtml
 
 @cindex marking translatable strings
 As a programmer, the first step to bringing GNU @code{gettext}
@@ -1051,8 +1095,8 @@ with the GNU @code{gettext} library, usually through the operation of
 @code{make}, given a suitable @file{Makefile} exists for the project,
 and the resulting executable is installed somewhere users will find it.
 The MO files themselves should also be properly installed.  Given the
-appropriate environment variables are set (@pxref{End Users}), the
-program should localize itself automatically, whenever it executes.
+appropriate environment variables are set (@pxref{Setting the POSIX Locale}),
+the program should localize itself automatically, whenever it executes.
 
 The remainder of this manual has the purpose of explaining in depth the various
 steps outlined above.
@@ -1060,74 +1104,266 @@ steps outlined above.
 @node Users, PO Files, Introduction, Top
 @chapter The User's View
 
-When GNU @code{gettext} will truly have reached its goal, average users
-should feel some kind of astonished pleasure, seeing the effect of
-that strange kind of magic that just makes their own native language
-appear everywhere on their screens.  As for naive users, they would
-ideally have no special pleasure about it, merely taking their own
-language for @emph{granted}, and becoming rather unhappy otherwise.
+Nowadays, when users log into a computer, they usually find that all
+their programs show messages in their native language -- at least for
+users of languages with an active free software community, like French or
+German; to a lesser extent for languages with a smaller participation in
+free software and the GNU project, like Hindi and Filipino.
 
-So, let's try to describe here how we would like the magic to operate,
-as we want the users' view to be the simplest, among all ways one
-could look at GNU @code{gettext}.  All other software engineers:
-programmers, translators, maintainers, should work together in such a
-way that the magic becomes possible.  This is a long and progressive
-undertaking, and information is available about the progress of the
-Translation Project.
-
-When a package is distributed, there are two kinds of users:
-@dfn{installers} who fetch the distribution, unpack it, configure
-it, compile it and install it for themselves or others to use; and
-@dfn{end users} that call programs of the package, once these have
-been installed at their site.  GNU @code{gettext} is offering magic
-for both installers and end users.
+How does this work?  How can the user influence the language that is used
+by the programs?  This chapter will answer it.
 
 @menu
-* Matrix::                      The Current @file{ABOUT-NLS} Matrix
-* End Users::                   Magic for End Users
+* System Installation::         Questions During Operating System Installation
+* Setting the GUI Locale::      How to Specify the Locale Used by GUI Programs
+* Setting the POSIX Locale::    How to Specify the Locale According to POSIX
+* Installing Localizations::    How to Install Additional Translations
 @end menu
 
-@node Matrix, End Users, Users, Users
-@section The Current @file{ABOUT-NLS} Matrix
-@cindex Translation Matrix
-@cindex available translations
-@cindex @file{ABOUT-NLS} file
+@node System Installation, Setting the GUI Locale, Users, Users
+@section Operating System Installation
 
-Languages are not equally supported in all packages using GNU
-@code{gettext}.  To know if some package uses GNU @code{gettext}, one
-may check the distribution for the @file{ABOUT-NLS} information file, for
-some @file{@var{ll}.po} files, often kept together into some @file{po/}
-directory, or for an @file{intl/} directory.  Internationalized packages
-have usually many @file{@var{ll}.po} files, where @var{ll} represents
-the language.  @ref{End Users} for a complete description of the format
-for @var{ll}.
+The default language is often already specified during operating system
+installation.  When the operating system is installed, the installer
+typically asks for the language used for the installation process and,
+separately, for the language to use in the installed system.  Some OS
+installers only ask for the language once.
 
-More generally, a matrix is available for showing the current state
-of the Translation Project, listing which packages are prepared for
-multi-lingual messages, and which languages are supported by each.
-Because this information changes often, this matrix is not kept within
-this GNU @code{gettext} manual.  This information is often found in
-file @file{ABOUT-NLS} from various distributions, but is also as old as
-the distribution itself.  A recent copy of this @file{ABOUT-NLS} file,
-containing up-to-date information, should generally be found on the
-Translation Project sites, and also on most GNU archive sites.
+This determines the system-wide default language for all users.  But the
+installers often give the possibility to install extra localizations for
+additional languages.  For example, the localizations of KDE (the K
+Desktop Environment) and OpenOffice.org are often bundled separately,
+as one installable package per language.
 
-@node End Users,  , Matrix, Users
-@section Magic for End Users
+At this point it is good to consider the intended use of the machine: If
+it is a machine designated for personal use, additional localizations are
+probably not necessary.  If, however, the machine is in use in an
+organization or company that has international relationships, one can
+consider the needs of guest users.  If you have a guest from abroad, for
+a week, what could be his preferred locales?  It may be worth installing
+these additional localizations ahead of time, since they cost only a bit
+of disk space at this point.
+
+The system-wide default language is the locale configuration that is used
+when a new user account is created.  But the user can have his own locale
+configuration that is different from the one of the other users of the
+same machine.  He can specify it, typically after the first login, as
+described in the next section.
+
+@node Setting the GUI Locale, Setting the POSIX Locale, System Installation, Users
+@section Setting the Locale Used by GUI Programs
+
+The immediately available programs in a user's desktop come from a group
+of programs called a ``desktop environment''; it usually includes the window
+manager, a web browser, a text editor, and more.  The most common free
+desktop environments are KDE, GNOME, and Xfce.
+
+The locale used by GUI programs of the desktop environment can be specified
+in a configuration screen called ``control center'', ``language settings''
+or ``country settings''.
+
+Individual GUI programs that are not part of the desktop environment can
+have their locale specified either in a settings panel, or through environment
+variables.
+
+For some programs, it is possible to specify the locale through environment
+variables, possibly even to a different locale than the desktop's locale.
+This means, instead of starting a program through a menu or from the file
+system, you can start it from the command-line, after having set some
+environment variables.  The environment variables can be those specified
+in the next section (@ref{Setting the POSIX Locale}); for some versions of
+KDE, however, the locale is specified through a variable @code{KDE_LANG},
+rather than @code{LANG} or @code{LC_ALL}.
+
+@node Setting the POSIX Locale, Installing Localizations, Setting the GUI Locale, Users
+@section Setting the Locale through Environment Variables
+
+As a user, if your language has been installed for this package, in the
+simplest case, you only have to set the @code{LANG} environment variable
+to the appropriate @samp{@var{ll}_@var{CC}} combination.  For example,
+let's suppose that you speak German and live in Germany.  At the shell
+prompt, merely execute 
+@w{@samp{setenv LANG de_DE}} (in @code{csh}),
+@w{@samp{export LANG; LANG=de_DE}} (in @code{sh}) or
+@w{@samp{export LANG=de_DE}} (in @code{bash}).  This can be done from your
+@file{.login} or @file{.profile} file, once and for all.
+
+@menu
+* Locale Names::                How a Locale Specification Looks Like
+* Locale Environment Variables:: Which Environment Variable Specfies What
+* The LANGUAGE variable::       How to Specify a Priority List of Languages
+@end menu
+
+@node Locale Names, Locale Environment Variables, Setting the POSIX Locale, Setting the POSIX Locale
+@subsection Locale Names
+
+A locale name usually has the form @samp{@var{ll}_@var{CC}}.  Here
+@samp{@var{ll}} is an @w{ISO 639} two-letter language code, and
+@samp{@var{CC}} is an @w{ISO 3166} two-letter country code.  For example,
+for German in Germany, @var{ll} is @code{de}, and @var{CC} is @code{DE}.
+You find a list of the language codes in appendix @ref{Language Codes} and
+a list of the country codes in appendix @ref{Country Codes}.
+
+You might think that the country code specification is redundant.  But in
+fact, some languages have dialects in different countries.  For example,
+@samp{de_AT} is used for Austria, and @samp{pt_BR} for Brazil.  The country
+code serves to distinguish the dialects.
+
+Many locale names have an extended syntax
+@samp{@var{ll}_@var{CC}.@var{encoding}} that also specifies the character
+encoding.  These are in use because between 2000 and 2005, most users have
+switched to locales in UTF-8 encoding.  For example, the German locale on
+glibc systems is nowadays @samp{de_DE.UTF-8}.  The older name @samp{de_DE}
+still refers to the German locale as of 2000 that stores characters in
+ISO-8859-1 encoding -- a text encoding that cannot even accomodate the Euro
+currency sign.
+
+Some locale names use @samp{@var{ll}_@var{CC}.@@@var{variant}} instead of
+@samp{@var{ll}_@var{CC}}.  The @samp{@@@var{variant}} can denote any kind of
+characteristics that is not already implied by the language @var{ll} and
+the country @var{CC}.  It can denote a particular monetary unit.  For example,
+on glibc systems, @samp{de_DE@@euro} denotes the locale that uses the Euro
+currency, in contrast to the older locale @samp{de_DE} which implies the use
+of the currency before 2002.  It can also denote a dialect of the language,
+or the script used to write text (for example, @samp{sr_RS@@latin} uses the
+Latin script, whereas @samp{sr_RS} uses the Cyrillic script to write Serbian),
+or the orthography rules, or similar.
+
+On other systems, some variations of this scheme are used, such as
+@samp{@var{ll}}.  You can get the list of locales supported by your system
+for your language by running the command @samp{locale -a | grep '^@var{ll}'}.
+
+There is also a special locale, called @samp{C}.
+@c Don't mention that this locale also has the name "POSIX". When we talk about
+@c the "POSIX locale", we mean the "locale as specified in the POSIX way", and
+@c mentioning a locale called "POSIX" would bring total confusion.
+When it is used, it disables all localization: in this locale, all programs
+standardized by POSIX use English messages and an unspecified character
+encoding (often US-ASCII, but sometimes also ISO-8859-1 or UTF-8, depending on
+the operating system).
+
+@node Locale Environment Variables, The LANGUAGE variable, Locale Names, Setting the POSIX Locale
+@subsection Locale Environment Variables
 @cindex setting up @code{gettext} at run time
 @cindex selecting message language
 @cindex language selection
 
+A locale is composed of several @emph{locale categories}, see @ref{Aspects}.
+When a program looks up locale dependent values, it does this according to
+the following environment variables, in priority order:
+
+@enumerate
+@vindex LANGUAGE@r{, environment variable}
+@item @code{LANGUAGE}
+@vindex LC_ALL@r{, environment variable}
+@item @code{LC_ALL}
+@vindex LC_CTYPE@r{, environment variable}
+@vindex LC_NUMERIC@r{, environment variable}
+@vindex LC_TIME@r{, environment variable}
+@vindex LC_COLLATE@r{, environment variable}
+@vindex LC_MONETARY@r{, environment variable}
+@vindex LC_MESSAGES@r{, environment variable}
+@item @code{LC_xxx}, according to selected locale category:
+@code{LC_CTYPE}, @code{LC_NUMERIC}, @code{LC_TIME}, @code{LC_COLLATE},
+@code{LC_MONETARY}, @code{LC_MESSAGES}, ...
 @vindex LANG@r{, environment variable}
-We consider here those packages using GNU @code{gettext} internally,
-and for which the installers did not disable translation at
-@emph{configure} time.  Then, users only have to set the @code{LANG}
-environment variable to the appropriate @samp{@var{ll}_@var{CC}}
-combination prior to using the programs in the package.  @xref{Matrix}.
-For example, let's presume a German site.  At the shell prompt, users
-merely have to execute @w{@samp{setenv LANG de_DE}} (in @code{csh}) or
-@w{@samp{export LANG; LANG=de_DE}} (in @code{sh}).  They could even do
-this from their @file{.login} or @file{.profile} file.
+@item @code{LANG}
+@end enumerate
+
+Variables whose value is set but is empty are ignored in this lookup.
+
+@code{LANG} is the normal environment variable for specifying a locale.
+As a user, you normally set this variable (unless some of the other variables
+have already been set by the system, in @file{/etc/profile} or similar
+initialization files).
+
+@code{LC_CTYPE}, @code{LC_NUMERIC}, @code{LC_TIME}, @code{LC_COLLATE},
+@code{LC_MONETARY}, @code{LC_MESSAGES}, and so on, are the environment
+variables meant to override @code{LANG} and affecting a single locale
+category only.  For example, assume you are a Swedish user in Spain, and you
+want your programs to handle numbers and dates according to Spanish
+conventions, and only the messages should be in Swedish.  Then you could
+create a locale named @samp{sv_ES} or @samp{sv_ES.UTF-8} by use of the
+@code{localedef} program.  But it is simpler, and achieves the same effect,
+to set the @code{LANG} variable to @code{es_ES.UTF-8} and the
+@code{LC_MESSAGES} variable to @code{sv_SE.UTF-8}; these two locales come
+already preinstalled with the operating system.
+
+@code{LC_ALL} is an environment variable that overrides all of these.
+It is typically used in scripts that run particular programs.  For example,
+@code{configure} scripts generated by GNU autoconf use @code{LC_ALL} to make
+sure that the configuration tests don't operate in locale dependent ways.
+
+Some systems, unfortunately, set @code{LC_ALL} in @file{/etc/profile} or in
+similar initialization files.  As a user, you therefore have to unset this
+variable if you want to set @code{LANG} and optionally some of the other
+@code{LC_xxx} variables.
+
+The @code{LANGUAGE} variable is described in the next subsection.
+
+@node The LANGUAGE variable,  , Locale Environment Variables, Setting the POSIX Locale
+@subsection Specifying a Priority List of Languages
+
+Not all programs have translations for all languages.  By default, an
+English message is shown in place of a nonexistent translation.  If you
+understand other languages, you can set up a priority list of languages.
+This is done through a different environment variable, called
+@code{LANGUAGE}.  GNU @code{gettext} gives preference to @code{LANGUAGE}
+over @code{LC_ALL} and @code{LANG} for the purpose of message handling,
+but you still need to have @code{LANG} (or @code{LC_ALL}) set to the primary
+language; this is required by other parts of the system libraries.
+For example, some Swedish users who would rather read translations in
+German than English for when Swedish is not available, set @code{LANGUAGE}
+to @samp{sv:de} while leaving @code{LANG} to @samp{sv_SE}.
+
+Special advice for Norwegian users: The language code for Norwegian
+bokm@ringaccent{a}l changed from @samp{no} to @samp{nb} recently (in 2003).
+During the transition period, while some message catalogs for this language
+are installed under @samp{nb} and some older ones under @samp{no}, it is
+recommended for Norwegian users to set @code{LANGUAGE} to @samp{nb:no} so that
+both newer and older translations are used.
+
+In the @code{LANGUAGE} environment variable, but not in the other
+environment variables, @samp{@var{ll}_@var{CC}} combinations can be
+abbreviated as @samp{@var{ll}} to denote the language's main dialect.
+For example, @samp{de} is equivalent to @samp{de_DE} (German as spoken in
+Germany), and @samp{pt} to @samp{pt_PT} (Portuguese as spoken in Portugal)
+in this context.
+
+Note: The variable @code{LANGUAGE} is ignored if the locale is set to
+@samp{C}.  In other words, you have to first enable localization, by setting
+@code{LANG} (or @code{LC_ALL}) to a value other than @samp{C}, before you can
+use a language priority list through the @code{LANGUAGE} variable.
+
+@node Installing Localizations,  , Setting the POSIX Locale, Users
+@section Installing Translations for Particular Programs
+@cindex Translation Matrix
+@cindex available translations
+
+Languages are not equally well supported in all packages using GNU
+@code{gettext}, and more translations are added over time.  Usually, you
+use the translations that are shipped with the operating system
+or with particular packages that you install afterwards.  But you can also
+install newer localizations directly.  For doing this, you will need an
+understanding where each localization file is stored on the file system.
+
+@cindex @file{ABOUT-NLS} file
+For programs that participate in the Translation Project, you can start
+looking for translations here:
+@url{http://translationproject.org/team/index.html}.
+A snapshot of this information is also found in the @file{ABOUT-NLS} file
+that is shipped with GNU gettext.
+
+For programs that are part of the KDE project, the starting point is:
+@url{http://i18n.kde.org/}.
+
+For programs that are part of the GNOME project, the starting point is:
+@url{http://www.gnome.org/i18n/}.
+
+For other programs, you may check whether the program's source code package
+contains some @file{@var{ll}.po} files; often they are kept together in a
+directory called @file{po/}.  Each @file{@var{ll}.po} file contains the
+message translations for the language whose abbreviation of @var{ll}.
 
 @node PO Files, Sources, Users, Top
 @chapter The Format of PO Files
@@ -1362,6 +1598,12 @@ Likewise for the GCC sources, see @ref{gcc-internal-format}.
 @kwindex no-qt-format@r{ flag}
 Likewise for Qt, see @ref{qt-format}.
 
+@item kde-format
+@kwindex kde-format@r{ flag}
+@itemx no-kde-format
+@kwindex no-kde-format@r{ flag}
+Likewise for KDE, see @ref{kde-format}.
+
 @item boost-format
 @kwindex boost-format@r{ flag}
 @itemx no-boost-format
@@ -1513,6 +1755,7 @@ needing translation.
 * Marking::                     Marking Translatable Strings
 * c-format Flag::               Telling something about the following string
 * Special cases::               Special Cases of Translatable Strings
+* Bug Report Address::          Letting Users Report Translation Bugs
 * Names::                       Marking Proper Names for Translation
 * Libraries::                   Preparing Library Sources
 @end menu
@@ -1563,11 +1806,11 @@ main (int argc, char *argv[])
 @file{config.h} or by the Makefile.  For now consult the @code{gettext}
 or @code{hello} sources for more information.
 
-@cindex locale facet, LC_ALL
-@cindex locale facet, LC_CTYPE
+@cindex locale category, LC_ALL
+@cindex locale category, LC_CTYPE
 The use of @code{LC_ALL} might not be appropriate for you.
 @code{LC_ALL} includes all locale categories and especially
-@code{LC_CTYPE}.  This later category is responsible for determining
+@code{LC_CTYPE}.  This latter category is responsible for determining
 character classes with the @code{isalnum} etc. functions from
 @file{ctype.h} which could especially for programs, which process some
 kind of input language, be wrong.  For example this would mean that a
@@ -1575,8 +1818,8 @@ source code using the @,{c} (c-cedilla character) is runnable in
 France but not in the U.S.
 
 Some systems also have problems with parsing numbers using the
-@code{scanf} functions if an other but the @code{LC_ALL} locale is used.
-The standards say that additional formats but the one known in the
+@code{scanf} functions if an other but the @code{LC_ALL} locale category is
+used.  The standards say that additional formats but the one known in the
 @code{"C"} locale might be recognized.  But some systems seem to reject
 numbers in the @code{"C"} locale format.  In some situation, it might
 also be a problem with the notation itself which makes it impossible to
@@ -1600,26 +1843,30 @@ code above by a sequence of @code{setlocale} lines
 @end group
 @end example
 
-@cindex locale facet, LC_CTYPE
-@cindex locale facet, LC_COLLATE
-@cindex locale facet, LC_MONETARY
-@cindex locale facet, LC_NUMERIC
-@cindex locale facet, LC_TIME
-@cindex locale facet, LC_MESSAGES
-@cindex locale facet, LC_RESPONSES
+@cindex locale category, LC_CTYPE
+@cindex locale category, LC_COLLATE
+@cindex locale category, LC_MONETARY
+@cindex locale category, LC_NUMERIC
+@cindex locale category, LC_TIME
+@cindex locale category, LC_MESSAGES
+@cindex locale category, LC_RESPONSES
 @noindent
 On all POSIX conformant systems the locale categories @code{LC_CTYPE},
 @code{LC_MESSAGES}, @code{LC_COLLATE}, @code{LC_MONETARY},
 @code{LC_NUMERIC}, and @code{LC_TIME} are available.  On some systems
 which are only ISO C compliant, @code{LC_MESSAGES} is missing, but
-a substitute for it is defined in GNU gettext's @code{<libintl.h>}.
+a substitute for it is defined in GNU gettext's @code{<libintl.h>} and
+in GNU gnulib's @code{<locale.h>}.
 
 Note that changing the @code{LC_CTYPE} also affects the functions
-declared in the @code{<ctype.h>} standard header.  If this is not
+declared in the @code{<ctype.h>} standard header and some functions
+declared in the @code{<string.h>} and @code{<stdlib.h>} standard headers.
+If this is not
 desirable in your application (for example in a compiler's parser),
 you can use a set of substitute functions which hardwire the C locale,
-such as found in the @code{<c-ctype.h>} and @code{<c-ctype.c>} files
-in the gettext source distribution.
+such as found in the modules @samp{c-ctype}, @samp{c-strcase},
+@samp{c-strcasestr}, @samp{c-strtod}, @samp{c-strtold} in the GNU gnulib
+source distribution.
 
 It is also possible to switch the locale forth and back between the
 environment dependent locale and the C locale, but this approach is
@@ -2230,7 +2477,7 @@ user can find out who is responsible for the decision.  See
 @ref{xgettext Invocation} to see how the @code{--debug} option can be
 used for solving this problem.
 
-@node Special cases, Names, c-format Flag, Sources
+@node Special cases, Bug Report Address, c-format Flag, Sources
 @section Special Cases of Translatable Strings
 
 @cindex marking string initializers
@@ -2324,7 +2571,61 @@ sure the output is really translated in any case.  But this analysis is
 generally not very difficult.  If it should be in any situation you can
 use this second method in this situation.
 
-@node Names, Libraries, Special cases, Sources
+@node Bug Report Address, Names, Special cases, Sources
+@section Letting Users Report Translation Bugs
+
+Code sometimes has bugs, but translations sometimes have bugs too.  The
+users need to be able to report them.  Reporting translation bugs to the
+programmer or maintainer of a package is not very useful, since the
+maintainer must never change a translation, except on behalf of the
+translator.  Hence the translation bugs must be reported to the
+translators.
+
+Here is a way to organize this so that the maintainer does not need to
+forward translation bug reports, nor even keep a list of the addresses of
+the translators or their translation teams.
+
+Every program has a place where is shows the bug report address.  For
+GNU programs, it is the code which handles the ``--help'' option,
+typically in a function called ``usage''.  In this place, instruct the
+translator to add her own bug reporting address.  For example, if that
+code has a statement
+
+@example
+@group
+printf (_("Report bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+@end group
+@end example
+
+you can add some translator instructions like this:
+
+@example
+@group
+/* TRANSLATORS: The placeholder indicates the bug-reporting address
+   for this package.  Please add _another line_ saying
+   "Report translation bugs to <...>\n" with the address for translation
+   bugs (typically your translation team's web or email address).  */
+printf (_("Report bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+@end group
+@end example
+
+These will be extracted by @samp{xgettext}, leading to a .pot file that
+contains this:
+
+@example
+@group
+#. TRANSLATORS: The placeholder indicates the bug-reporting address
+#. for this package.  Please add _another line_ saying
+#. "Report translation bugs to <...>\n" with the address for translation
+#. bugs (typically your translation team's web or email address).
+#: src/hello.c:178
+#, c-format
+msgid "Report bugs to <%s>.\n"
+msgstr ""
+@end group
+@end example
+
+@node Names, Libraries, Bug Report Address, Sources
 @section Marking Proper Names for Translation
 
 Should names of persons, cities, locations etc. be marked for translation
@@ -2569,7 +2870,8 @@ entry.  You should fill in the following fields.
 
 @table @asis
 @item Project-Id-Version
-This is the name and version of the package.
+This is the name and version of the package.  Fill it in if it has not
+already been filled in by @code{xgettext}.
 
 @item Report-Msgid-Bugs-To
 This has already been filled in by @code{xgettext}.  It contains an email
@@ -2608,8 +2910,8 @@ but also to coordinate difficult linguistic issues.
 @cindex list of translation teams, where to find
 In the Free Translation Project, each translation team has its own mailing
 list.  The up-to-date list of teams can be found at the Free Translation
-Project's homepage, @uref{http://www.iro.umontreal.ca/contrib/po/HTML/},
-in the "National teams" area.
+Project's homepage, @uref{http://translationproject.org/}, in the "Teams"
+area.
 
 @item Content-Type
 @cindex encoding of PO files
@@ -2742,6 +3044,7 @@ format of the plural forms field is described in @ref{Plural forms}.
 * KBabel::                      KDE's PO File Editor
 * Gtranslator::                 GNOME's PO File Editor
 * PO Mode::                     Emacs's PO File Editor
+* Compendium::                  Using Translation Compendia
 @end menu
 
 @node KBabel, Gtranslator, Editing, Editing
@@ -2752,7 +3055,7 @@ format of the plural forms field is described in @ref{Plural forms}.
 @section GNOME's PO File Editor
 @cindex GNOME PO file editor
 
-@node PO Mode,  , Gtranslator, Editing
+@node PO Mode, Compendium, Gtranslator, Editing
 @section Emacs's PO File Editor
 @cindex Emacs PO Mode
 
@@ -2787,7 +3090,6 @@ For the beginning, besides main PO mode commands
 * Subedit::                     Mode for Editing Translations
 * C Sources Context::           C Sources Context
 * Auxiliary::                   Consulting Auxiliary PO Files
-* Compendium::                  Using Translation Compendia
 @end menu
 
 @node Installation, Main PO Commands, PO Mode, PO Mode
@@ -3982,7 +4284,7 @@ enter a new directory at the front of the search path, and the command
 @kbd{M-S} (@code{po-ignore-source-path}) is used to select, with completion,
 one of the directories she does not want anymore on the search path.
 
-@node Auxiliary, Compendium, C Sources Context, PO Mode
+@node Auxiliary,  , C Sources Context, PO Mode
 @subsection Consulting Auxiliary PO Files
 @emindex consulting translations to other languages
 
@@ -4066,8 +4368,8 @@ files resulting of the @samp{M-x normalize} command.  Until these
 discrepancies between PO mode and other GNU @code{gettext} tools get
 fully resolved, the translator should stay aware of normalisation issues.
 
-@node Compendium,  , Auxiliary, PO Mode
-@subsection Using Translation Compendia
+@node Compendium,  , PO Mode, Editing
+@section Using Translation Compendia
 @emindex using translation compendia
 
 @cindex compendium
@@ -4083,7 +4385,7 @@ already translated entries, from translations kept in the compendium.
 @end menu
 
 @node Creating Compendia, Using Compendia, Compendium, Compendium
-@subsubsection Creating Compendia
+@subsection Creating Compendia
 @cindex creating compendia
 @cindex compendium, creating
 
@@ -4171,7 +4473,7 @@ msggrep --location src/getopt.c -o compendium.po file.po
 @end example
 
 @node Using Compendia,  , Creating Compendia, Compendium
-@subsubsection Using Compendia
+@subsection Using Compendia
 
 You can use a compendium file to initialize a translation from scratch
 or to update an already existing translation.
@@ -4195,7 +4497,7 @@ here done using @samp{sed}):
 
 @example
 msgcat --use-first -o update.po compendium1.po compendium2.po file.po
-msgmerge update.po file.pot | sed -e '/^#~/d' > file.po
+msgmerge update.po file.pot | msgattrib --no-obsolete > file.po
 @end example
 
 @node Manipulating, Binaries, Editing, Top
@@ -4279,6 +4581,7 @@ write other specialized programs that process PO files.
 * msgattrib Invocation::        Invoking the @code{msgattrib} Program
 * msgen Invocation::            Invoking the @code{msgen} Program
 * msgexec Invocation::          Invoking the @code{msgexec} Program
+* Colorizing::                  Highlighting parts of PO files
 * libgettextpo::                Writing your own programs that process PO files
 @end menu
 
@@ -4327,12 +4630,408 @@ write other specialized programs that process PO files.
 
 @include msgen.texi
 
-@node msgexec Invocation, libgettextpo, msgen Invocation, Manipulating
+@node msgexec Invocation, Colorizing, msgen Invocation, Manipulating
 @section Invoking the @code{msgexec} Program
 
 @include msgexec.texi
 
-@node libgettextpo,  , msgexec Invocation, Manipulating
+@node Colorizing, libgettextpo, msgexec Invocation, Manipulating
+@section Highlighting parts of PO files
+
+Translators are usually only interested in seeing the untranslated and
+fuzzy messages of a PO file.  Also, when a message is set fuzzy because
+the msgid changed, they want to see the differences between the previous
+msgid and the current one (especially if the msgid is long and only few
+words in it have changed).  Finally, it's always welcome to highlight the
+different sections of a message in a PO file (comments, msgid, msgstr, etc.).
+
+Such highlighting is possible through the @code{msgcat} options
+@samp{--color} and @samp{--style}.
+
+@menu
+* The --color option::          Triggering colorized output
+* The TERM variable::           The environment variable @code{TERM}
+* The --style option::          The @code{--style} option
+* Style rules::                 Style rules for PO files
+* Customizing less::            Customizing @code{less} for viewing PO files
+@end menu
+
+@node The --color option, The TERM variable,  , Colorizing
+@subsection The @code{--color} option
+
+@opindex --color@r{, @code{msgcat} option}
+The @samp{--color=@var{when}} option specifies under which conditions
+colorized output should be generated.  The @var{when} part can be one of
+the following:
+
+@table @code
+@item always
+@itemx yes
+The output will be colorized.
+
+@item never
+@itemx no
+The output will not be colorized.
+
+@item auto
+@itemx tty
+The output will be colorized if the output device is a tty, i.e.@: when the
+output goes directly to a text screen or terminal emulator window.
+
+@item html
+The output will be colorized and be in HTML format.
+@end table
+
+@noindent
+@samp{--color} is equivalent to @samp{--color=yes}.  The default is
+@samp{--color=auto}.
+
+Thus, a command like @samp{msgcat vi.po} will produce colorized output
+when called by itself in a command window.  Whereas in a pipe, such as
+@samp{msgcat vi.po | less -R}, it will not produce colorized output.  To
+get colorized output in this situation nevertheless, use the command
+@samp{msgcat --color vi.po | less -R}.
+
+The @samp{--color=html} option will produce output that can be viewed in
+a browser.  This can be useful, for example, for Indic languages,
+because the renderic of Indic scripts in browser is usually better than
+in terminal emulators.
+
+Note that the output produced with the @code{--color} option is @emph{not}
+a valid PO file in itself.  It contains additional terminal-specific escape
+sequences or HTML tags.  A PO file reader will give a syntax error when
+confronted with such content.  Except for the @samp{--color=html} case,
+you therefore normally don't need to save output produced with the
+@code{--color} option in a file.
+
+@node The TERM variable, The --style option, The --color option, Colorizing
+@subsection The environment variable @code{TERM}
+
+@vindex TERM@r{, environment variable}
+The environment variable @code{TERM} contains a identifier for the text
+window's capabilities.  You can get a detailed list of these cababilities
+by using the @samp{infocmp} command, using @samp{man 5 terminfo} as a
+reference.
+
+When producing text with embedded color directives, @code{msgcat} looks
+at the @code{TERM} variable.  Text windows today typically support at least
+8 colors.  Often, however, the text window supports 16 or more colors,
+even though the @code{TERM} variable is set to a identifier denoting only
+8 supported colors.  It can be worth setting the @code{TERM} variable to
+a different value in these cases:
+
+@table @code
+@item xterm
+@code{xterm} is in most cases built with support for 16 colors.  It can also
+be built with support for 88 or 256 colors (but not both).  You can try to
+set @code{TERM} to either @code{xterm-16color}, @code{xterm-88color}, or
+@code{xterm-256color}.
+
+@item rxvt
+@code{rxvt} is often built with support for 16 colors.  You can try to set
+@code{TERM} to @code{rxvt-16color}.
+
+@item konsole
+@code{konsole} too is often built with support for 16 colors.  You can try to
+set @code{TERM} to @code{konsole-16color} or @code{xterm-16color}.
+@end table
+
+After setting @code{TERM}, you can verify it by invoking
+@samp{msgcat --color=test} and seeing whether the output looks like a
+reasonable color map.
+
+@node The --style option, Style rules, The TERM variable, Colorizing
+@subsection The @code{--style} option
+
+@opindex --style@r{, @code{msgcat} option}
+The @samp{--style=@var{style_file}} option specifies the style file to use
+when colorizing.  It has an effect only when the @code{--color} option is
+effective.
+
+@vindex PO_STYLE@r{, environment variable}
+If the @code{--style} option is not specified, the environment variable
+@code{PO_STYLE} is considered.  It is meant to point to the user's
+preferred style for PO files.
+
+The default style file is @file{$prefix/share/gettext/styles/po-default.css},
+where @code{$prefix} is the installation location.
+
+A few style files are predefined:
+@table @file
+@item po-vim.css
+This style imitates the look used by vim 7.
+
+@item po-emacs-x.css
+This style imitates the look used by GNU Emacs 21 and 22 in an X11 window.
+
+@item po-emacs-xterm.css
+@itemx po-emacs-xterm16.css
+@itemx po-emacs-xterm256.css
+This style imitates the look used by GNU Emacs 22 in a terminal of type
+@samp{xterm} (8 colors) or @samp{xterm-16color} (16 colors) or
+@samp{xterm-256color} (256 colors), respectively.
+@end table
+
+@noindent
+You can use these styles without specifying a directory.  They are actually
+located in @file{$prefix/share/gettext/styles/}, where @code{$prefix} is the
+installation location.
+
+You can also design your own styles.  This is described in the next section.
+
+
+@node Style rules, Customizing less, The --style option, Colorizing
+@subsection Style rules for PO files
+
+The same style file can be used for styling of a PO file, for terminal
+output and for HTML output.  It is written in CSS (Cascading Style Sheet)
+syntax.  See @url{http://www.w3.org/TR/css2/cover.html} for a formal
+definition of CSS.  Many HTML authoring tutorials also contain explanations
+of CSS.
+
+In the case of HTML output, the style file is embedded in the HTML output.
+In the case of text output, the style file is interpreted by the
+@code{msgcat} program.  This means, in particular, that when
+@code{@@import} is used with relative file names, the file names are
+
+@itemize @minus
+@item
+relative to the resulting HTML file, in the case of HTML output,
+
+@item
+relative to the style sheet containing the @code{@@import}, in the case of
+text output.  (Actually, @code{@@import}s are not yet supported in this case,
+due to a limitation in @code{libcroco}.)
+@end itemize
+
+CSS rules are built up from selectors and declarations.  The declarations
+specify graphical properties; the selectors specify specify when they apply.
+
+In PO files, the following simple selectors (based on "CSS classes", see
+the CSS2 spec, section 5.8.3) are supported.
+
+@itemize @bullet
+@item
+Selectors that apply to entire messages:
+
+@table @code
+@item .header
+This matches the header entry of a PO file.
+
+@item .translated
+This matches a translated message.
+
+@item .untranslated
+This matches an untranslated message (i.e.@: a message with empty translation).
+
+@item .fuzzy
+This matches a fuzzy message (i.e.@: a message which has a translation that
+needs review by the translator).
+
+@item .obsolete
+This matches an obsolete message (i.e.@: a message that was translated but is
+not needed by the current POT file any more).
+@end table
+
+@item
+Selectors that apply to parts of a message in PO syntax.  Recall the general
+structure of a message in PO syntax:
+
+@example
+@var{white-space}
+#  @var{translator-comments}
+#. @var{extracted-comments}
+#: @var{reference}@dots{}
+#, @var{flag}@dots{}
+#| msgid @var{previous-untranslated-string}
+msgid @var{untranslated-string}
+msgstr @var{translated-string}
+@end example
+
+@table @code
+@item .comment
+This matches all comments (translator comments, extracted comments,
+source file reference comments, flag comments, previous message comments,
+as well as the entire obsolete messages).
+
+@item .translator-comment
+This matches the translator comments.
+
+@item .extracted-comment
+This matches the extracted comments, i.e.@: the comments placed by the
+programmer at the attention of the translator.
+
+@item .reference-comment
+This matches the source file reference comments (entire lines).
+
+@item .reference
+This matches the individual source file references inside the source file
+reference comment lines.
+
+@item .flag-comment
+This matches the flag comment lines (entire lines).
+
+@item .flag
+This matches the individual flags inside flag comment lines.
+
+@item .fuzzy-flag
+This matches the `fuzzy' flag inside flag comment lines.
+
+@item .previous-comment
+This matches the comments containing the previous untranslated string (entire
+lines).
+
+@item .previous
+This matches the previous untranslated string including the string delimiters,
+the associated keywords (@code{msgid} etc.) and the spaces between them.
+
+@item .msgid
+This matches the untranslated string including the string delimiters,
+the associated keywords (@code{msgid} etc.) and the spaces between them.
+
+@item .msgstr
+This matches the translated string including the string delimiters,
+the associated keywords (@code{msgstr} etc.) and the spaces between them.
+
+@item .keyword
+This matches the keywords (@code{msgid}, @code{msgstr}, etc.).
+
+@item .string
+This matches strings, including the string delimiters (double quotes).
+@end table
+
+@item
+Selectors that apply to parts of strings:
+
+@table @code
+@item .text
+This matches the entire contents of a string (excluding the string delimiters,
+i.e.@: the double quotes).
+
+@item .escape-sequence
+This matches an escape sequence (starting with a backslash).
+
+@item .format-directive
+This matches a format string directive (starting with a @samp{%} sign in the
+case of most programming languages, with a @samp{@{} in the case of
+@code{java-format} and @code{csharp-format}, with a @samp{~} in the case of
+@code{lisp-format} and @code{scheme-format}, or with @samp{$} in the case of
+@code{sh-format}).
+
+@item .invalid-format-directive
+This matches an invalid format string directive.
+
+@item .added
+In an untranslated string, this matches a part of the string that was not
+present in the previous untranslated string.  (Not yet implemented in this
+release.)
+
+@item .changed
+In an untranslated string or in a previous untranslated string, this matches
+a part of the string that is changed or replaced.  (Not yet implemented in
+this release.)
+
+@item .removed
+In a previous untranslated string, this matches a part of the string that
+is not present in the current untranslated string.  (Not yet implemented in
+this release.)
+@end table
+@end itemize
+
+These selectors can be combined to hierarchical selectors.  For example,
+
+@smallexample
+.msgstr .invalid-format-directive @{ color: red; @}
+@end smallexample
+
+@noindent
+will highlight the invalid format directives in the translated strings.
+
+In text mode, pseudo-classes (CSS2 spec, section 5.11) and pseudo-elements
+(CSS2 spec, section 5.12) are not supported.
+
+The declarations in HTML mode are not limited; any graphical attribute
+supported by the browsers can be used.
+
+The declarations in text mode are limited to the following properties.  Other
+properties will be silently ignored.
+
+@table @asis
+@item @code{color} (CSS2 spec, section 14.1)
+@itemx @code{background-color} (CSS2 spec, section 14.2.1)
+These properties is supported.  Colors will be adjusted to match the terminal's
+capabilities.  Note that many terminals support only 8 colors.
+
+@item @code{font-weight} (CSS2 spec, section 15.2.3)
+This property is supported, but most terminals can only render two different
+weights: @code{normal} and @code{bold}.  Values >= 600 are rendered as
+@code{bold}.
+
+@item @code{font-style} (CSS2 spec, section 15.2.3)
+This property is supported.  The values @code{italic} and @code{oblique} are
+rendered the same way.
+
+@item @code{text-decoration} (CSS2 spec, section 16.3.1)
+This property is supported, limited to the values @code{none} and
+@code{underline}.
+@end table
+
+@node Customizing less,  , Style rules, Colorizing
+@subsection Customizing @code{less} for viewing PO files
+
+The @samp{less} program is a popular text file browser for use in a text
+screen or terminal emulator.  It also supports text with embedded escape
+sequences for colors and text decorations.
+
+You can use @code{less} to view a PO file like this (assuming an UTF-8
+environment):
+
+@smallexample
+msgcat --to-code=UTF-8 --color xyz.po | less -R
+@end smallexample
+
+You can simplify this to this simple command:
+
+@smallexample
+less xyz.po
+@end smallexample
+
+@noindent
+after these three preparations:
+
+@enumerate
+@item
+Add the options @samp{-R} and @samp{-f} to the @code{LESS} environment
+variable.  In sh shells:
+@smallexample
+$ LESS="$LESS -R -f"
+$ export LESS
+@end smallexample
+
+@item
+If your system does not already have the @file{lessopen.sh} and
+@file{lessclose.sh} scripts, create them and set the @code{LESSOPEN} and
+@code{LESSCLOSE} environment variables, as indicated in the manual page
+(@samp{man less}).
+
+@item
+Add to @file{lessopen.sh} a piece of script that recognizes PO files
+through their file extension and invokes @code{msgcat} on them, producing
+a temporary file.  Like this:
+
+@smallexample
+case "$1" in
+  *.po)
+    tmpfile=`mktemp "$@{TMPDIR-/tmp@}/less.XXXXXX"`
+    msgcat --to-code=UTF-8 --color "$1" > "$tmpfile"
+    echo "$tmpfile"
+    exit 0
+    ;;
+esac
+@end smallexample
+@end enumerate
+
+@node libgettextpo,  , Colorizing, Manipulating
 @section Writing your own programs that process PO files
 
 For the tasks for which a combination of @samp{msgattrib}, @samp{msgcat} etc.
@@ -4836,8 +5535,8 @@ in the current domain.  If it is not available, the argument itself is
 returned.  If the argument is @code{NULL} the result is undefined.
 
 One thing which should come into mind is that no explicit dependency to
-the used domain is given.  The current value of the domain for the
-@code{LC_MESSAGES} locale is used.  If this changes between two
+the used domain is given.  The current value of the domain is used.
+If this changes between two
 executions of the same @code{gettext} call in the program, both calls
 reference a different message catalog.
 
@@ -4877,7 +5576,7 @@ char *dcgettext (const char *domain_name, const char *msgid,
 
 Both take an additional argument at the first place, which corresponds
 to the argument of @code{textdomain}.  The third argument of
-@code{dcgettext} allows to use another locale but @code{LC_MESSAGES}.
+@code{dcgettext} allows to use another locale category but @code{LC_MESSAGES}.
 But I really don't know where this can be useful.  If the
 @var{domain_name} is @code{NULL} or @var{category} has an value beside
 the known ones, the result is undefined.  It should also be noted that
@@ -4919,8 +5618,8 @@ stored we need some way to add these information to file message catalog
 files.  The way usually used in Unix environments is have this encoding
 in the file name.  This is also done here.  The directory name given in
 @code{bindtextdomain}s second argument (or the default directory),
-followed by the value and name of the locale and the domain name are
-concatenated:
+followed by the name of the locale, the locale category, and the domain name
+are concatenated:
 
 @example
 @var{dir_name}/@var{locale}/LC_@var{category}/@var{domain_name}.mo
@@ -4933,18 +5632,19 @@ library, and for packages adhering to its conventions, it's:
 @end example
 
 @noindent
-@var{locale} is the value of the locale whose name is this
+@var{locale} is the name of the locale category which is designated by
 @code{LC_@var{category}}.  For @code{gettext} and @code{dgettext} this
 @code{LC_@var{category}} is always @code{LC_MESSAGES}.@footnote{Some
-system, eg Ultrix, don't have @code{LC_MESSAGES}.  Here we use a more or
+system, e.g.@: mingw, don't have @code{LC_MESSAGES}.  Here we use a more or
 less arbitrary value for it, namely 1729, the smallest positive integer
 which can be represented in two different ways as the sum of two cubes.}
-The value of the locale is determined through
+The name of the locale category is determined through
 @code{setlocale (LC_@var{category}, NULL)}.
 @footnote{When the system does not support @code{setlocale} its behavior
 in setting the locale values is simulated by looking at the environment
 variables.}
-@code{dcgettext} specifies the locale category by the third argument.
+When using the function @code{dcgettext}, you can specify the locale category
+through the third argument.
 
 @node Charset conversion, Contexts, Locating Catalogs, gettext
 @subsection How to specify the output character set @code{gettext} uses
@@ -5065,7 +5765,7 @@ const char *dcpgettext (const char *domain_name,
 These are generalizations of @code{pgettext}.  They behave similarly to
 @code{dgettext} and @code{dcgettext}, respectively.  The @var{domain_name}
 argument defines the translation domain.  The @var{category} argument
-allows to use another locale facet than @code{LC_MESSAGES}.
+allows to use another locale category than @code{LC_MESSAGES}.
 
 As as example consider the following fictional situation.  A GUI program
 has a menu bar with the following entries:
@@ -5809,7 +6509,7 @@ priority:
 @vindex LC_COLLATE@r{, environment variable}
 @vindex LC_MONETARY@r{, environment variable}
 @vindex LC_MESSAGES@r{, environment variable}
-@item @code{LC_xxx}, according to selected locale
+@item @code{LC_xxx}, according to selected locale category
 @vindex LANG@r{, environment variable}
 @item @code{LANG}
 @end enumerate
@@ -5949,7 +6649,7 @@ access routines) with their software instead of just including the
 @code{libintl} code with their software.
 
 Message catalog support is however only the tip of the iceberg.
-What about the data for the other locale categories.  They also have
+What about the data for the other locale categories?  They also have
 a number of deficiencies.  Are we going to abandon them as well and
 develop another duplicate set of routines (should @code{libintl}
 expand beyond message catalog support)?
@@ -6035,7 +6735,7 @@ subscribe
 Keep in mind that team members should be interested in @emph{working}
 at translations, or at solving translational difficulties, rather than
 merely lurking around.  If your team does not exist yet and you want to
-start one, please write to @w{@file{translation@@iro.umontreal.ca}};
+start one, please write to @w{@file{coordinator@@translationproject.org}};
 you will then reach the coordinator for all translator teams.
 
 A handful of GNU packages have already been adapted and provided
@@ -6044,7 +6744,7 @@ teams have begun to organize, using these packages as a starting
 point.  But there are many more packages and many languages for
 which we have no volunteer translators.  If you would like to
 volunteer to work at translating messages, please send mail to
-@file{translation@@iro.umontreal.ca} indicating what language(s)
+@file{coordinator@@translationproject.org} indicating what language(s)
 you can work on.
 
 @node Trans Intro 1, Discussions, Trans Intro 0, Translators
@@ -6063,7 +6763,7 @@ teams have begun to organize, using these packages as a starting
 point.  But there are many more packages and many languages
 for which we have no volunteer translators.  If you'd like to
 volunteer to work at translating messages, please send mail to
-@samp{translation@@iro.umontreal.ca} indicating what language(s)
+@samp{coordinator@@translationproject.org} indicating what language(s)
 you can work on.
 @end quotation
 
@@ -6085,7 +6785,7 @@ an enthusiastic response from pretesters, so we believe that
 internationalization of free software is dedicated to succeed.
 
 For suggestion clarifications, additions or corrections to this
-document, please e-mail to @file{translation@@iro.umontreal.ca}.
+document, please e-mail to @file{coordinator@@translationproject.org}.
 
 @node Discussions, Organization, Trans Intro 1, Translators
 @section Discussions
@@ -6197,7 +6897,7 @@ become a permanent and continuous activity in the free software community,
 once well started.
 The setup should be minimally completed and tested before GNU
 @code{gettext} becomes an official reality.  The e-mail address
-@file{translation@@iro.umontreal.ca} has been setup for receiving
+@file{coordinator@@translationproject.org} has been set up for receiving
 offers from volunteers and general e-mail on these topics.  This address
 reaches the Translation Project coordinator.
 
@@ -6210,7 +6910,7 @@ reaches the Translation Project coordinator.
 @node Central Coordination, National Teams, Organization, Organization
 @subsection Central Coordination
 
-I also think GNU will need sooner than it thinks, that someone setup
+I also think GNU will need sooner than it thinks, that someone set up
 a way to organize and coordinate these groups.  Some kind of group
 of groups.  My opinion is that it would be good that GNU delegates
 this task to a small group of collaborating volunteers, shortly.
@@ -6331,7 +7031,7 @@ this also seems to work).
 If we get any inquiries about GNU @code{gettext}, send them on to:
 
 @example
-@file{translation@@iro.umontreal.ca}
+@file{coordinator@@translationproject.org}
 @end example
 
 The @file{*-pretest} lists are quite useful to me, maybe the idea could
@@ -6534,7 +7234,7 @@ standards, or even better, Gnits standards, because GNU @code{gettext}
 is purposely for helping the internationalization of the whole GNU
 project, and as many other good free packages as possible.  So, the
 maintainer's view presented here presumes that the package already has
-a @file{configure.in} file and uses GNU Autoconf.
+a @file{configure.ac} file and uses GNU Autoconf.
 
 Nevertheless, GNU @code{gettext} may surely be useful for free packages
 not following GNU standards and conventions, but the maintainers of such
@@ -6552,7 +7252,7 @@ for changes.
 * Prerequisites::               Prerequisite Works
 * gettextize Invocation::       Invoking the @code{gettextize} Program
 * Adjusting Files::             Files You Must Create or Alter
-* autoconf macros::             Autoconf macros for use in @file{configure.in}
+* autoconf macros::             Autoconf macros for use in @file{configure.ac}
 * CVS Issues::                  Integrating with CVS
 * Release Management::          Creating a Distribution Tarball
 @end menu
@@ -6620,8 +7320,8 @@ internationalized shell scripts within your own package: GNU
 want to see the translation of shell script messages.
 
 @item
-Your package should use Autoconf and have a @file{configure.in} or
-@file{configure.ac} file.
+Your package should use Autoconf and have a @file{configure.ac} or
+@file{configure.in} file.
 If it does not, you have to learn how.  The Autoconf documentation
 is quite well written, it is a good idea that you print it and get
 familiar with it.
@@ -6645,7 +7345,7 @@ It is worth adding here a few words about how the maintainer should
 ideally behave with PO files submissions.  As a maintainer, your role is
 to authenticate the origin of the submission as being the representative
 of the appropriate translating teams of the Translation Project (forward
-the submission to @file{translation@@iro.umontreal.ca} in case of doubt),
+the submission to @file{coordinator@@translationproject.org} in case of doubt),
 to ensure that the PO file format is not severely broken and does not
 prevent successful installation, and for the rest, to merely put these
 PO files in @file{po/} for distribution.
@@ -6698,7 +7398,7 @@ gettext functionality.
 * po/LINGUAS::                  @file{LINGUAS} in @file{po/}
 * po/Makevars::                 @file{Makevars} in @file{po/}
 * po/Rules-*::                  Extending @file{Makefile} in @file{po/}
-* configure.in::                @file{configure.in} at top level
+* configure.ac::                @file{configure.ac} at top level
 * config.guess::                @file{config.guess}, @file{config.sub} at top level
 * mkinstalldirs::               @file{mkinstalldirs} at top level
 * aclocal::                     @file{aclocal.m4} at top level
@@ -6804,7 +7504,11 @@ Only packages which have multiple @file{po/} directories at different
 locations need to adjust the three first variables defined in
 @file{Makevars}.
 
-@node po/Rules-*, configure.in, po/Makevars, Adjusting Files
+As an alternative to the @code{XGETTEXT_OPTIONS} variables, it is also
+possible to specify @code{xgettext} options through the
+@code{AM_XGETTEXT_OPTION} autoconf macro.  See @ref{AM_XGETTEXT_OPTION}.
+
+@node po/Rules-*, configure.ac, po/Makevars, Adjusting Files
 @subsection Extending @file{Makefile} in @file{po/}
 @cindex @file{Makefile.in.in} extensions
 
@@ -6834,15 +7538,15 @@ Similarly, you can create rules for building message catalogs for the
 from those for the @file{sr} locale -- Serbian written with Cyrillic
 letters.  See @ref{msgfilter Invocation}.
 
-@node configure.in, config.guess, po/Rules-*, Adjusting Files
-@subsection @file{configure.in} at top level
+@node configure.ac, config.guess, po/Rules-*, Adjusting Files
+@subsection @file{configure.ac} at top level
 
-@file{configure.in} or @file{configure.ac} - this is the source from which
+@file{configure.ac} or @file{configure.in} - this is the source from which
 @code{autoconf} generates the @file{configure} script.
 
 @enumerate
 @item Declare the package and version.
-@cindex package and version declaration in @file{configure.in}
+@cindex package and version declaration in @file{configure.ac}
 
 This is done by a set of lines like these:
 
@@ -6871,7 +7575,7 @@ should appear in the packaged @code{tar} file name of your distribution
 @item Check for internationalization support.
 
 Here is the main @code{m4} macro for triggering internationalization
-support.  Just add this line to @file{configure.in}:
+support.  Just add this line to @file{configure.ac}:
 
 @example
 AM_GNU_GETTEXT
@@ -6890,7 +7594,7 @@ AM_GNU_GETTEXT([external])
 
 @item Have output files created.
 
-The @code{AC_OUTPUT} directive, at the end of your @file{configure.in}
+The @code{AC_OUTPUT} directive, at the end of your @file{configure.ac}
 file, needs to be modified in two ways:
 
 @example
@@ -6931,7 +7635,7 @@ you need to add an explicit invocation of @samp{AC_GNU_SOURCE} in the
 invocation.  This is necessary because of ordering restrictions imposed
 by GNU autoconf.
 
-@node config.guess, mkinstalldirs, configure.in, Adjusting Files
+@node config.guess, mkinstalldirs, configure.ac, Adjusting Files
 @subsection @file{config.guess}, @file{config.sub} at top level
 
 If you haven't suppressed the @file{intl/} subdirectory,
@@ -6956,7 +7660,7 @@ top level of a distribution.  But it is also possible to put them in a
 subdirectory, altogether with other configuration support files like
 @file{install-sh}, @file{ltconfig}, @file{ltmain.sh} or @file{missing}.
 All you need to do, other than moving the files, is to add the following line
-to your @file{configure.in}.
+to your @file{configure.ac}.
 
 @example
 AC_CONFIG_AUX_DIR([@var{subdir}])
@@ -6978,13 +7682,13 @@ automake 1.9.
 If you do not have an @file{aclocal.m4} file in your distribution,
 the simplest is to concatenate the files @file{codeset.m4},
 @file{gettext.m4}, @file{glibc2.m4}, @file{glibc21.m4}, @file{iconv.m4},
-@file{intdiv0.m4}, @file{intl.m4}, @file{intldir.m4}, @file{intmax.m4},
-@file{inttypes_h.m4}, @file{inttypes-pri.m4}, @file{lcmessage.m4},
-@file{lib-ld.m4}, @file{lib-link.m4}, @file{lib-prefix.m4}, @file{lock.m4},
-@file{longdouble.m4}, @file{longlong.m4}, @file{nls.m4}, @file{po.m4},
-@file{printf-posix.m4}, @file{progtest.m4}, @file{size_max.m4},
-@file{stdint_h.m4}, @file{uintmax_t.m4}, @file{ulonglong.m4},
-@file{visibility.m4}, @file{wchar_t.m4}, @file{wint_t.m4}, @file{xsize.m4}
+@file{intdiv0.m4}, @file{intl.m4}, @file{intldir.m4}, @file{intlmacosx.m4},
+@file{intmax.m4}, @file{inttypes_h.m4}, @file{inttypes-pri.m4},
+@file{lcmessage.m4}, @file{lib-ld.m4}, @file{lib-link.m4},
+@file{lib-prefix.m4}, @file{lock.m4}, @file{longlong.m4}, @file{nls.m4},
+@file{po.m4}, @file{printf-posix.m4}, @file{progtest.m4}, @file{size_max.m4},
+@file{stdint_h.m4}, @file{uintmax_t.m4}, @file{visibility.m4},
+@file{wchar_t.m4}, @file{wint_t.m4}, @file{xsize.m4}
 from GNU @code{gettext}'s
 @file{m4/} directory into a single file.  If you have suppressed the
 @file{intl/} directory, only @file{gettext.m4}, @file{iconv.m4},
@@ -7364,11 +8068,11 @@ Do not install the @code{gettext.h} file in public locations.  Every
 package that needs it should contain a copy of it on its own.
 
 @node autoconf macros, CVS Issues, Adjusting Files, Maintainers
-@section Autoconf macros for use in @file{configure.in}
+@section Autoconf macros for use in @file{configure.ac}
 @cindex autoconf macros for @code{gettext}
 
 GNU @code{gettext} installs macros for use in a package's
-@file{configure.in} or @file{configure.ac}.
+@file{configure.ac} or @file{configure.in}.
 @xref{Top, , Introduction, autoconf, The Autoconf Manual}.
 The primary macro is, of course, @code{AM_GNU_GETTEXT}.
 
@@ -7378,6 +8082,7 @@ The primary macro is, of course, @code{AM_GNU_GETTEXT}.
 * AM_GNU_GETTEXT_NEED::         AM_GNU_GETTEXT_NEED in @file{gettext.m4}
 * AM_GNU_GETTEXT_INTL_SUBDIR::  AM_GNU_GETTEXT_INTL_SUBDIR in @file{intldir.m4}
 * AM_PO_SUBDIRS::               AM_PO_SUBDIRS in @file{po.m4}
+* AM_XGETTEXT_OPTION::          AM_XGETTEXT_OPTION in @file{po.m4}
 * AM_ICONV::                    AM_ICONV in @file{iconv.m4}
 @end menu
 
@@ -7482,7 +8187,6 @@ the GNU gettext infrastructure that is used by the package.
 The use of this macro is optional; only the @code{autopoint} program makes
 use of it (@pxref{CVS Issues}).
 
-
 @node AM_GNU_GETTEXT_NEED, AM_GNU_GETTEXT_INTL_SUBDIR, AM_GNU_GETTEXT_VERSION, autoconf macros
 @subsection AM_GNU_GETTEXT_NEED in @file{gettext.m4}
 
@@ -7521,7 +8225,7 @@ the @code{AM_GNU_GETTEXT} invocation; the order doesn't matter.
 The use of this macro requires GNU automake 1.10 or newer and
 GNU autoconf 2.61 or newer.
 
-@node AM_PO_SUBDIRS, AM_ICONV, AM_GNU_GETTEXT_INTL_SUBDIR, autoconf macros
+@node AM_PO_SUBDIRS, AM_XGETTEXT_OPTION, AM_GNU_GETTEXT_INTL_SUBDIR, autoconf macros
 @subsection AM_PO_SUBDIRS in @file{po.m4}
 
 @amindex AM_PO_SUBDIRS
@@ -7537,7 +8241,30 @@ should be used.  If so, it sets the @code{USE_NLS} variable to @samp{yes},
 otherwise to @samp{no}.  It also determines the right values for Makefile
 variables in each @file{po/} directory.
 
-@node AM_ICONV,  , AM_PO_SUBDIRS, autoconf macros
+@node AM_XGETTEXT_OPTION, AM_ICONV, AM_PO_SUBDIRS, autoconf macros
+@subsection AM_XGETTEXT_OPTION in @file{po.m4}
+
+@amindex AM_XGETTEXT_OPTION
+The @code{AM_XGETTEXT_OPTION} macro registers a command-line option to be
+used in the invocations of @code{xgettext} in the @file{po/} directories
+of the package.
+
+For example, if you have a source file that defines a function
+@samp{error_at_line} whose fifth argument is a format string, you can use
+@example
+AM_XGETTEXT_OPTION([--flag=error_at_line:5:c-format])
+@end example
+@noindent
+to instruct @code{xgettext} to mark all translatable strings in @samp{gettext}
+invocations that occur as fifth argument to this function as @samp{c-format}.
+
+See @ref{xgettext Invocation} for the list of options that @code{xgettext}
+accepts.
+
+The use of this macro is an alternative to the use of the
+@samp{XGETTEXT_OPTIONS} variable in @file{po/Makevars}.
+
+@node AM_ICONV,  , AM_XGETTEXT_OPTION, autoconf macros
 @subsection AM_ICONV in @file{iconv.m4}
 
 @amindex AM_ICONV
@@ -7620,7 +8347,7 @@ Otherwise the following damages will likely occur:
 @itemize @bullet
 @item
 Apparent version mismatch between developers.  Since some @code{gettext}
-specific portions in @file{configure.in}, @file{configure.ac} and
+specific portions in @file{configure.ac}, @file{configure.in} and
 @code{Makefile.am}, @code{Makefile.in} files depend on the @code{gettext}
 version, the use of infrastructure files belonging to different
 @code{gettext} versions can easily lead to build errors.
@@ -7646,7 +8373,7 @@ undiscovered due to this constellation.
 
 There are basically three ways to deal with generated files in the
 context of a CVS repository, such as @file{configure} generated from
-@file{configure.in}, @code{@var{parser}.c} generated from
+@file{configure.ac}, @code{@var{parser}.c} generated from
 @code{@var{parser}.y}, or @code{po/Makefile.in.in} autoinstalled by
 @code{gettextize} or @code{autopoint}.
 
@@ -7695,7 +8422,7 @@ committed into the CVS.
 
 For the third approach, the maintainer can omit from the CVS repository
 all the files that @code{gettextize} mentions as "copy".  Instead, he
-adds to the @file{configure.in} or @file{configure.ac} a line of the
+adds to the @file{configure.ac} or @file{configure.in} a line of the
 form
 
 @example
@@ -7817,7 +8544,7 @@ Similarly, you should make the functions @code{ngettext},
 @code{dcgettext}, @code{dcngettext} available from within the language.
 These functions are less often used, but are nevertheless necessary for
 particular purposes: @code{ngettext} for correct plural handling, and
-@code{dcgettext} and @code{dcngettext} for obeying other locale
+@code{dcgettext} and @code{dcngettext} for obeying other locale-related
 environment variables than @code{LC_MESSAGES}, such as @code{LC_TIME} or
 @code{LC_MONETARY}.  For these latter functions, you need to make the
 @code{LC_*} constants, available in the C header @code{<locale.h>},
@@ -7836,7 +8563,7 @@ function.
 You should either perform a @code{setlocale (LC_ALL, "")} call during
 the startup of your language runtime, or allow the programmer to do so.
 Remember that gettext will act as a no-op if the @code{LC_MESSAGES} and
-@code{LC_CTYPE} locale facets are not both set.
+@code{LC_CTYPE} locale categories are not both set.
 
 @item
 A programmer should have a way to extract translatable strings from a
@@ -7934,6 +8661,7 @@ strings.
 * php-format::                  PHP Format Strings
 * gcc-internal-format::         GCC internal Format Strings
 * qt-format::                   Qt Format Strings
+* kde-format::                  KDE Format Strings
 * boost-format::                Boost Format Strings
 @end menu
 
@@ -7974,7 +8702,7 @@ insert an @samp{I} flag into numeric format directives.  For example, the
 translation of @code{"%d"} can be @code{"%Id"}.  The effect of this flag,
 on systems with GNU @code{libc}, is that in the output, the ASCII digits are
 replaced with the @samp{outdigits} defined in the @code{LC_CTYPE} locale
-facet.  On other systems, the @code{gettext} function removes this flag,
+category.  On other systems, the @code{gettext} function removes this flag,
 so that it has no effect.
 
 Note that the programmer should @emph{not} put this flag into the
@@ -8143,15 +8871,23 @@ denotes a programming language, @samp{O} denotes a binary operator,
 @samp{P} denotes a function parameter, @samp{Q} denotes an assignment
 operator, @samp{V} denotes a const/volatile qualifier.
 
-@node qt-format, boost-format, gcc-internal-format, Translators for other Languages
+@node qt-format, kde-format, gcc-internal-format, Translators for other Languages
 @subsection Qt Format Strings
 
 Qt format strings are described in the documentation of the QString class
-@uref{file:/usr/lib/qt-3.0.5/doc/html/qstring.html}.
+@uref{file:/usr/lib/qt-4.3.0/doc/html/qstring.html}.
 In summary, a directive consists of a @samp{%} followed by a digit. The same
 directive cannot occur more than once in a format string.
 
-@node boost-format,  , qt-format, Translators for other Languages
+@node kde-format, boost-format, qt-format, Translators for other Languages
+@subsection KDE Format Strings
+
+KDE 4 format strings are defined as follows:
+A directive consists of a @samp{%} followed by a non-zero decimal number.
+If a @samp{%n} occurs in a format strings, all of @samp{%1}, ..., @samp{%(n-1)}
+must occur as well, except possibly one of them.
+
+@node boost-format,  , kde-format, Translators for other Languages
 @subsection Boost Format Strings
 
 Boost format strings are described in the documentation of the
@@ -8989,7 +9725,8 @@ java, java2
 _("abc")
 
 @item gettext/ngettext functions
-@code{GettextResource.gettext}, @code{GettextResource.ngettext}
+@code{GettextResource.gettext}, @code{GettextResource.ngettext},
+@code{GettextResource.pgettext}, @code{GettextResource.npgettext}
 
 @item textdomain
 ---, use @code{ResourceBundle.getResource} instead
@@ -9067,24 +9804,24 @@ a PO file with plural handling.
 @item
 The @code{gnu.gettext.GettextResource} API.
 
-Reference documentation in Javadoc 1.1 style format
-is in the @uref{javadoc1/tree.html,javadoc1 directory} and
-in Javadoc 2 style format
-in the @uref{javadoc2/index.html,javadoc2 directory}.
+Reference documentation in Javadoc 1.1 style format is in the
+@uref{javadoc2/index.html,javadoc2 directory}.
 
 Its @code{gettext} function returns a string translation.  Note that when
 a translation is missing, the @var{msgid} argument is returned unchanged.
 
 This has the advantage of having the @code{ngettext} function for plural
-handling.
+handling and the @code{pgettext} and @code{npgettext} for strings constraint
+to a particular context.
 
 @cindex @code{libintl} for Java
 To use this API, one needs the @code{libintl.jar} file which is part of
 the GNU gettext package and distributed under the LGPL.
 @end enumerate
 
-Three examples, using the second API, are available in the @file{examples}
-directory: @code{hello-java}, @code{hello-java-awt}, @code{hello-java-swing}.
+Four examples, using the second API, are available in the @file{examples}
+directory: @code{hello-java}, @code{hello-java-awt}, @code{hello-java-swing},
+@code{hello-java-qtjambi}.
 
 Now, to make use of the API and define a shorthand for @samp{getString},
 there are three idioms that you can choose from:
@@ -9186,6 +9923,8 @@ _("abc")
 @item gettext/ngettext functions
 @code{GettextResourceManager.GetString},
 @code{GettextResourceManager.GetPluralString}
+@code{GettextResourceManager.GetParticularString}
+@code{GettextResourceManager.GetParticularPluralString}
 
 @item textdomain
 @code{new GettextResourceManager(domain)}
@@ -9288,6 +10027,12 @@ handling function @code{GetPluralString}.  Whereas @code{.resources} files can
 only contain data and only support lookups that depend on a single string.
 
 @item
+Context handling: A message catalog in @code{.dll} format supports the
+query-with-context functions @code{GetParticularString} and
+@code{GetParticularPluralString}.  Whereas @code{.resources} files can
+only contain data and only support lookups that depend on a single string.
+
+@item
 The @code{GettextResourceManager} that loads the message catalogs in
 @code{.dll} format also provides for inheritance on a per-message basis.
 For example, in Austrian (@code{de_AT}) locale, translations from the German
@@ -9345,6 +10090,15 @@ a translation is missing, the @var{msgid} argument is returned unchanged.
 
 The @code{GetPluralString} function returns a string translation with plural
 handling, like the @code{ngettext} function in C.
+
+The @code{GetParticularString} function returns a string's translation,
+specific to a particular context, like the @code{pgettext} function in C.
+Note that when a translation is missing, the @var{msgid} argument is returned
+unchanged.
+
+The @code{GetParticularPluralString} function returns a string translation,
+specific to a particular context, with plural handling, like the
+@code{npgettext} function in C.
 
 @cindex @code{libintl} for C#
 To use this API, one needs the @code{GNU.Gettext.dll} file which is part of

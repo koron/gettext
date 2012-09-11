@@ -1,11 +1,11 @@
 /* Locating a program in PATH.
-   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include <config.h>
@@ -28,7 +27,7 @@
 #include <unistd.h>
 
 #include "xalloc.h"
-#include "pathname.h"
+#include "filename.h"
 
 
 const char *
@@ -76,7 +75,7 @@ find_in_path (const char *progname)
 	dir = ".";
 
       /* Concatenate dir and progname.  */
-      progpathname = concatenated_pathname (dir, progname, NULL);
+      progpathname = concatenated_filename (dir, progname, NULL);
 
       /* On systems which have the eaccess() system call, let's use it.
 	 On other systems, let's hope that this program is not installed
@@ -89,10 +88,10 @@ find_in_path (const char *progname)
 	    {
 	      free (progpathname);
 
-	      /* Add the "./" prefix for real, that concatenated_pathname()
+	      /* Add the "./" prefix for real, that concatenated_filename()
 		 optimized away.  This avoids a second PATH search when the
 		 caller uses execlp/execvp.  */
-	      progpathname = xmalloc (2 + strlen (progname) + 1);
+	      progpathname = XNMALLOC (2 + strlen (progname) + 1, char);
 	      progpathname[0] = '.';
 	      progpathname[1] = '/';
 	      memcpy (progpathname + 2, progname, strlen (progname) + 1);

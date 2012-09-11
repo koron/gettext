@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.php:13
+#: hello.php:12
 msgid "Hello, world!"
 msgstr "Hallo Welt!"
 
-#: hello.php:15
+#: hello.php:14
 #, php-format
 msgid "This program is running as process number %d."
 msgstr "Dieses Programm läuft mit der Prozess-Nummer %d."

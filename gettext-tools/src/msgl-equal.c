@@ -2,10 +2,10 @@
    Copyright (C) 2001-2002, 2005-2006 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -57,7 +56,7 @@ msgstr_equal_ignoring_potcdate (const char *msgstr1, size_t msgstr1_len,
 	}
       if (memcmp (ptr1, field, fieldlen) == 0)
 	break;
-      ptr1 = memchr (ptr1, '\n', msgstr1_end - ptr1);
+      ptr1 = (const char *) memchr (ptr1, '\n', msgstr1_end - ptr1);
       if (ptr1 == NULL)
 	break;
       ptr1++;
@@ -73,7 +72,7 @@ msgstr_equal_ignoring_potcdate (const char *msgstr1, size_t msgstr1_len,
 	}
       if (memcmp (ptr2, field, fieldlen) == 0)
 	break;
-      ptr2 = memchr (ptr2, '\n', msgstr2_end - ptr2);
+      ptr2 = (const char *) memchr (ptr2, '\n', msgstr2_end - ptr2);
       if (ptr2 == NULL)
 	break;
       ptr2++;
@@ -91,11 +90,11 @@ msgstr_equal_ignoring_potcdate (const char *msgstr1, size_t msgstr1_len,
 	  /* Compare, ignoring the lines starting at ptr1 and ptr2.  */
 	  if (msgstr_equal (msgstr1, ptr1 - msgstr1, msgstr2, ptr2 - msgstr2))
 	    {
-	      ptr1 = memchr (ptr1, '\n', msgstr1_end - ptr1);
+	      ptr1 = (const char *) memchr (ptr1, '\n', msgstr1_end - ptr1);
 	      if (ptr1 == NULL)
 		ptr1 = msgstr1_end;
 
-	      ptr2 = memchr (ptr2, '\n', msgstr2_end - ptr2);
+	      ptr2 = (const char *) memchr (ptr2, '\n', msgstr2_end - ptr2);
 	      if (ptr2 == NULL)
 		ptr2 = msgstr2_end;
 

@@ -1,12 +1,12 @@
 /* xgettext Lisp backend.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-lisp.h"
 
 #include <errno.h>
 #include <stdbool.h>
@@ -32,7 +34,6 @@
 #include "x-lisp.h"
 #include "error.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "hash.h"
 #include "gettext.h"
 
@@ -151,7 +152,7 @@ x_lisp_keyword (const char *name)
 
       /* Uppercase it.  */
       len = end - name;
-      symname = (char *) xmalloc (len);
+      symname = XNMALLOC (len, char);
       for (i = 0; i < len; i++)
 	symname[i] =
 	  (name[i] >= 'a' && name[i] <= 'z' ? name[i] - 'a' + 'A' : name[i]);
@@ -365,8 +366,7 @@ static inline void
 init_token (struct token *tp)
 {
   tp->allocated = 10;
-  tp->chars =
-    (struct token_char *) xmalloc (tp->allocated * sizeof (struct token_char));
+  tp->chars = XNMALLOC (tp->allocated, struct token_char);
   tp->charcount = 0;
 }
 
@@ -919,7 +919,7 @@ string_of_object (const struct object *op)
   if (!(op->type == t_symbol || op->type == t_string))
     abort ();
   n = op->token->charcount;
-  str = (char *) xmalloc (n + 1);
+  str = XNMALLOC (n + 1, char);
   q = str;
   for (p = op->token->chars; n > 0; p++, n--)
     *q++ = p->ch;
@@ -963,7 +963,7 @@ read_object (struct object *op, flag_context_ty outer_context)
 	case syntax_multi_esc:
 	case syntax_constituent:
 	  /* Start reading a token.  */
-	  op->token = (struct token *) xmalloc (sizeof (struct token));
+	  op->token = XMALLOC (struct token);
 	  read_token (op->token, &curr);
 	  last_non_comment_line = line_number;
 
@@ -1165,7 +1165,7 @@ read_object (struct object *op, flag_context_ty outer_context)
 
 	    case '"':
 	      {
-		op->token = (struct token *) xmalloc (sizeof (struct token));
+		op->token = XMALLOC (struct token);
 		init_token (op->token);
 		op->line_number_at_start = line_number;
 		for (;;)

@@ -1,12 +1,12 @@
 /* xgettext Python backend.
-   Copyright (C) 2002-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2002-2003, 2005-2007 Free Software Foundation, Inc.
 
    This file was written by Bruno Haible <haible@clisp.cons.org>, 2002.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,12 +14,14 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+/* Specification.  */
+#include "x-python.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -38,14 +40,11 @@
 #include "xerror.h"
 #include "xvasprintf.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "c-strstr.h"
 #include "c-ctype.h"
 #include "po-charset.h"
 #include "uniname.h"
-#include "utf16-ucs4.h"
-#include "utf8-ucs4.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(s) gettext(s)
@@ -661,7 +660,7 @@ try_to_extract_coding (const char *comment)
 		{
 		  /* Extract the encoding string.  */
 		  size_t encoding_len = encoding_end - encoding_start;
-		  char *encoding = (char *) xmalloc (encoding_len + 1);
+		  char *encoding = XNMALLOC (encoding_len + 1, char);
 
 		  memcpy (encoding, encoding_start, encoding_len);
 		  encoding[encoding_len] = '\0';
@@ -912,7 +911,7 @@ mixed_string_buffer_append (struct mixed_string_buffer *bp, int c)
 
 	  utf16buf[0] = bp->utf16_surr;
 	  utf16buf[1] = UNICODE_VALUE (c);
-	  if (u16_mbtouc_aux (&uc, utf16buf, 2) != 2)
+	  if (u16_mbtouc (&uc, utf16buf, 2) != 2)
 	    abort ();
 
 	  mixed_string_buffer_append_unicode (bp, uc);
@@ -1002,7 +1001,8 @@ struct token_ty
     u"abc"    \<nl> \\ \' \" \a\b\f\n\r\t\v \ooo \xnn \unnnn \Unnnnnnnn \N{...}
     ur"abc"                                           \unnnn
    The \unnnn values are UTF-16 values; a single \Unnnnnnnn can expand to two
-   \unnnn items.  The \ooo and \xnn values are in the current source encoding.
+   \unnnn items.  The \ooo and \xnn values are in the current source encoding
+   for byte strings, and Unicode code points for Unicode strings.
  */
 
 static int
@@ -1140,7 +1140,10 @@ phase7_getuc (int quote_char,
 		    phase2_ungetc (c);
 		}
 	      *backslash_counter = 0;
-	      return (unsigned char) n;
+	      if (interpret_unicode)
+		return UNICODE (n);
+	      else
+		return (unsigned char) n;
 	    }
 	  case 'x':
 	    {
@@ -1172,8 +1175,12 @@ phase7_getuc (int quote_char,
 
 		  if (n2 >= 0)
 		    {
+		      int n = (n1 << 4) + n2;
 		      *backslash_counter = 0;
-		      return (unsigned char) ((n1 << 4) + n2);
+		      if (interpret_unicode)
+			return UNICODE (n);
+		      else
+			return (unsigned char) n;
 		    }
 
 		  phase2_ungetc (c2);

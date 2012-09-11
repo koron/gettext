@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.py.in:13
+#: hello.py.in:12
 msgid "Hello, world!"
 msgstr "Dia duit, a dhomhain!"
 
-#: hello.py.in:14
+#: hello.py.in:13
 #, python-format
 msgid "This program is running as process number %(pid)d."
 msgstr "Tá an clár seo á rith mar phróiseas %(pid)d."

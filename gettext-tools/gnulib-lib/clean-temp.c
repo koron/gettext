@@ -1,11 +1,11 @@
 /* Temporary directories and temporary files with automatic cleanup.
-   Copyright (C) 2001, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #include <config.h>
@@ -30,13 +29,17 @@
 #include <string.h>
 #include <unistd.h>
 
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+# define WIN32_LEAN_AND_MEAN  /* avoid including junk */
+# include <windows.h>
+#endif
+
 #include "error.h"
 #include "fatal-signal.h"
 #include "pathmax.h"
 #include "tmpdir.h"
-#include "mkdtemp.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "gl_linkedhash_list.h"
 #include "gettext.h"
 #if GNULIB_FWRITEERROR
@@ -65,6 +68,13 @@
 
 #ifndef uintptr_t
 # define uintptr_t unsigned long
+#endif
+
+#if !GNULIB_FCNTL_SAFER
+/* The results of open() in this file are not used with fchdir,
+   therefore save some unnecessary work in fchdir.c.  */
+# undef open
+# undef close
 #endif
 
 
@@ -154,8 +164,8 @@ static gl_list_t /* <int> */ volatile descriptors;
 static bool
 string_equals (const void *x1, const void *x2)
 {
-  const char *s1 = x1;
-  const char *s2 = x2;
+  const char *s1 = (const char *) x1;
+  const char *s2 = (const char *) x2;
   return strcmp (s1, s2) == 0;
 }
 
@@ -167,7 +177,7 @@ string_equals (const void *x1, const void *x2)
 static size_t
 string_hash (const void *x)
 {
-  const char *s = x;
+  const char *s = (const char *) x;
   size_t h = 0;
 
   for (; *s; s++)
@@ -251,7 +261,7 @@ create_temp_dir (const char *prefix, const char *parentdir,
   struct tempdir * volatile *tmpdirp = NULL;
   struct tempdir *tmpdir;
   size_t i;
-  char *template;
+  char *xtemplate;
   char *tmpdirname;
 
   /* See whether it can take the slot of an earlier temporary directory
@@ -273,8 +283,7 @@ create_temp_dir (const char *prefix, const char *parentdir,
 	  size_t old_allocated = cleanup_list.tempdir_allocated;
 	  size_t new_allocated = 2 * cleanup_list.tempdir_allocated + 1;
 	  struct tempdir * volatile *new_array =
-	    (struct tempdir * volatile *)
-	    xmalloc (new_allocated * sizeof (struct tempdir * volatile));
+	    XNMALLOC (new_allocated, struct tempdir * volatile);
 
 	  if (old_allocated == 0)
 	    /* First use of this facility.  Register the cleanup handler.  */
@@ -306,24 +315,26 @@ create_temp_dir (const char *prefix, const char *parentdir,
     }
 
   /* Initialize a 'struct tempdir'.  */
-  tmpdir = (struct tempdir *) xmalloc (sizeof (struct tempdir));
+  tmpdir = XMALLOC (struct tempdir);
   tmpdir->dirname = NULL;
   tmpdir->cleanup_verbose = cleanup_verbose;
   tmpdir->subdirs = gl_list_create_empty (GL_LINKEDHASH_LIST,
-					  string_equals, string_hash, false);
+					  string_equals, string_hash, NULL,
+					  false);
   tmpdir->files = gl_list_create_empty (GL_LINKEDHASH_LIST,
-					string_equals, string_hash, false);
+					string_equals, string_hash, NULL,
+					false);
 
   /* Create the temporary directory.  */
-  template = (char *) xallocsa (PATH_MAX);
-  if (path_search (template, PATH_MAX, parentdir, prefix, parentdir == NULL))
+  xtemplate = (char *) xmalloca (PATH_MAX);
+  if (path_search (xtemplate, PATH_MAX, parentdir, prefix, parentdir == NULL))
     {
       error (0, errno,
 	     _("cannot find a temporary directory, try setting $TMPDIR"));
       goto quit;
     }
   block_fatal_signals ();
-  tmpdirname = mkdtemp (template);
+  tmpdirname = mkdtemp (xtemplate);
   if (tmpdirname != NULL)
     {
       tmpdir->dirname = tmpdirname;
@@ -334,7 +345,7 @@ create_temp_dir (const char *prefix, const char *parentdir,
     {
       error (0, errno,
 	     _("cannot create a temporary directory using template \"%s\""),
-	     template);
+	     xtemplate);
       goto quit;
     }
   /* Replace tmpdir->dirname with a copy that has indefinite extent.
@@ -342,11 +353,11 @@ create_temp_dir (const char *prefix, const char *parentdir,
      block because then the cleanup handler would not remove the directory
      if xstrdup fails.  */
   tmpdir->dirname = xstrdup (tmpdirname);
-  freesa (template);
+  freea (xtemplate);
   return (struct temp_dir *) tmpdir;
 
  quit:
-  freesa (template);
+  freea (xtemplate);
   return NULL;
 }
 
@@ -557,12 +568,40 @@ cleanup_temp_dir (struct temp_dir *dir)
 }
 
 
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+
+/* On Windows, opening a file with _O_TEMPORARY has the effect of passing
+   the FILE_FLAG_DELETE_ON_CLOSE flag to CreateFile(), which has the effect
+   of deleting the file when it is closed - even when the program crashes.
+   But (according to the Cygwin sources) it works only on Windows NT or newer.
+   So we cache the info whether we are running on Windows NT or newer.  */
+
+static bool
+supports_delete_on_close ()
+{
+  static int known; /* 1 = yes, -1 = no, 0 = unknown */
+  if (!known)
+    {
+      OSVERSIONINFO v;
+
+      if (GetVersionEx (&v))
+	known = (v.dwPlatformId == VER_PLATFORM_WIN32_NT ? 1 : -1);
+      else
+	known = -1;
+    }
+  return (known > 0);
+}
+
+#endif
+
+
 /* Register a file descriptor to be closed.  */
 static void
 register_fd (int fd)
 {
   if (descriptors == NULL)
-    descriptors = gl_list_create_empty (GL_LINKEDHASH_LIST, NULL, NULL, false);
+    descriptors = gl_list_create_empty (GL_LINKEDHASH_LIST, NULL, NULL, NULL,
+					false);
   gl_list_add_first (descriptors, (void *) (uintptr_t) fd);
 }
 
@@ -592,7 +631,15 @@ open_temp (const char *file_name, int flags, mode_t mode)
   int saved_errno;
 
   block_fatal_signals ();
-  fd = open (file_name, flags, mode); /* actually open or open_safer */
+  /* Note: 'open' here is actually open() or open_safer().  */
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+  /* Use _O_TEMPORARY when possible, to increase the chances that the
+     temporary file is removed when the process crashes.  */
+  if (supports_delete_on_close ())
+    fd = open (file_name, flags | _O_TEMPORARY, mode);
+  else
+#endif
+    fd = open (file_name, flags, mode);
   saved_errno = errno;
   if (fd >= 0)
     register_fd (fd);
@@ -610,8 +657,28 @@ fopen_temp (const char *file_name, const char *mode)
   int saved_errno;
 
   block_fatal_signals ();
-  fp = fopen (file_name, mode); /* actually fopen or fopen_safer */
-  saved_errno = errno;
+  /* Note: 'fopen' here is actually fopen() or fopen_safer().  */
+#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+  /* Use _O_TEMPORARY when possible, to increase the chances that the
+     temporary file is removed when the process crashes.  */
+  if (supports_delete_on_close ())
+    {
+      size_t mode_len = strlen (mode);
+      char *augmented_mode = (char *) xmalloca (mode_len + 2);
+      memcpy (augmented_mode, mode, mode_len);
+      memcpy (augmented_mode + mode_len, "D", 2);
+
+      fp = fopen (file_name, augmented_mode);
+      saved_errno = errno;
+
+      freea (augmented_mode);
+    }
+  else
+#endif
+    {
+      fp = fopen (file_name, mode);
+      saved_errno = errno;
+    }
   if (fp != NULL)
     {
       /* It is sufficient to register fileno (fp) instead of the entire fp,

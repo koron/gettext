@@ -55,6 +55,7 @@ DEFS = @DEFS@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 INSTALL = @INSTALL@
@@ -84,6 +85,7 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -152,6 +154,7 @@ POTFILES = \
   hello-java/Hello.java \
   hello-java-awt/Hello.java \
   hello-java-swing/Hello.java \
+  hello-java-qtjambi/Hello.java \
   hello-csharp/hello.cs \
   hello-csharp-forms/hello.cs \
   hello-gawk/hello.awk \
@@ -185,6 +188,7 @@ SMALLPOTS = \
   hello-java.pot \
   hello-java-awt.pot \
   hello-java-swing.pot \
+  hello-java-qtjambi.pot \
   hello-csharp.pot \
   hello-csharp-forms.pot \
   hello-gawk.pot \
@@ -274,6 +278,7 @@ SMALLPOFILES_FOR_lang = \
   ../hello-java/po/$$lang.po \
   ../hello-java-awt/po/$$lang.po \
   ../hello-java-swing/po/$$lang.po \
+  ../hello-java-qtjambi/po/$$lang.po \
   ../hello-csharp/po/$$lang.po \
   ../hello-csharp-forms/po/$$lang.po \
   ../hello-gawk/po/$$lang.po \
@@ -568,6 +573,9 @@ hello-java-awt.pot : $(POTFILES_DEPS)
 hello-java-swing.pot : $(POTFILES_DEPS)
 	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-java-swing
 
+hello-java-qtjambi.pot : $(POTFILES_DEPS)
+	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-java-qtjambi
+
 hello-csharp.pot : $(POTFILES_DEPS)
 	$(SHELL) '$(srcdir)/xsmallpot.sh' '$(srcdir)' hello-csharp
 
@@ -710,6 +718,9 @@ $(DUMMYPOFILES):
 
 ../hello-java-swing/po/$(LL).po: hello-java-swing.pot $(LL).po
 	$(SHELL) mmsmallpo.sh hello-java-swing $(LL)
+
+../hello-java-qtjambi/po/$(LL).po: hello-java-qtjambi.pot $(LL).po
+	$(SHELL) mmsmallpo.sh hello-java-qtjambi $(LL)
 
 ../hello-csharp/po/$(LL).po: hello-csharp.pot $(LL).po
 	$(SHELL) mmsmallpo.sh hello-csharp $(LL)

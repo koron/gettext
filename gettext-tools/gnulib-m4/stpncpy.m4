@@ -1,5 +1,5 @@
-# stpncpy.m4 serial 4
-dnl Copyright (C) 2002-2003, 2005-2006 Free Software Foundation, Inc.
+# stpncpy.m4 serial 9
+dnl Copyright (C) 2002-2003, 2005-2007 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,7 +7,12 @@ dnl with or without modifications, as long as this notice is preserved.
 AC_DEFUN([gl_FUNC_STPNCPY],
 [
   dnl Persuade glibc <string.h> to declare stpncpy().
-  AC_REQUIRE([AC_GNU_SOURCE])
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
+
+  dnl The stpncpy() declaration in lib/string.in.h uses 'restrict'.
+  AC_REQUIRE([AC_C_RESTRICT])
+
+  AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
 
   dnl Both glibc and AIX (4.3.3, 5.1) have an stpncpy() function
   dnl declared in <string.h>. Its side effects are the same as those
@@ -51,6 +56,7 @@ int main () {
     AC_DEFINE(HAVE_STPNCPY, 1,
       [Define if you have the stpncpy() function and it works.])
   else
+    HAVE_STPNCPY=0
     AC_LIBOBJ([stpncpy])
     gl_PREREQ_STPNCPY
   fi
@@ -60,4 +66,3 @@ int main () {
 AC_DEFUN([gl_PREREQ_STPNCPY], [
   :
 ])
-

@@ -1,11 +1,11 @@
 /* Recode Serbian text from Cyrillic to Latin script.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -37,7 +36,6 @@
 #include "relocatable.h"
 #include "basename.h"
 #include "xalloc.h"
-#include "exit.h"
 #include "localcharset.h"
 #include "c-strcase.h"
 #include "xstriconv.h"
@@ -110,10 +108,11 @@ main (int argc, char *argv[])
       printf ("%s (GNU %s) %s\n", basename (program_name), PACKAGE, VERSION);
       /* xgettext: no-wrap */
       printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n\
 "),
-	      "2006");
+	      "2006-2007");
       printf (_("Written by %s and %s.\n"),
 	      /* TRANSLATORS: This is a proper name. The last name is
 		 (with Unicode escapes) "\u0160egan" or (with HTML entities)
@@ -168,6 +167,10 @@ Informative output:\n"));
       printf (_("\
   -V, --version               output version information and exit\n"));
       printf ("\n");
+      /* TRANSLATORS: The placeholder indicates the bug-reporting address
+         for this package.  Please add _another line_ saying
+         "Report translation bugs to <...>\n" with the address for translation
+         bugs (typically your translation team's web or email address).  */
       fputs (_("Report bugs to <bug-gnu-gettext@gnu.org>.\n"), stdout);
     }
 
@@ -259,10 +262,10 @@ process (FILE *stream)
 #if HAVE_ICONV
   iconv_t conv_to_utf8 = (iconv_t)(-1);
   iconv_t conv_from_utf8 = (iconv_t)(-1);
-  char *utf8_line;
-  size_t utf8_line_len;
-  char *backconv_line;
-  size_t backconv_line_len;
+  char *last_utf8_line;
+  size_t last_utf8_line_len;
+  char *last_backconv_line;
+  size_t last_backconv_line_len;
 #endif
 
   init_linebuffer (&lb);
@@ -290,10 +293,10 @@ and iconv() does not support this conversion."),
 Cannot convert from \"%s\" to \"%s\". %s relies on iconv(), \
 and iconv() does not support this conversion."),
 	       "UTF-8", locale_code, basename (program_name));
-      utf8_line = NULL;
-      utf8_line_len = 0;
-      backconv_line = NULL;
-      backconv_line_len = 0;
+      last_utf8_line = NULL;
+      last_utf8_line_len = 0;
+      last_backconv_line = NULL;
+      last_backconv_line_len = 0;
 #else
       error (EXIT_FAILURE, 0, _("\
 Cannot convert from \"%s\" to \"%s\". %s relies on iconv(). \
@@ -326,11 +329,22 @@ This version was built without iconv()."),
       /* Convert it to UTF-8.  */
       if (need_code_conversion)
 	{
+	  char *utf8_line = last_utf8_line;
+	  size_t utf8_line_len = last_utf8_line_len;
+
 	  if (xmem_cd_iconv (line, line_len, conv_to_utf8,
 			     &utf8_line, &utf8_line_len) != 0)
 	    error (EXIT_FAILURE, errno,
 		   _("input is not valid in \"%s\" encoding"),
 		   locale_code);
+	  if (utf8_line != last_utf8_line)
+	    {
+	      if (last_utf8_line != NULL)
+		free (last_utf8_line);
+	      last_utf8_line = utf8_line;
+	      last_utf8_line_len = utf8_line_len;
+	    }
+
 	  line = utf8_line;
 	  line_len = utf8_line_len;
 	}
@@ -343,11 +357,22 @@ This version was built without iconv()."),
       /* Convert it back to the original encoding.  */
       if (need_code_conversion)
 	{
+	  char *backconv_line = last_backconv_line;
+	  size_t backconv_line_len = last_backconv_line_len;
+
 	  if (xmem_cd_iconv (filtered_line, filtered_line_len, conv_from_utf8,
 			     &backconv_line, &backconv_line_len) != 0)
 	    error (EXIT_FAILURE, errno,
 		   _("error while converting from \"%s\" encoding to \"%s\" encoding"),
 		   "UTF-8", locale_code);
+	  if (backconv_line != last_backconv_line)
+	    {
+	      if (last_backconv_line != NULL)
+		free (last_backconv_line);
+	      last_backconv_line = backconv_line;
+	      last_backconv_line_len = backconv_line_len;
+	    }
+
 	  fwrite (backconv_line, 1, backconv_line_len, stdout);
 	}
       else

@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.py.in:13
+#: hello.py.in:12
 msgid "Hello, world!"
 msgstr "世界你好！"
 
-#: hello.py.in:14
+#: hello.py.in:13
 #, python-format
 msgid "This program is running as process number %(pid)d."
 msgstr "此程序正以进程号 %(pid)d 运行。"

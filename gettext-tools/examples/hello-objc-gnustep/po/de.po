@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: Hello.m:50
+#: Hello.m:49
 msgid "Hello, world!"
 msgstr "Hallo Welt!"
 
-#: Hello.m:59
+#: Hello.m:58
 #, objc-format
 msgid "This program is running as process number %d."
 msgstr "Dieses Programm läuft mit der Prozess-Nummer %d."

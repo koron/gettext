@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.tcl:14
+#: hello.tcl:13
 msgid "Hello, world!"
 msgstr "世界你好！"
 
-#: hello.tcl:17
+#: hello.tcl:16
 #, tcl-format
 msgid "This program is running as process number %d."
 msgstr "此程序正以进程号 %d 运行。"

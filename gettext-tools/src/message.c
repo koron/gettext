@@ -1,12 +1,12 @@
 /* GNU gettext - internationalization aids
-   Copyright (C) 1995-1998, 2000-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2007 Free Software Foundation, Inc.
 
    This file was written by Peter Miller <millerp@canb.auug.org.au>
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -14,8 +14,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -30,7 +29,7 @@
 #include "fstrcmp.h"
 #include "hash.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 
 
 const char *const format_language[NFORMATS] =
@@ -55,6 +54,7 @@ const char *const format_language[NFORMATS] =
   /* format_php */		"php",
   /* format_gcc_internal */	"gcc-internal",
   /* format_qt */		"qt",
+  /* format_kde */		"kde",
   /* format_boost */		"boost"
 };
 
@@ -80,6 +80,7 @@ const char *const format_language_pretty[NFORMATS] =
   /* format_php */		"PHP",
   /* format_gcc_internal */	"GCC internal",
   /* format_qt */		"Qt",
+  /* format_kde */		"KDE",
   /* format_boost */		"Boost"
 };
 
@@ -102,7 +103,7 @@ message_alloc (const char *msgctxt,
   message_ty *mp;
   size_t i;
 
-  mp = (message_ty *) xmalloc (sizeof (message_ty));
+  mp = XMALLOC (message_ty);
   mp->msgctxt = msgctxt;
   mp->msgid = msgid;
   mp->msgid_plural = (msgid_plural != NULL ? xstrdup (msgid_plural) : NULL);
@@ -241,7 +242,7 @@ message_list_alloc (bool use_hashtable)
 {
   message_list_ty *mlp;
 
-  mlp = (message_list_ty *) xmalloc (sizeof (message_list_ty));
+  mlp = XMALLOC (message_list_ty);
   mlp->nitems = 0;
   mlp->nitems_max = 0;
   mlp->item = NULL;
@@ -281,7 +282,7 @@ message_list_hash_insert_entry (hash_table *htable, message_ty *mp)
       size_t msgctxt_len = strlen (mp->msgctxt);
       size_t msgid_len = strlen (mp->msgid);
       keylen = msgctxt_len + 1 + msgid_len + 1;
-      alloced_key = (char *) xallocsa (keylen);
+      alloced_key = (char *) xmalloca (keylen);
       memcpy (alloced_key, mp->msgctxt, msgctxt_len);
       alloced_key[msgctxt_len] = MSGCTXT_SEPARATOR;
       memcpy (alloced_key + msgctxt_len + 1, mp->msgid, msgid_len + 1);
@@ -297,7 +298,7 @@ message_list_hash_insert_entry (hash_table *htable, message_ty *mp)
   found = (hash_insert_entry (htable, key, keylen, mp) == NULL);
 
   if (mp->msgctxt != NULL)
-    freesa (alloced_key);
+    freea (alloced_key);
 
   return found;
 }
@@ -448,6 +449,24 @@ message_list_msgids_changed (message_list_ty *mlp)
 }
 
 
+message_list_ty *
+message_list_copy (message_list_ty *mlp, int copy_level)
+{
+  message_list_ty *result;
+  size_t j;
+
+  result = message_list_alloc (mlp->use_hashtable);
+  for (j = 0; j < mlp->nitems; j++)
+    {
+      message_ty *mp = mlp->item[j];
+
+      message_list_append (result, copy_level ? mp : message_copy (mp));
+    }
+
+  return result;
+}
+
+
 message_ty *
 message_list_search (message_list_ty *mlp,
 		     const char *msgctxt, const char *msgid)
@@ -464,7 +483,7 @@ message_list_search (message_list_ty *mlp,
 	  size_t msgctxt_len = strlen (msgctxt);
 	  size_t msgid_len = strlen (msgid);
 	  keylen = msgctxt_len + 1 + msgid_len + 1;
-	  alloced_key = (char *) xallocsa (keylen);
+	  alloced_key = (char *) xmalloca (keylen);
 	  memcpy (alloced_key, msgctxt, msgctxt_len);
 	  alloced_key[msgctxt_len] = MSGCTXT_SEPARATOR;
 	  memcpy (alloced_key + msgctxt_len + 1, msgid, msgid_len + 1);
@@ -482,7 +501,7 @@ message_list_search (message_list_ty *mlp,
 	int found = !hash_find_entry (&mlp->htable, key, keylen, &htable_value);
 
 	if (msgctxt != NULL)
-	  freesa (alloced_key);
+	  freea (alloced_key);
 
 	if (found)
 	  return (message_ty *) htable_value;
@@ -576,7 +595,7 @@ message_list_list_alloc ()
 {
   message_list_list_ty *mllp;
 
-  mllp = (message_list_list_ty *) xmalloc (sizeof (message_list_list_ty));
+  mllp = XMALLOC (message_list_list_ty);
   mllp->nitems = 0;
   mllp->nitems_max = 0;
   mllp->item = NULL;
@@ -686,7 +705,7 @@ msgdomain_alloc (const char *domain, bool use_hashtable)
 {
   msgdomain_ty *mdp;
 
-  mdp = (msgdomain_ty *) xmalloc (sizeof (msgdomain_ty));
+  mdp = XMALLOC (msgdomain_ty);
   mdp->domain = domain;
   mdp->messages = message_list_alloc (use_hashtable);
   return mdp;
@@ -706,13 +725,12 @@ msgdomain_list_alloc (bool use_hashtable)
 {
   msgdomain_list_ty *mdlp;
 
-  mdlp = (msgdomain_list_ty *) xmalloc (sizeof (msgdomain_list_ty));
+  mdlp = XMALLOC (msgdomain_list_ty);
   /* Put the default domain first, so that when we output it,
      we can omit the 'domain' directive.  */
   mdlp->nitems = 1;
   mdlp->nitems_max = 1;
-  mdlp->item =
-    (msgdomain_ty **) xmalloc (mdlp->nitems_max * sizeof (msgdomain_ty *));
+  mdlp->item = XNMALLOC (mdlp->nitems_max, msgdomain_ty *);
   mdlp->item[0] = msgdomain_alloc (MESSAGE_DOMAIN_DEFAULT, use_hashtable);
   mdlp->use_hashtable = use_hashtable;
   mdlp->encoding = NULL;
@@ -778,6 +796,43 @@ msgdomain_list_sublist (msgdomain_list_ty *mdlp, const char *domain,
     }
   else
     return NULL;
+}
+
+
+/* Copy a message domain list.
+   If copy_level = 0, also copy the messages.  If copy_level = 1, share the
+   messages but copy the domains.  If copy_level = 2, share the domains.  */
+msgdomain_list_ty *
+msgdomain_list_copy (msgdomain_list_ty *mdlp, int copy_level)
+{
+  msgdomain_list_ty *result;
+  size_t j;
+
+  result = XMALLOC (msgdomain_list_ty);
+  result->nitems = 0;
+  result->nitems_max = 0;
+  result->item = NULL;
+  result->use_hashtable = mdlp->use_hashtable;
+  result->encoding = mdlp->encoding;
+
+  for (j = 0; j < mdlp->nitems; j++)
+    {
+      msgdomain_ty *mdp = mdlp->item[j];
+
+      if (copy_level < 2)
+	{
+	  msgdomain_ty *result_mdp = XMALLOC (msgdomain_ty);
+
+	  result_mdp->domain = mdp->domain;
+	  result_mdp->messages = message_list_copy (mdp->messages, copy_level);
+
+	  msgdomain_list_append (result, result_mdp);
+	}
+      else
+	msgdomain_list_append (result, mdp);
+    }
+
+  return result;
 }
 
 

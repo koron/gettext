@@ -1,10 +1,10 @@
 ## Makefile for the gettext-tools/misc subdirectory of GNU gettext
-## Copyright (C) 1995-1997, 2000-2003, 2005-2006 Free Software Foundation, Inc.
+## Copyright (C) 1995-1997, 2000-2003, 2005-2007 Free Software Foundation, Inc.
 ##
-## This program is free software; you can redistribute it and/or modify
+## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation; either version 2, or (at your option)
-## any later version.
+## the Free Software Foundation; either version 3 of the License, or
+## (at your option) any later version.
 ##
 ## This program is distributed in the hope that it will be useful,
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,8 +12,7 @@
 ## GNU General Public License for more details.
 ##
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software Foundation,
-## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in.
 
@@ -36,8 +35,12 @@ gettextsrc_DATA = archive.tar.gz
 # The archive.tar.gz is not in the CVS. Alpha-testers must use the one from an
 # already installed release.
 archive.tar.gz:
-	cp -p $(gettextsrcdir)/archive.tar.gz $@
-
+	if test -f $(gettextsrcdir)/archive.tar.gz; then \
+	  cp -p $(gettextsrcdir)/archive.tar.gz $@; \
+	else \
+	  echo "archive.tar.gz is not in the CVS. Please copy the archive.tar.gz from an already installed release to gettext-tools/misc/." 1>&2; \
+	  exit 1; \
+	fi
 
 # Emacs Lisp code.
 

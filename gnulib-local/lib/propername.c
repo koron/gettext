@@ -1,11 +1,11 @@
 /* Localization of proper names.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2006.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -32,7 +31,6 @@
 #include "c-strcase.h"
 #include "xstriconv.h"
 #include "c-strstr.h"
-#include "strstr.h"
 #include "xalloc.h"
 #include "gettext.h"
 
@@ -48,13 +46,13 @@ proper_name (const char *name)
   if (translation != name)
     {
       /* See whether the translation contains the original name.  */
-      if (strstr (translation, name) != NULL)
+      if (mbsstr (translation, name) != NULL)
 	return translation;
       else
 	{
 	  /* Return "TRANSLATION (NAME)".  */
 	  char *result =
-	    (char *) xmalloc (strlen (translation) + 2 + strlen (name) + 1 + 1);
+	    XNMALLOC (strlen (translation) + 2 + strlen (name) + 1 + 1, char);
 
 	  sprintf (result, "%s (%s)", translation, name);
 	  return result;
@@ -93,7 +91,7 @@ proper_name_utf8 (const char *name_ascii, const char *name_utf8)
      || _LIBICONV_VERSION >= 0x0105
       {
 	size_t len = strlen (locale_code);
-	char *locale_code_translit = (char *) xmalloc (len + 10 + 1);
+	char *locale_code_translit = XNMALLOC (len + 10 + 1, char);
 	memcpy (locale_code_translit, locale_code, len);
 	memcpy (locale_code_translit + len, "//TRANSLIT", 10 + 1);
 
@@ -119,12 +117,12 @@ proper_name_utf8 (const char *name_ascii, const char *name_utf8)
   if (translation != name_ascii)
     {
       /* See whether the translation contains the original name.
-	 A multibyte-aware strstr() is not absolutely necessary here.  */
+	 The multibyte-aware mbsstr() is not absolutely necessary here.  */
       if (c_strstr (translation, name_ascii) != NULL
 	  || (name_converted != NULL
-	      && strstr (translation, name_converted) != NULL)
+	      && mbsstr (translation, name_converted) != NULL)
 	  || (name_converted_translit != NULL
-	      && strstr (translation, name_converted_translit) != NULL))
+	      && mbsstr (translation, name_converted_translit) != NULL))
 	{
 	  if (alloc_name_converted != NULL)
 	    free (alloc_name_converted);
@@ -136,7 +134,7 @@ proper_name_utf8 (const char *name_ascii, const char *name_utf8)
 	{
 	  /* Return "TRANSLATION (NAME)".  */
 	  char *result =
-	    (char *) xmalloc (strlen (translation) + 2 + strlen (name) + 1 + 1);
+	    XNMALLOC (strlen (translation) + 2 + strlen (name) + 1 + 1, char);
 
 	  sprintf (result, "%s (%s)", translation, name);
 

@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Hello.java:21
+#: Hello.java:20
 msgid "Hello, world!"
 msgstr "Hej världen!"
 
-#: Hello.java:26
+#: Hello.java:25
 #, java-format
 msgid "This program is running as process number {0}."
 msgstr "Detta program kör som process nummer {0}."

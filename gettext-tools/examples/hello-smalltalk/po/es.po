@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.st.in:32
+#: hello.st.in:31
 msgid "Hello, world!"
 msgstr "¡Hola, mundo!"
 
-#: hello.st.in:33
+#: hello.st.in:32
 #, smalltalk-format
 msgid "This program is running as process number %1."
 msgstr "Este programa está corriendo como el proceso número %1."

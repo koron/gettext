@@ -1,11 +1,11 @@
 /* Reading NeXTstep/GNUstep .strings files.
-   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -36,8 +35,7 @@
 #include "xalloc.h"
 #include "xvasprintf.h"
 #include "po-xerror.h"
-#include "utf8-ucs4.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -336,7 +334,7 @@ conv_from_ucs4 (const int *buffer, size_t buflen)
   unsigned char *q;
 
   /* Each UCS-4 word needs 6 bytes at worst.  */
-  utf8_string = (unsigned char *) xmalloc (6 * buflen + 1);
+  utf8_string = XNMALLOC (6 * buflen + 1, unsigned char);
 
   for (pos = 0, q = utf8_string; pos < buflen; )
     {

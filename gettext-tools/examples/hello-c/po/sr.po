@@ -13,11 +13,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.c:31
+#: hello.c:30
 msgid "Hello, world!"
 msgstr "Здраво свима!"
 
-#: hello.c:32
+#: hello.c:31
 #, c-format
 msgid "This program is running as process number %d."
 msgstr "Овај програм се извршава као процес број %d."

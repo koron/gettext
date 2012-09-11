@@ -1,11 +1,11 @@
 /* Reading Java .properties files.
-   Copyright (C) 2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -38,11 +37,16 @@
 #include "xvasprintf.h"
 #include "po-xerror.h"
 #include "msgl-ascii.h"
-#include "utf16-ucs4.h"
-#include "ucs4-utf8.h"
+#include "unistr.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
+
+/* For compiling this file in C++ mode.  */
+#ifdef __cplusplus
+# define this thiss
+#endif
+
 
 /* The format of the Java .properties files is documented in the JDK
    documentation for class java.util.Properties.  In the case of .properties
@@ -244,7 +248,7 @@ conv_from_iso_8859_1 (char *string)
     {
       size_t length = strlen (string);
       /* Each ISO-8859-1 character needs 2 bytes at worst.  */
-      unsigned char *utf8_string = (unsigned char *) xmalloc (2 * length + 1);
+      unsigned char *utf8_string = XNMALLOC (2 * length + 1, unsigned char);
       unsigned char *q = utf8_string;
       const char *str = string;
       const char *str_limit = str + length;
@@ -424,7 +428,7 @@ read_escaped_string (bool in_key)
     unsigned char *q;
 
     /* Each UTF-16 word needs 3 bytes at worst.  */
-    utf8_string = (unsigned char *) xmalloc (3 * buflen + 1);
+    utf8_string = XNMALLOC (3 * buflen + 1, unsigned char);
     for (pos = 0, q = utf8_string; pos < buflen; )
       {
 	unsigned int uc;

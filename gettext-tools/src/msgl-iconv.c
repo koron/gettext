@@ -1,11 +1,11 @@
 /* Message list charset and locale charset handling.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -40,7 +39,7 @@
 #include "xstriconv.h"
 #include "msgl-ascii.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "c-strstr.h"
 #include "xvasprintf.h"
 #include "po-xerror.h"
@@ -80,7 +79,7 @@ convert_string (iconv_t cd, const char *string,
 {
   size_t len = strlen (string) + 1;
   char *result = NULL;
-  size_t resultlen;
+  size_t resultlen = 0;
 
   if (xmem_cd_iconv (string, len, cd, &result, &resultlen) == 0)
     /* Verify the result has exactly one NUL byte, at the end.  */
@@ -132,7 +131,7 @@ convert_msgstr (iconv_t cd, message_ty *mp,
 		const struct conversion_context* context)
 {
   char *result = NULL;
-  size_t resultlen;
+  size_t resultlen = 0;
 
   if (!(mp->msgstr_len > 0 && mp->msgstr[mp->msgstr_len - 1] == '\0'))
     abort ();
@@ -168,10 +167,12 @@ convert_msgstr (iconv_t cd, message_ty *mp,
 #endif
 
 
-bool
-iconv_message_list (message_list_ty *mlp,
-		    const char *canon_from_code, const char *canon_to_code,
-		    const char *from_filename)
+static bool
+iconv_message_list_internal (message_list_ty *mlp,
+			     const char *canon_from_code,
+			     const char *canon_to_code,
+			     bool update_header,
+			     const char *from_filename)
 {
   bool canon_from_code_overridden = (canon_from_code != NULL);
   bool msgids_changed;
@@ -196,12 +197,10 @@ iconv_message_list (message_list_ty *mlp,
 		size_t len;
 		char *charset;
 		const char *canon_charset;
-		size_t len1, len2, len3;
-		char *new_header;
 
 		charsetstr += strlen ("charset=");
 		len = strcspn (charsetstr, " \t\n");
-		charset = (char *) xallocsa (len + 1);
+		charset = (char *) xmalloca (len + 1);
 		memcpy (charset, charsetstr, len);
 		charset[len] = '\0';
 
@@ -239,17 +238,24 @@ present charset \"%s\" is not a portable encoding name"),
 two different charsets \"%s\" and \"%s\" in input file"),
 					    canon_from_code, canon_charset));
 		  }
-		freesa (charset);
+		freea (charset);
 
-		len1 = charsetstr - header;
-		len2 = strlen (canon_to_code);
-		len3 = (header + strlen (header)) - (charsetstr + len);
-		new_header = (char *) xmalloc (len1 + len2 + len3 + 1);
-		memcpy (new_header, header, len1);
-		memcpy (new_header + len1, canon_to_code, len2);
-		memcpy (new_header + len1 + len2, charsetstr + len, len3 + 1);
-		mlp->item[j]->msgstr = new_header;
-		mlp->item[j]->msgstr_len = len1 + len2 + len3 + 1;
+		if (update_header)
+		  {
+		    size_t len1, len2, len3;
+		    char *new_header;
+
+		    len1 = charsetstr - header;
+		    len2 = strlen (canon_to_code);
+		    len3 = (header + strlen (header)) - (charsetstr + len);
+		    new_header = XNMALLOC (len1 + len2 + len3 + 1, char);
+		    memcpy (new_header, header, len1);
+		    memcpy (new_header + len1, canon_to_code, len2);
+		    memcpy (new_header + len1 + len2, charsetstr + len,
+			    len3 + 1);
+		    mlp->item[j]->msgstr = new_header;
+		    mlp->item[j]->msgstr_len = len1 + len2 + len3 + 1;
+		  }
 	      }
 	  }
       }
@@ -328,9 +334,20 @@ This version was built without iconv()."),
   return msgids_changed;
 }
 
+bool
+iconv_message_list (message_list_ty *mlp,
+		    const char *canon_from_code, const char *canon_to_code,
+		    const char *from_filename)
+{
+  return iconv_message_list_internal (mlp,
+				      canon_from_code, canon_to_code, true,
+				      from_filename);
+}
+
 msgdomain_list_ty *
 iconv_msgdomain_list (msgdomain_list_ty *mdlp,
 		      const char *to_code,
+		      bool update_header,
 		      const char *from_filename)
 {
   const char *canon_to_code;
@@ -345,8 +362,9 @@ target charset \"%s\" is not a portable encoding name."),
 			  to_code));
 
   for (k = 0; k < mdlp->nitems; k++)
-    iconv_message_list (mdlp->item[k]->messages, mdlp->encoding, canon_to_code,
-			from_filename);
+    iconv_message_list_internal (mdlp->item[k]->messages,
+				 mdlp->encoding, canon_to_code, update_header,
+				 from_filename);
 
   mdlp->encoding = canon_to_code;
   return mdlp;
@@ -359,7 +377,7 @@ iconvable_string (iconv_t cd, const char *string)
 {
   size_t len = strlen (string) + 1;
   char *result = NULL;
-  size_t resultlen;
+  size_t resultlen = 0;
 
   if (xmem_cd_iconv (string, len, cd, &result, &resultlen) == 0)
     {
@@ -417,7 +435,7 @@ static bool
 iconvable_msgstr (iconv_t cd, message_ty *mp)
 {
   char *result = NULL;
-  size_t resultlen;
+  size_t resultlen = 0;
 
   if (!(mp->msgstr_len > 0 && mp->msgstr[mp->msgstr_len - 1] == '\0'))
     abort ();
@@ -484,7 +502,7 @@ is_message_list_iconvable (message_list_ty *mlp,
 
 		charsetstr += strlen ("charset=");
 		len = strcspn (charsetstr, " \t\n");
-		charset = (char *) xallocsa (len + 1);
+		charset = (char *) xmalloca (len + 1);
 		memcpy (charset, charsetstr, len);
 		charset[len] = '\0';
 
@@ -500,7 +518,7 @@ is_message_list_iconvable (message_list_ty *mlp,
 			else
 			  {
 			    /* charset is not a portable encoding name.  */
-			    freesa (charset);
+			    freea (charset);
 			    return false;
 			  }
 		      }
@@ -512,11 +530,11 @@ is_message_list_iconvable (message_list_ty *mlp,
 		    else if (canon_from_code != canon_charset)
 		      {
 			/* Two different charsets in input file.  */
-			freesa (charset);
+			freea (charset);
 			return false;
 		      }
 		  }
-		freesa (charset);
+		freea (charset);
 	      }
 	  }
       }

@@ -1,3 +1,507 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-11-05  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Expand the NEED_PRINTF_DIRECTIVE_A
+	code when NEED_PRINTF_LONG_DOUBLE or NEED_PRINTF_DOUBLE is set.
+	Needed on Cygwin, where !NEED_PRINTF_DIRECTIVE_A && NEED_PRINTF_DOUBLE.
+	Reported by Eric Blake.
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* lock.h: Protect all macro definitions containing an 'if' statement
+	through a "do { ... } while (0)".
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (DCHAR_IS_TCHAR, DCHAR_CPY): Undefine at the end.
+
+2007-06-11  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.c (PRINTF_FETCHARGS) [ENABLE_UNISTDIO]: Fix NULL
+	replacement string.
+	Reported by Eric Blake.
+
+2007-06-10  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.h (PRINTF_FETCHARGS): New macro.
+	(arg_type) [ENABLE_UNISTDIO]: Define TYPE_U8_STRING, TYPE_U16_STRING,
+	TYPE_U32_STRING.
+	(argument) [ENABLE_UNISTDIO]: Add a_u8_string, a_u16_string,
+	a_u32_string variants.
+	(PRINTF_FETCHARGS): Renamed from printf_fetchargs.
+	* printf-args.c: Don't include config.h and the specification header
+	if PRINTF_FETCHARGS is already defined.
+	(PRINTF_FETCHARGS): Renamed from printf_fetchargs.
+	(PRINTF_FETCHARGS) [ENABLE_UNISTDIO]: Add code for TYPE_U8_STRING,
+	TYPE_U16_STRING, TYPE_U32_STRING.
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (libintl.res): Use 'c' command instead of 'a' command.
+	Needed for GNU sed 3.02.
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Handle NEED_PRINTF_UNBOUNDED_PRECISION.
+
+2007-11-04  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (scale10_round_decimal_decoded): Fix shift loop.
+
+2007-11-03  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Implement NEED_PRINTF_DOUBLE.
+	(decode_double): New function, copied from decode_long_double.
+	(scale10_round_decimal_decoded): New function, extracted from
+	scale10_round_decimal_long_double.
+	(scale10_round_decimal_long_double): Use it.
+	(scale10_round_decimal_double): New function.
+	(floorlog10): New function.
+	(VASNPRINTF): Handle NEED_PRINTF_DOUBLE case.
+
+2007-11-03  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Don't assume that snprintf's return value
+	is C99 compliant.
+	Needed for OSF/1 5.1.
+
+2007-11-03  Bruno Haible  <bruno@clisp.org>
+
+	Fix out-of-memory handling of vasnprintf.
+	* printf-parse.c: Include <errno.h>.
+	(PRINTF_PARSE): When failing, set errno to EINVAL or ENOMEM.
+	* vasnprintf.c (VASNPRINTF): When PRINTF_PARSE fails, assume errno is
+	already set.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Don't report overflow if the available
+	length is INT_MAX and sizeof (DCHAR_T) > sizeof (TCHAR_T).
+	Reported by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
+
+2007-10-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Don't use %n on glibc >= 2.3 systems.
+	Reported by Jim Meyering.
+
+2007-07-13  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (decimal_point_char): Define also if
+	(NEED_PRINTF_LONG_DOUBLE || NEED_PRINTF_INFINITE_DOUBLE)
+	&& !NEED_PRINTF_DIRECTIVE_A.
+	Reported by Clemens Koller <clemens.koller@anagramm.de> via
+	Gary V. Vaughan <gary@gnu.org>.
+
+2007-06-10  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Don't include config.h and the specification header if
+	VASNPRINTF is already defined.
+	(DCHAR_IS_TCHAR, DCHAR_CPY): New macros.
+	(VASNPRINTF): Use PRINTF_FETCHARGS instead of printf_fetchargs. Use
+	DCHAR_CPY. Handle the case that DCHAR_T and FCHAR_T are not the same
+	type. Handle the case that TCHAR_T and FCHAR_T are not of the same
+	size. Handle the case that DCHAR_T and TCHAR_T are not the same type,
+	add a conversion from TCHAR_T[] to DCHAR_T[], and rework the padding
+	code accordingly.
+	(VASNPRINTF) [ENABLE_UNISTDIO]: Implement the 'U' directive. Enable
+	pad_ourselves also in this case, with the 'c' and 's' directives, and
+	with a different notion of "width".
+
+2007-06-10  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF) [!USE_SNPRINTF]: Remove variable
+	'maxlen'. Ensure only length + width bytes are allocated, not
+	length + 1 + width.
+
+2007-06-09  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (FCHAR_T, DCHAR_T, TCHAR_T): New macros.
+	(CHAR_T): Remove macro.
+	(VASNPRINTF): Update.
+
+2007-06-05  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Do the extra handling of NaN and Inf
+	also the %a / %A. Handle the %a / %A code before this extra handling.
+
+2007-06-05  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c [NEED_PRINTF_LONG_DOUBLE ||
+	NEED_PRINTF_INFINITE_LONG_DOUBLE]: Include fpucw.h.
+
+2007-11-01  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (LIBINTL_VERSION): Bump to 0.17.
+	* Makefile.in (LTV_CURRENT, LTV_REVISION, LTV_AGE): Bump to 8:2:0.
+
+2007-10-28  Ulrich Drepper  <drepper@redhat.com>
+
+	* locale.alias: Add note that this file should never be depended on.
+
+2007-10-27  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (libintl.la): Use @LTLIBC@ instead of -lc. Needed on
+	HP-UX 11.
+
+2007-10-21  Bruno Haible  <bruno@clisp.org>
+
+	* printf-parse.c: Don't assume <stdint.h> exists in IN_LIBASPRINTF
+	context.
+
+2007-10-21  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (_nl_find_msg): Use plain ANSI C.
+
+2007-10-20  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (libintl.res): Put more literal newlines into the sed
+	scripts.
+
+2007-10-14  Bruno Haible  <bruno@clisp.org>
+
+	* dcigettext.c (DCIGETTEXT): Save errno also around the tfind() call.
+	Needed because Interix 3.5 tfind() clobbers errno.
+	Reported by Martin Koeppe <mkoeppe@gmx.de>.
+
+2007-10-13  Bruno Haible  <bruno@clisp.org>
+
+	* gettextP.h: Include <bits/libc-lock.h> or lock.h.
+	* dcigettext.c (_nl_find_msg): Unlock the conversions_lock when
+	exiting.
+
+2007-09-24  Ulrich Drepper  <drepper@redhat.com>
+
+	[BZ #5058]
+	http://sourceware.org/bugzilla/show_bug.cgi?id=5058
+	http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=443660
+	* gettextP.h (struct loaded_domain): Add conversions_lock member.
+	* loadmsgcat.c (_nl_load_domain): Initialize conversions_lock.
+	(_nl_unload_domain): Finalize conversions_lock.
+	* dcigettext.c (_nl_find_msg): Take conversions_lock before handling
+	table of known conversions.
+
+2007-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* dcigettext.c (_nl_find_msg): Free encoding if __gconv_open failed.
+	* finddomain.c (_nl_find_domain): Free normalized_codeset on failure.
+
+2007-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gettextP.h (struct loaded_domain): Change plural to const
+	struct expression *.
+	* eval-plural.h (plural_eval): Change first argument to
+	const struct expression *.
+	* plural-exp.c (EXTRACT_PLURAL_EXPRESSION): Change first argument to
+	const struct expression **.
+	* plural-exp.h (EXTRACT_PLURAL_EXPRESSION, plural_eval): Adjust
+	prototypes.
+	* loadmsgcat.c (_nl_unload_domain): Cast away const in call to
+	__gettext_free_exp.
+
+2007-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dcigettext.c (_nl_find_msg): Return NULL even if __gconv_open
+	returns __GCONV_NOCONV, but not for __GCONV_NULCONV.
+
+2007-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* finddomain.c (_nl_find_domain): If _nl_explode_name returned -1,
+	return NULL.
+	* explodename.c (_nl_explode_name): Return -1 if _nl_normalize_codeset
+	failed.
+
+2007-06-10  Bruno Haible  <bruno@clisp.org>
+
+	* printf-parse.c: Don't include config.h and the specification
+	header if PRINTF_PARSE is already defined. Eliminate the set of
+	parameters for WIDE_CHAR_VERSION; the user of this file must provide
+	them now. Include c-ctype.h.
+	(PRINTF_PARSE) [ENABLE_UNISTDIO]: Add code implementing the 'U'
+	directive and CHAR_T_ONLY_ASCII.
+	* printf.c: Include wprintf-parse.h. Define the set of parameters for
+	the WIDE_CHAR_VERSION.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettextP.h (gl_locale_name_canonicalize, gl_locale_name_posix,
+	gl_locale_name_default, gl_locale_name): New macros.
+	(_nl_locale_name_canonicalize): New declaration.
+	* localename.c: Include config.h unconditionally. Include gettextP.h or
+	localename.h.
+	(gl_locale_name_canonicalize): Renamed from
+	_nl_locale_name_canonicalize. Make static except in libintl.
+	(gl_locale_name_posix): Renamed from _nl_locale_name_posix.
+	(gl_locale_name_default): Renamed from _nl_locale_name_default.
+	(gl_locale_name): Renamed from _nl_locale_name.
+
+2007-05-28  Bruno Haible  <bruno@clisp.org>
+
+	* libintl.rc: New file.
+	* Makefile.in (DISTFILES.common): Add it.
+	(WINDRES): New variable.
+	(OBJECTS_RES_yes, OBJECTS_RES_no): New variables.
+	(libintl.la, libgnuintl.la): Include also $((OBJECTS_RES_...).
+	(libintl.res): New rule.
+	(mostlyclean): Remove also libintl.res.
+
+2007-05-21  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Update comments.
+
+2007-03-24  Bruno Haible  <bruno@clisp.org>
+
+	* tsearch.c [!IN_LIBINTL]: Include search.h instead of tsearch.h.
+
+2007-05-20  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Use NEED_PRINTF_INFINITE_DOUBLE instead of
+	NEED_PRINTF_INFINITE.
+	(is_infinitel): New function.
+	(VASNPRINTF): Handle NEED_PRINTF_INFINITE_LONG_DOUBLE case.
+
+2007-05-19  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include math.h and isnan.h.
+	(is_infinite_or_zero): New function.
+	(VASNPRINTF): Fix also the handling of infinite or zero 'double'
+	values in the %f, %F, %e, %E, %g, %G directives.
+
+2007-05-19  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (convert_to_decimal): Add an extra_zeroes argument.
+	(scale10_round_decimal_long_double): Inline scale10_round_long_double.
+	Instead of multiplying with 10^k, set extra_zeroes to k.
+	(scale10_round_long_double): Remove function.
+
+2007-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF) [NEED_PRINTF_FLAG_ZERO]: Fix logic bug
+	introduced on 2007-05-06.
+
+2007-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include math.h and float+.h.
+	(mp_limb_t): New type.
+	(GMP_LIMB_BITS): New macro.
+	(mp_twolimb_t): New type.
+	(GMP_TWOLIMB_BITS): New macro.
+	(mpn_t): New type.
+	(multiply, divide, convert_to_decimal, decode_long_double,
+	scale10_round_long_double, scale10_round_decimal_long_double,
+	floorlog10l): New functions.
+	(VASNPRINTF) [NEED_PRINTF_LONG_DOUBLE]: Implement 'long double' support
+	for the %f, %F, %e, %E, %g, %G directives.
+
+2007-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (USE_SNPRINTF): Define to 0 on BeOS.
+
+2007-05-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF) [WIN32]: Use %I64d instead of %lld for
+	printing 64-bit integers. Needed for mingw.
+
+2007-05-06  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF) [NEED_PRINTF_FLAG_ZERO]: Perform the
+	padding ourselves for the floating-point directives.
+
+2007-05-06  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF) [NEED_PRINTF_FLAG_GROUPING]: Don't pass
+	the ' flag character to sprintf or snprintf.
+
+2007-04-11  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Implement the %F directive using the %f
+	directive, if NEED_PRINTF_DIRECTIVE_F is defined.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include <math.h>. Don't include float+.h.
+	(VASNPRINTF): Use signbit for faster determination whether to print a
+	minus sign.
+
+2007-03-27  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (decimal_point_char): New function.
+	(VASNPRINTF): Use it.
+
+2007-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include langinfo.h.
+	(VASNPRINTF): Prefer nl_langinfo over localeconv, since it's more
+	multithread-safe.
+
+2007-03-24  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include fpucw.h.
+	(VASNPRINTF): Invoke BEGIN/END_LONG_DOUBLE_ROUNDING around the
+	'long double' calculations.
+
+2007-03-24  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include float+.h.
+	(VASNPRINTF): When comparing agains +0.0L or +0.0, compare only
+	SIZEOF_LDBL or SIZEOF_DBL bytes.
+
+2007-03-24  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c [!HAVE_LONG_DOUBLE]: Include printf-frexp.h. Don't
+	include isnanl-nolibm.h.
+
+2007-03-21  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Update after isnanl.h was renamed to isnanl-nolibm.h.
+
+2007-03-18  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Undo first part of last patch.
+
+2007-03-17  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (EOVERFLOW): New fallback definition.
+	(VASNPRINTF): Fail with EOVERFLOW when the given allocated size is
+	larger than INT_MAX, or when it grow to a value larger than INT_MAX.
+
+2007-03-17  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Clear out the memory used for arg_mem
+	before comparing it. Needed because on some platforms (e.g. x86) a
+	'long double' occupies less bytes than sizeof (long double).
+
+2007-03-11  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (sprintf): Undefine.
+
+2007-03-11  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (snprintf): Undefine. Avoids an endless recursion.
+
+2007-03-09  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): For the 'a' and 'A' directives, use a
+	locale dependent decimal point, rather than always '.'.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c: Include isnan.h, isnanl.h, printf-frexp.h,
+	printf-frexpl.h.
+	(VASNPRINTF): Handle the 'a' and 'A' directives here, if needed.
+
+2007-03-08  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.h: Convert tabs in the middle of lines to spaces.
+
+2007-05-12  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.in (install-dvi, install-html, install-info, install-ps,
+	install-pdf): New targets.
+	Reported by Noah Slater <nslater@gmail.com>.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.h: Assume HAVE_LONG_DOUBLE to be true.
+	* printf-args.c: Likewise.
+	* printf-parse.c: Likewise.
+	* vasnprintf.c: Likewise.
+
+2007-03-25  Bruno Haible  <bruno@clisp.org>
+
+	* printf-parse.c [!IN_LIBINTL]: Include <stdint.h>, for intmax_t.
+	(PRINTF_PARSE): Make the support for size specifier 'j' unconditional.
+
+2007-03-04  Bruno Haible  <bruno@clisp.org>
+
+	* libgnuintl.h.in (libintl_printf): Treat BeOS like NetBSD and Woe32
+	systems.
+	* printf.c (libintl_printf): Likewise.
+
+2007-02-25  Bruno Haible  <bruno@clisp.org>
+
+	* vasnprintf.c (VASNPRINTF): Fix estimate of size needed for a 'a' or
+	'A' conversion.
+
+2007-01-29  Bruno Haible  <bruno@clisp.org>
+
+	* printf-args.h: Use '#if HAVE_*' instead of '#ifdef HAVE_*'.
+	* printf-args.c: Likewise.
+	* printf-parse.c: Likewise.
+	* vasnprintf.c: Likewise.
+
+2007-01-27  Bruno Haible  <bruno@clisp.org>
+
+	* tsearch.h: New file, from gnulib.
+	* tsearch.c: New file, from gnulib.
+	* dcigettext.c [!HAVE_TSEARCH]: Include tsearch.h and tsearch.c.
+	(root, transcmp): Define unconditionally.
+	(DCIGETTEXT): Assume tsearch exists.
+	* Makefile.in (HEADERS): Add tsearch.h, tsearch.c.
+
+2006-12-21  Bruno Haible  <bruno@clisp.org>
+
+	* localename.c (SUBLANG_BENGALI_INDIA): Change value from 0 to 1.
+	(SUBLANG_BENGALI_BANGLADESH): Change value from 1 to 2.
+	(SUBLANG_PUNJABI_INDIA): Change value from 0 to 1.
+	(SUBLANG_PUNJABI_PAKISTAN): Change value from 1 to 2.
+	(SUBLANG_ROMANIAN_ROMANIA): Change value from 0 to 1.
+	(SUBLANG_ROMANIAN_MOLDOVA): Change value from 1 to 2.
+	(SUBLANG_SINDHI_INDIA): Remove macro.
+	(SUBLANG_SINDHI_AFGHANISTAN): New macro.
+	(SUBLANG_TAMAZIGHT_ALGERIA_LATIN): Renamed from
+	SUBLANG_TAMAZIGHT_LATIN.
+	(SUBLANG_TIGRINYA_ETHIOPIA): Change value from 0 to 1.
+	(SUBLANG_TIGRINYA_ERITREA): Change value from 1 to 2.
+	(_nl_locale_name_default): Update.
+	Reported by Bob Rossi <bob_rossi@cox.net>.
+
+2006-10-30  Bruno Haible  <bruno@clisp.org>
+
+	* plural-exp.h [C++]: Define functions without name mangling.
+
+2006-11-03  Bruno Haible  <bruno@clisp.org>
+
+	Move declarations to header files.
+	* dcigettext.c: Include localcharset.h.
+	(get_output_charset): Remove locale_charset declaration.
+
+2006-10-30  Bruno Haible  <bruno@clisp.org>
+
+	Move declarations to header files.
+	* gettextP.h (_nl_default_dirname, _nl_domain_bindings): New
+	declarations and aliases.
+	(_nl_default_default_domain, _nl_current_default_domain): New
+	declarations and aliases.
+	* bindtextdom.c (_nl_default_dirname, _nl_domain_bindings): Remove
+	declarations and aliases.
+	* dcigettext.c (_nl_default_default_domain, _nl_current_default_domain,
+	_nl_default_dirname, _nl_domain_bindings): Remove aliases.
+	* textdomain.c (_nl_default_default_domain, _nl_current_default_domain):
+	Remove declarations and aliases.
+
+2006-11-01  Bruno Haible  <bruno@clisp.org>
+
+	* printf-parse.c (PRINTF_PARSE): Cast malloc/realloc results.
+
+2006-10-29  Bruno Haible  <bruno@clisp.org>
+
+	Make it compile in C++ mode.
+	* gettextP.h (SWAP): Don't use K&R syntax in C++ mode.
+	* gmo.h (struct segment_pair): Move out of the scope of struct
+	sysdep_string.
+	* dcigettext.c (DCIGETTEXT): Cast mempcpy results.
+	* loadmsgcat.c (_nl_load_domain): Cast alloca result.
+	* localealias.c (read_alias_file): Cast memcpy result.
+	* plural-exp.h (enum expression_operator): Move out of the scope of
+	struct expression. Rename from 'enum operator'.
+	* plural-exp.c (plvar, plone, GERMANIC_PLURAL): Don't use C99 named
+	initializer syntax in C++ mode.
+	* plural.y (%union, new_exp, new_exp_0, new_exp_1, new_exp_2,
+	new_exp_3): Update.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

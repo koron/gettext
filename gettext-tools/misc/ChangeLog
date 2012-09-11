@@ -1,3 +1,207 @@
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettext-0.17 released.
+
+2007-11-07  Bruno Haible  <bruno@clisp.org>
+
+	* autopoint.in: Update for 0.17.
+
+2007-10-31  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.in (m4filelist): Remove ulonglong.m4 from the list.
+
+2007-10-17  Bruno Haible  <bruno@clisp.org>
+
+        * po-mode.el (po-msgstr-form-flavor): Renamed from
+        po-this-msgstr-flavor. New defvar.
+
+2007-10-15  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-get-msgstr-form): Remove 'kill' argument.
+	(po-kill-ring-save-msgstr, po-fade-out-entry): Update.
+
+	* po-mode.el (po-get-msgid): Remove 'kill' argument.
+
+	* po-mode.el (po-get-msgstr-form): Renamed from po-get-msgstr-new.
+	(po-get-msgstr): Remove function.
+
+	* po-mode.el (po-subedit-exit-old): Remove function.
+
+	* po-mode.el (po-set-msgstr-form): Renamed from po-set-msgstr-new.
+	(po-set-msgstr): Remove function.
+
+	* po-mode.el (po-edit-msgstr-old): Remove function.
+
+	* po-mode.el (po-edit-string): Renamed from po-edit-string-new. Remove
+	old po-edit-string function.
+
+2007-10-14  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-find-span-of-entry): Inline po-find-this-msgstr.
+	(po-find-this-msgstr): Remove function.
+
+	* po-mode.el (po-start-of-msgstr-form, po-end-of-msgstr-form): New
+	defvars.
+
+	* po-mode.el (po-start-of-msgstr-form): Renamed from
+	po-start-of-this-msgstr.
+	(po-end-of-msgstr-form): Renamed from po-end-of-this-msgstr.
+
+	* po-mode.el (po-start-of-msgstr-block): Renamed from
+	po-start-of-msgstr.
+
+	* po-mode.el (po-any-msgstr-block-regexp): Renamed from
+	po-any-msgstr-regexp.
+
+	* po-mode.el (po-any-msgstr-form-regexp): Renamed from
+	po-any-msgstr-regexp-old.
+
+2007-10-07  Bruno Haible  <bruno@clisp.org>
+
+	* autopoint.in (func_version): In the --version output, say GPLv3+.
+	* gettexize.in (func_version): Likewise.
+
+2007-09-01  Bruno Haible  <bruno@clisp.org>
+
+	* Makefile.am (archive.tar.gz): Provide an explicit error message if
+	archive.tar.gz cannot be found.
+	Reported by Spiros at <https://savannah.gnu.org/bugs/?16657>.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* autopoint.in (func_version): Use the standard --version output, see
+	<http://lists.gnu.org/archive/html/bug-gnulib/2007-03/msg00302.html>.
+	* gettexize.in (func_version): Likewise.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-check-file-header): Use save-restriction.
+	Report and patch by Sven Joachim <sven_joachim@web.de> in
+	<http://lists.gnu.org/archive/html/bug-gnu-utils/2006-08/msg00110.html>.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-team-name-to-code): Add a few more entries.
+
+2007-06-29  Karl Eichwalder  <ke@suse.de>
+
+	* po-mode.el (po-find-this-msgstr): New function.
+	(po-find-span-of-entry): Use it.
+
+	* po-mode.el (po-get-msgstr-flavor): New function.
+	(po-any-msgstr-regexp-old): New variable.
+	(po-subedit-exit-old): New function, renamed from po-subedit-exit.
+	(po-edit-msgstr-old): New function, renamed from po-edit-msgstr.
+	(po-get-msgstr-new): New function, based on po-get-msgstr.
+	(po-set-msgstr-new): New function, based on po-set-msgstr.
+	(po-edit-string-new): New function, based on po-edit-string.
+	(po-edit-msgstr): Use po-get-msgstr-new.
+	(po-subedit-exit): Use po-set-msgstr-new.
+
+2007-06-30  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-translation-project-address): Update email address
+	after the Translation Project moved.
+	(po-translation-project-mail-label): Update comment.
+
+2007-06-29  Karl Eichwalder  <ke@suse.de>
+
+	* po-mode.el (po-subedit-mode-menu-layout, po-mode-menu-layout):
+	Remove trailing string.
+	* po-mode.el (po-mode-menu-layout): Make "Source marking" a submenu.
+	Remove subtitles from menus.
+	Comment unimplemented features.  Reorganize entry hierarchy.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	Support for the msgctxt syntax.
+	* po-mode.el (po-mode-version-string): Bump version number to 2.1.
+	(po-start-of-msgctxt): New variable.
+	(po-any-msgctxt-msgid-regexp): New variable.
+	(po-font-lock-keywords): Add msgctxt.
+	(po-mode): Make variable po-start-of-msgctxt local.
+	(po-find-span-of-entry): Set also po-start-of-msgctxt.
+	(po-add-attribute, po-delete-attribute): Use po-start-of-msgctxt.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-mode-map): Bind po-undo also to Ctrl-x u.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-any-msgstr-regexp): Add support for plural forms.
+	The patch from 2001-03-10 did not work.
+	(po-untranslated-regexp): Recognize also empty msgstr[i] values.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-edit-out-full): Don't ask the user for confirmation.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el: Untabify.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-font-lock-keywords): Stop recognizing "msg" as a
+	keyword.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	Fix '#' command on obsolete entries.
+	* po-mode.el (po-comment-regexp): Renamed from po-active-comment-regexp.
+	(po-obsolete-comment-regexp): Remove variable.
+	(po-get-comment, po-set-comment): Fix syntax assumptions about comments
+	for obsolete entries.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-msgid-to-msgstr): Fix English message.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-add-attribute, po-delete-attribute, po-fuzzy-regexp):
+	Don't recognize the syntax "#! fuzzy" any more.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-validate): Protect the buffer-file-name against
+	shell interpretation.
+	Reported by Laurynas Biveinis <laurynas.biveinis@gmail.com>.
+
+2007-06-17  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-msgfmt-version-check): Recognize also 0.16.2-pre1.
+
+2007-06-08  Bruno Haible  <bruno@clisp.org>
+
+	* autopoint.in: Update year in --version output.
+
+2007-06-07  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.in (m4filelist): Add intlmacosx.m4 to the list.
+	(func_version): Update copyright year.
+
+2007-05-24  Bruno Haible  <bruno@clisp.org>
+
+	* po-mode.el (po-mode-map): Bind po-undo also to Ctrl-_.
+	Suggested by Kevin Ryde <user42@zip.com.au>.
+
+2007-04-06  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.in (m4filelist): Remove longdouble.m4 from the list.
+
+2006-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.in: Protect against spaces in the value of $gettext_dir.
+
+2006-12-19  Bruno Haible  <bruno@clisp.org>
+
+	* gettextize.in (func_usage): Document --po-dir.
+	Handle the --po-dir option. Loop over each specified --po-dir value
+	instead of hardcoding po/.
+	Reported by Daniel Leidert <daniel.leidert.spam@gmx.net>.
+
 2006-11-27  Bruno Haible  <bruno@clisp.org>
 
 	* gettext-0.16.1 released.

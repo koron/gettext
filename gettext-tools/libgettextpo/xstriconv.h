@@ -1,11 +1,11 @@
 /* Charset conversion with out-of-memory checking.
-   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible and Simon Josefsson.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _XSTRICONV_H
 #define _XSTRICONV_H
@@ -35,13 +34,14 @@ extern "C" {
 /* Convert an entire string from one encoding to another, using iconv.
    The original string is at [SRC,...,SRC+SRCLEN-1].
    The conversion descriptor is passed as CD.
-   *RESULTP should initially contain NULL or a malloced memory block.
-   May change the size of the allocated memory block in *RESULTP, storing
-   its new address in *RESULTP and its new length in *LENGTHP.
+   *RESULTP and *LENGTH should initially be a scratch buffer and its size,
+   or *RESULTP can initially be NULL.
+   May erase the contents of the memory at *RESULTP.
    Upon memory allocation failure, report the error and exit.
    Return value: 0 if successful, otherwise -1 and errno set.
-   If successful, the resulting string is stored in *RESULTP and its length
-   in *LENGTHP.  */
+   If successful: The resulting string is stored in *RESULTP and its length
+   in *LENGTHP.  *RESULTP is set to a freshly allocated memory block, or is
+   unchanged if no dynamic memory allocation was necessary.  */
 extern int xmem_cd_iconv (const char *src, size_t srclen, iconv_t cd,
 			  char **resultp, size_t *lengthp);
 

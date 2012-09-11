@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: Hello.java:15
+#: Hello.java:14
 msgid "Hello, world!"
 msgstr "Dia duit, a dhomhain!"
 
-#: Hello.java:19
+#: Hello.java:18
 #, java-format
 msgid "This program is running as process number {0}."
 msgstr "Tá an clár seo á rith mar phróiseas {0}."

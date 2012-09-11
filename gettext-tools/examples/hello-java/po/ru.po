@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3\n"
 
-#: Hello.java:15
+#: Hello.java:14
 msgid "Hello, world!"
 msgstr "Здравствуй, мир!"
 
-#: Hello.java:19
+#: Hello.java:18
 #, java-format
 msgid "This program is running as process number {0}."
 msgstr "Эта программа выполняется как процесс под номером {0}."

@@ -2,7 +2,7 @@
 # Copyright © 2006 Yoyodyne, Inc.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, 2006.
 # Christophe Combelles <ccomb@free.fr>, 2006
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU hello-gawk 0.15-pre5\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: hello.awk:12
+#: hello.awk:11
 msgid "Hello, world!"
 msgstr "Bonjour, le monde !"
 
-#: hello.awk:13
+#: hello.awk:12
 #, awk-format
 msgid "This program is running as process number %d."
 msgstr "Ce programme est exécuté en tant que processus numéro %d."

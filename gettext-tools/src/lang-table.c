@@ -1,11 +1,11 @@
 /* Table of languages.
-   Copyright (C) 2001-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2005.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -125,7 +124,7 @@ struct language_table_entry language_table[] =
     { "iu", "Inuktitut" },
     { "ja", "Japanese" },
     { "jab", "Hyam" },
-    { "jw", "Javanese" },
+    { "jv", "Javanese" },
     { "ka", "Georgian" },
     { "kab", "Kabyle" },
     { "kaj", "Jju" },
@@ -286,3 +285,20 @@ struct language_table_entry language_table[] =
     { "zap", "Zapotec" }
   };
 const size_t language_table_size = sizeof (language_table) / sizeof (language_table[0]);
+
+/* The language names for variants of languages, according to the catalog name
+   (usually built from the language code and territory code).
+   Should be consistent with the list of languages found on the TP site, see
+   the URL contained in gettext-tools/projects/TP/teams.url.  */
+struct language_table_entry language_variant_table[] =
+  {
+    { "de_AT", "Austrian" },
+    { "en_GB", "English (British)" },
+    { "es_AR", "Argentinian" },
+    { "es_IC", "Spanish (Canary Islands)" },
+    { "pt_BR", "Brazilian Portuguese" },
+    { "zh_CN", "Chinese (simplified)" },
+    { "zh_HK", "Chinese (Hong Kong)" },
+    { "zh_TW", "Chinese (traditional)" }
+  };
+const size_t language_variant_table_size = sizeof (language_variant_table) / sizeof (language_variant_table[0]);

@@ -14,11 +14,11 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: hello.lisp.in:12
+#: hello.lisp.in:11
 msgid "Hello, world!"
 msgstr "Witaj ¶wiecie!"
 
-#: hello.lisp.in:14
+#: hello.lisp.in:13
 #, lisp-format
 msgid "This program is running as process number ~D."
 msgstr "Ten program dzia³a jako proces o numerze ~D."

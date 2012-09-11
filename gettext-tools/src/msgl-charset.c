@@ -1,11 +1,11 @@
 /* Message list charset and locale charset handling.
-   Copyright (C) 2001-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 
 #ifdef HAVE_CONFIG_H
@@ -26,6 +25,7 @@
 #include "msgl-charset.h"
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "po-charset.h"
@@ -33,12 +33,11 @@
 #include "error.h"
 #include "progname.h"
 #include "basename.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "xerror.h"
 #include "xvasprintf.h"
 #include "message.h"
 #include "c-strstr.h"
-#include "exit.h"
 #include "gettext.h"
 
 #define _(str) gettext (str)
@@ -78,7 +77,7 @@ compare_po_locale_charsets (const msgdomain_list_ty *mdlp)
 
 		    charsetstr += strlen ("charset=");
 		    len = strcspn (charsetstr, " \t\n");
-		    charset = (char *) xallocsa (len + 1);
+		    charset = (char *) xmalloca (len + 1);
 		    memcpy (charset, charsetstr, len);
 		    charset[len] = '\0';
 
@@ -88,7 +87,7 @@ compare_po_locale_charsets (const msgdomain_list_ty *mdlp)
 			     _("\
 present charset \"%s\" is not a portable encoding name"),
 			     charset);
-		    freesa (charset);
+		    freea (charset);
 		    if (canon_locale_code != canon_charset)
 		      {
 			multiline_warning (xasprintf (_("warning: ")),

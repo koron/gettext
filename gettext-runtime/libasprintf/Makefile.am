@@ -1,5 +1,5 @@
 ## Makefile for the gettext-runtime/libasprintf subdirectory of GNU gettext
-## Copyright (C) 2002-2006 Free Software Foundation, Inc.
+## Copyright (C) 2002-2007 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify it
 ## under the terms of the GNU Library General Public License as published
@@ -19,11 +19,14 @@
 ## Process this file with automake to produce Makefile.in.
 
 AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
+ACLOCAL = ../../build-aux/fixaclocal @ACLOCAL@
 ACLOCAL_AMFLAGS = -I ../../m4 -I ../m4
 EXTRA_DIST =
 MOSTLYCLEANFILES =
 
 RM = rm -f
+
+DEFS = -DIN_LIBASPRINTF @DEFS@
 
 
 # Library include file.
@@ -69,13 +72,13 @@ libasprintf.la: $(libasprintf_la_OBJECTS) $(libasprintf_la_DEPENDENCIES)
 
 
 # >>> gnulib module alloca.
-EXTRA_DIST += alloca_.h
+EXTRA_DIST += alloca.in.h
 
 # The following is needed in order to create an <alloca.h> when the system
 # doesn't have one that works with the given compiler.
 all-local $(libasprintf_la_OBJECTS): @ALLOCA_H@
-alloca.h: alloca_.h
-	cp $(srcdir)/alloca_.h alloca.h
+alloca.h: alloca.in.h
+	cp $(srcdir)/alloca.in.h alloca.h
 MOSTLYCLEANFILES += alloca.h
 # <<< gnulib module alloca.
 
@@ -162,7 +165,7 @@ html-local: $(HTMLS)
 # Override of automake's definition.
 # We want to use texi2html, not makeinfo --html.
 autosprintf_all.html: autosprintf.texi
-	$(TEXI2HTML) -expandinfo -number -monolithic `if test -f autosprintf.texi; then echo autosprintf.texi; else echo $(srcdir)/autosprintf.texi; fi`
+	$(TEXI2HTML) -number -monolithic `if test -f autosprintf.texi; then echo autosprintf.texi; else echo $(srcdir)/autosprintf.texi; fi`
 	mv autosprintf.html autosprintf_all.html
 
 # The install-html target is already defined by automake.

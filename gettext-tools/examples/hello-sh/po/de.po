@@ -16,11 +16,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.sh:15
+#: hello.sh:14
 msgid "Hello, world!"
 msgstr "Hallo Welt!"
 
-#: hello.sh:18
+#: hello.sh:17
 #, sh-format
 msgid "This program is running as process number $pid."
 msgstr "Dieses Programm läuft mit der Prozess-Nummer $pid."

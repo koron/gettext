@@ -14,11 +14,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: hello.py.in:13
+#: hello.py.in:12
 msgid "Hello, world!"
 msgstr "¡Hola, mundo!"
 
-#: hello.py.in:14
+#: hello.py.in:13
 #, python-format
 msgid "This program is running as process number %(pid)d."
 msgstr "Este programa está corriendo como el proceso número %(pid)d."

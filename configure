@@ -1279,6 +1279,7 @@ Optional Features:
   --enable-relocatable    install a package that can be moved in the filesystem
   --disable-libasprintf   do not build libasprintf
   --disable-openmp        do not use OpenMP
+  --disable-largefile     omit support for large files
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1295,6 +1296,23 @@ Optional Packages:
   --with-included-gettext use the GNU gettext library included here
   --with-libintl-prefix[=DIR]  search for libintl in DIR/include and DIR/lib
   --without-libintl-prefix     don't search for libintl in includedir and libdir
+  --with-included-glib    use the glib2 included here
+  --with-libglib-2.0-prefix[=DIR]  search for libglib-2.0 in DIR/include and DIR/lib
+  --without-libglib-2.0-prefix     don't search for libglib-2.0 in includedir and libdir
+  --with-included-libcroco  use the libcroco included here
+  --with-libcroco-0.6-prefix[=DIR]  search for libcroco-0.6 in DIR/include and DIR/lib
+  --without-libcroco-0.6-prefix     don't search for libcroco-0.6 in includedir and libdir
+  --with-included-libxml  use the libxml2 included here
+  --with-libxml2-prefix[=DIR]  search for libxml2 in DIR/include and DIR/lib
+  --without-libxml2-prefix     don't search for libxml2 in includedir and libdir
+  --with-libncurses-prefix[=DIR]  search for libncurses in DIR/include and DIR/lib
+  --without-libncurses-prefix     don't search for libncurses in includedir and libdir
+  --with-libtermcap-prefix[=DIR]  search for libtermcap in DIR/include and DIR/lib
+  --without-libtermcap-prefix     don't search for libtermcap in includedir and libdir
+  --with-libxcurses-prefix[=DIR]  search for libxcurses in DIR/include and DIR/lib
+  --without-libxcurses-prefix     don't search for libxcurses in includedir and libdir
+  --with-libcurses-prefix[=DIR]  search for libcurses in DIR/include and DIR/lib
+  --without-libcurses-prefix     don't search for libcurses in includedir and libdir
   --without-included-regex don't compile regex; this is the default on
                           systems with version 2 of the GNU C library
                           (use with caution on other system)
@@ -2236,6 +2254,8 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
+am__tar='${AMTAR} chof - --owner=root --group=root "$$tardir"'
+
 
 
 
@@ -2691,11 +2711,6 @@ if test "${with_libintl_prefix+set}" = set; then
   withval=$with_libintl_prefix;
 fi
 
-# Check whether --enable-openmp was given.
-if test "${enable_openmp+set}" = set; then
-  enableval=$enable_openmp;
-fi
-
 
 
 # Check whether --enable-java was given.
@@ -2708,9 +2723,91 @@ if test "${enable_native_java+set}" = set; then
   enableval=$enable_native_java;
 fi
 
+
+# Check whether --with-included-glib was given.
+if test "${with_included_glib+set}" = set; then
+  withval=$with_included_glib;
+fi
+
+
+# Check whether --with-libglib-2.0-prefix was given.
+if test "${with_libglib_2_0_prefix+set}" = set; then
+  withval=$with_libglib_2_0_prefix;
+fi
+
+
+# Check whether --with-included-libcroco was given.
+if test "${with_included_libcroco+set}" = set; then
+  withval=$with_included_libcroco;
+fi
+
+
+# Check whether --with-libcroco-0.6-prefix was given.
+if test "${with_libcroco_0_6_prefix+set}" = set; then
+  withval=$with_libcroco_0_6_prefix;
+fi
+
+
+# Check whether --with-included-glib was given.
+if test "${with_included_glib+set}" = set; then
+  withval=$with_included_glib;
+fi
+
+
+# Check whether --with-libglib-2.0-prefix was given.
+if test "${with_libglib_2_0_prefix+set}" = set; then
+  withval=$with_libglib_2_0_prefix;
+fi
+
+
+# Check whether --with-included-libxml was given.
+if test "${with_included_libxml+set}" = set; then
+  withval=$with_included_libxml;
+fi
+
+
+# Check whether --with-libxml2-prefix was given.
+if test "${with_libxml2_prefix+set}" = set; then
+  withval=$with_libxml2_prefix;
+fi
+
+# Check whether --enable-openmp was given.
+if test "${enable_openmp+set}" = set; then
+  enableval=$enable_openmp;
+fi
+
 # Check whether --enable-relocatable was given.
 if test "${enable_relocatable+set}" = set; then
   enableval=$enable_relocatable;
+fi
+
+# Check whether --enable-largefile was given.
+if test "${enable_largefile+set}" = set; then
+  enableval=$enable_largefile;
+fi
+
+
+# Check whether --with-libncurses-prefix was given.
+if test "${with_libncurses_prefix+set}" = set; then
+  withval=$with_libncurses_prefix;
+fi
+
+
+# Check whether --with-libtermcap-prefix was given.
+if test "${with_libtermcap_prefix+set}" = set; then
+  withval=$with_libtermcap_prefix;
+fi
+
+
+# Check whether --with-libxcurses-prefix was given.
+if test "${with_libxcurses_prefix+set}" = set; then
+  withval=$with_libxcurses_prefix;
+fi
+
+
+# Check whether --with-libcurses-prefix was given.
+if test "${with_libcurses_prefix+set}" = set; then
+  withval=$with_libcurses_prefix;
 fi
 
 

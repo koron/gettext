@@ -1,11 +1,11 @@
 /* Java format strings.
-   Copyright (C) 2001-2004, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2007 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
-   This program is free software; you can redistribute it and/or modify
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -28,7 +27,7 @@
 #include "format.h"
 #include "c-ctype.h"
 #include "xalloc.h"
-#include "xallocsa.h"
+#include "xmalloca.h"
 #include "xvasprintf.h"
 #include "format-invalid.h"
 #include "gettext.h"
@@ -149,9 +148,10 @@ static bool choice_format_parse (const char *format, struct spec *spec,
 /* Return true if a format is a valid messageFormatPattern.
    Extracts argument type information into spec.  */
 static bool
-message_format_parse (const char *format, struct spec *spec,
+message_format_parse (const char *format, char *fdi, struct spec *spec,
 		      char **invalid_reason)
 {
+  const char *const format_start = format;
   bool quoting = false;
 
   for (;;)
@@ -168,6 +168,7 @@ message_format_parse (const char *format, struct spec *spec,
 	  unsigned int number;
 	  enum format_arg_type type;
 
+	  FDI_SET (format, FMTDIR_START);
 	  spec->directives++;
 
 	  element_start = ++format;
@@ -188,12 +189,13 @@ message_format_parse (const char *format, struct spec *spec,
 	    {
 	      *invalid_reason =
 		xstrdup (_("The string ends in the middle of a directive: found '{' without matching '}'."));
+	      FDI_SET (format - 1, FMTDIR_ERROR);
 	      return false;
 	    }
 	  element_end = format++;
 
 	  n = element_end - element_start;
-	  element = element_alloced = (char *) xallocsa (n + 1);
+	  element = element_alloced = (char *) xmalloca (n + 1);
 	  memcpy (element, element_start, n);
 	  element[n] = '\0';
 
@@ -201,7 +203,8 @@ message_format_parse (const char *format, struct spec *spec,
 	    {
 	      *invalid_reason =
 		xasprintf (_("In the directive number %u, '{' is not followed by an argument number."), spec->directives);
-	      freesa (element_alloced);
+	      FDI_SET (format - 1, FMTDIR_ERROR);
+	      freea (element_alloced);
 	      return false;
 	    }
 	  number = 0;
@@ -235,7 +238,8 @@ message_format_parse (const char *format, struct spec *spec,
 		    {
 		      *invalid_reason =
 			xasprintf (_("In the directive number %u, the substring \"%s\" is not a valid date/time style."), spec->directives, element);
-		      freesa (element_alloced);
+		      FDI_SET (format - 1, FMTDIR_ERROR);
+		      freea (element_alloced);
 		      return false;
 		    }
 		}
@@ -245,7 +249,8 @@ message_format_parse (const char *format, struct spec *spec,
 		  element -= 4;
 		  *invalid_reason =
 		    xasprintf (_("In the directive number %u, \"%s\" is not followed by a comma."), spec->directives, element);
-		  freesa (element_alloced);
+		  FDI_SET (format - 1, FMTDIR_ERROR);
+		  freea (element_alloced);
 		  return false;
 		}
 	    }
@@ -267,7 +272,8 @@ message_format_parse (const char *format, struct spec *spec,
 		    {
 		      *invalid_reason =
 			xasprintf (_("In the directive number %u, the substring \"%s\" is not a valid number style."), spec->directives, element);
-		      freesa (element_alloced);
+		      FDI_SET (format - 1, FMTDIR_ERROR);
+		      freea (element_alloced);
 		      return false;
 		    }
 		}
@@ -277,7 +283,8 @@ message_format_parse (const char *format, struct spec *spec,
 		  element -= 6;
 		  *invalid_reason =
 		    xasprintf (_("In the directive number %u, \"%s\" is not followed by a comma."), spec->directives, element);
-		  freesa (element_alloced);
+		  FDI_SET (format - 1, FMTDIR_ERROR);
+		  freea (element_alloced);
 		  return false;
 		}
 	    }
@@ -294,7 +301,8 @@ message_format_parse (const char *format, struct spec *spec,
 		    ;
 		  else
 		    {
-		      freesa (element_alloced);
+		      FDI_SET (format - 1, FMTDIR_ERROR);
+		      freea (element_alloced);
 		      return false;
 		    }
 		}
@@ -304,7 +312,8 @@ message_format_parse (const char *format, struct spec *spec,
 		  element -= 6;
 		  *invalid_reason =
 		    xasprintf (_("In the directive number %u, \"%s\" is not followed by a comma."), spec->directives, element);
-		  freesa (element_alloced);
+		  FDI_SET (format - 1, FMTDIR_ERROR);
+		  freea (element_alloced);
 		  return false;
 		}
 	    }
@@ -312,10 +321,11 @@ message_format_parse (const char *format, struct spec *spec,
 	    {
 	      *invalid_reason =
 		xasprintf (_("In the directive number %u, the argument number is not followed by a comma and one of \"%s\", \"%s\", \"%s\", \"%s\"."), spec->directives, "time", "date", "number", "choice");
-	      freesa (element_alloced);
+	      FDI_SET (format - 1, FMTDIR_ERROR);
+	      freea (element_alloced);
 	      return false;
 	    }
-	  freesa (element_alloced);
+	  freea (element_alloced);
 
 	  if (spec->allocated == spec->numbered_arg_count)
 	    {
@@ -325,12 +335,16 @@ message_format_parse (const char *format, struct spec *spec,
 	  spec->numbered[spec->numbered_arg_count].number = number;
 	  spec->numbered[spec->numbered_arg_count].type = type;
 	  spec->numbered_arg_count++;
+
+	  FDI_SET (format - 1, FMTDIR_END);
 	}
       /* The doc says "ab}de" is invalid.  Even though JDK accepts it.  */
       else if (!quoting && *format == '}')
 	{
+	  FDI_SET (format, FMTDIR_START);
 	  *invalid_reason =
 	    xstrdup (_("The string starts in the middle of a directive: found '}' without matching '{'."));
+	  FDI_SET (format, FMTDIR_ERROR);
 	  return false;
 	}
       else if (*format != '\0')
@@ -571,7 +585,7 @@ choice_format_parse (const char *format, struct spec *spec,
 	}
       HANDLE_QUOTE;
 
-      msgformat = (char *) xallocsa (strlen (format) + 1);
+      msgformat = (char *) xmalloca (strlen (format) + 1);
       mp = msgformat;
 
       while (*format != '\0' && !(!quoting && *format == '|'))
@@ -581,9 +595,10 @@ choice_format_parse (const char *format, struct spec *spec,
 	}
       *mp = '\0';
 
-      msgformat_valid = message_format_parse (msgformat, spec, invalid_reason);
+      msgformat_valid =
+	message_format_parse (msgformat, NULL, spec, invalid_reason);
 
-      freesa (msgformat);
+      freea (msgformat);
 
       if (!msgformat_valid)
 	return false;
@@ -608,7 +623,8 @@ numbered_arg_compare (const void *p1, const void *p2)
 }
 
 static void *
-format_parse (const char *format, bool translated, char **invalid_reason)
+format_parse (const char *format, bool translated, char *fdi,
+	      char **invalid_reason)
 {
   struct spec spec;
   struct spec *result;
@@ -618,7 +634,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
   spec.allocated = 0;
   spec.numbered = NULL;
 
-  if (!message_format_parse (format, &spec, invalid_reason))
+  if (!message_format_parse (format, fdi, &spec, invalid_reason))
     goto bad_format;
 
   /* Sort the numbered argument array, and eliminate duplicates.  */
@@ -670,7 +686,7 @@ format_parse (const char *format, bool translated, char **invalid_reason)
 	goto bad_format;
     }
 
-  result = (struct spec *) xmalloc (sizeof (struct spec));
+  result = XMALLOC (struct spec);
   *result = spec;
   return result;
 
@@ -788,7 +804,6 @@ struct formatstring_parser formatstring_java =
    format_parse for strings read from standard input.  */
 
 #include <stdio.h>
-#include "getline.h"
 
 static void
 format_print (void *descr)
@@ -852,7 +867,7 @@ main ()
 	line[--line_len] = '\0';
 
       invalid_reason = NULL;
-      descr = format_parse (line, false, &invalid_reason);
+      descr = format_parse (line, false, NULL, &invalid_reason);
 
       format_print (descr);
       printf ("\n");
@@ -869,7 +884,7 @@ main ()
 /*
  * For Emacs M-x compile
  * Local Variables:
- * compile-command: "/bin/sh ../libtool --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../lib -I../intl -DHAVE_CONFIG_H -DTEST format-java.c ../lib/libgettextlib.la"
+ * compile-command: "/bin/sh ../libtool --tag=CC --mode=link gcc -o a.out -static -O -g -Wall -I.. -I../gnulib-lib -I../intl -DHAVE_CONFIG_H -DTEST format-java.c ../gnulib-lib/libgettextlib.la"
  * End:
  */
 
