@@ -21,6 +21,13 @@
 #define _LOCALCHARSET_H
 
 
+#ifdef BUILDING_LIBINTL
+#define LIBINTL_DLL_EXPORTED __declspec(dllexport)
+#else
+#define LIBINTL_DLL_EXPORTED __declspec(dllimport)
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,7 +38,7 @@ extern "C" {
    The result must not be freed; it is statically allocated.
    If the canonical name cannot be determined, the result is a non-canonical
    name.  */
-extern const char * locale_charset (void);
+extern LIBINTL_DLL_EXPORTED const char * locale_charset (void);
 
 
 #ifdef __cplusplus
