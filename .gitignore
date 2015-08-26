@@ -1,0 +1,16 @@
+*.dll
+*.exe
+*.exp
+*.lib
+*.obj
+*.res
+
+/gettext-runtime/config.h
+/gettext-runtime/intl/libgnuintl.h
+/gettext-runtime/intl/libintl.h
+/gettext-runtime/libasprintf/alloca.h
+/gettext-runtime/libasprintf/autosprintf.h
+/gettext-runtime/libasprintf/config.h
+/gettext-tools/config.h
+/gettext-tools/intl/libgnuintl.h
+/gettext-tools/intl/libintl.h
