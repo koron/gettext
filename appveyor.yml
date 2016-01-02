@@ -1,0 +1,58 @@
+environment:
+  version: 0.14.6
+  ICONV_VERSION: 1.14.0
+
+version: $(version)-{build}
+
+init:
+  - ps: >-
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+      }
+      else
+      {
+        Update-AppveyorBuild -Version "$env:version-$($env:appveyor_repo_commit.substring(0,7))"
+      }
+
+install:
+  - cinst unzip
+  - cinst zip
+
+platform:
+  - x86
+  - x64
+
+before_build:
+  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%PLATFORM% /release'
+  - cmd: |
+      MD tmp
+      cd tmp
+      curl -LO https://github.com/koron/libiconv/releases/download/v%ICONV_VERSION%/libiconv-v%ICONV_VERSION%-win-%PLATFORM%.zip
+      unzip libiconv-v%ICONV_VERSION%-win-%PLATFORM%.zip
+      REN libiconv-v%ICONV_VERSION%-win-%PLATFORM% LOCAL
+      cd ..
+
+build_script:
+  - cmd: |
+      nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX=%APPVEYOR_BUILD_FOLDER%\tmp\LOCAL
+
+after_test:
+  - cmd: |
+      RD /S /Q tmp\LOCAL
+      nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX=%APPVEYOR_BUILD_FOLDER%\tmp\LOCAL install
+      cd tmp
+      REN LOCAL gettext-%APPVEYOR_BUILD_VERSION%-win-%PLATFORM%
+      zip -r9q gettext-%APPVEYOR_BUILD_VERSION%-win-%PLATFORM%.zip gettext-%APPVEYOR_BUILD_VERSION%-win-%PLATFORM%
+      cd ..
+
+artifacts:
+  - path: tmp\gettext-$(APPVEYOR_BUILD_VERSION)-win-$(PLATFORM).zip
+
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: /be7Y+tvNQ5L6cFCdFcE7B7aMwPfHey36ufKbGC/khkmpw6OdwrEaHJ+tvcfPUyn
+  draft: true
+  on:
+    appveyor_repo_tag: true
