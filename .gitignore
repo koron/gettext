@@ -5,6 +5,8 @@
 *.obj
 *.res
 
+/tmp/
+
 /gettext-runtime/config.h
 /gettext-runtime/intl/libgnuintl.h
 /gettext-runtime/intl/libintl.h
