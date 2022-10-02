@@ -1,0 +1,157 @@
+name: Windows
+
+on: [push]
+
+env:
+  iconv_version: 'v1.14.0+3'
+
+jobs:
+  build-x64:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - name: libiconv
+      run: |
+        IF NOT EXIST tmp MKDIR tmp
+        CD tmp
+        SET LIBICONV_NAME=libiconv-${{ env.iconv_version }}-windows-x64
+        curl -LO "https://github.com/koron/libiconv/releases/download/${{ env.iconv_version }}/%LIBICONV_NAME%.zip"
+        unzip -o "%LIBICONV_NAME%.zip"
+        REN "%LIBICONV_NAME%" local
+
+    - name: build
+      run: |
+        CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local"
+
+    - name: install
+      run: |
+        CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local2" install
+
+    - name: archive artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: gettext-windows-x64
+        path: |
+          tmp/local2
+
+  dist-x64:
+    if: github.ref_type == 'tag'
+    needs: [ build-x64 ]
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+    - name: download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: gettext-windows-x64
+        path: gettext-${{ github.ref_name }}-windows-x64
+
+    - name: install zip command
+      uses: crazy-max/ghaction-chocolatey@v2
+      with:
+        args: install zip
+
+    - name: zip archive
+      run: |
+        SET GETTEXT_NAME=gettext-${{ github.ref_name }}-windows-x64
+        zip -r9q "%GETTEXT_NAME%.zip" "%GETTEXT_NAME%"
+
+    - name: list zip
+      run: DIR *.zip
+
+    - name: release
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        prerelease: ${{ contains(github.ref_name, '-alpha.') || contains(github.ref_name, '-beta.') }}
+        files: |
+          *.zip
+        fail_on_unmatched_files: true
+        generate_release_notes: false
+        append_body: true
+
+  build-x86:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - name: libiconv
+      run: |
+        IF NOT EXIST tmp MKDIR tmp
+        CD tmp
+        SET LIBICONV_NAME=libiconv-${{ env.iconv_version }}-windows-x86
+        curl -LO "https://github.com/koron/libiconv/releases/download/${{ env.iconv_version }}/%LIBICONV_NAME%.zip"
+        unzip -o "%LIBICONV_NAME%.zip"
+        REN "%LIBICONV_NAME%" local
+
+    - name: build
+      run: |
+        CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local"
+
+    - name: install
+      run: |
+        CALL "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local2" install
+
+    - name: archive artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: gettext-windows-x86
+        path: |
+          tmp/local2
+
+  dist-x86:
+    if: github.ref_type == 'tag'
+    needs: [ build-x86 ]
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+    - name: download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: gettext-windows-x86
+        path: gettext-${{ github.ref_name }}-windows-x86
+
+    - name: install zip command
+      uses: crazy-max/ghaction-chocolatey@v2
+      with:
+        args: install zip
+
+    - name: zip archive
+      run: |
+        SET GETTEXT_NAME=gettext-${{ github.ref_name }}-windows-x86
+        zip -r9q "%GETTEXT_NAME%.zip" "%GETTEXT_NAME%"
+
+    - name: list zip
+      run: DIR *.zip
+
+    - name: release
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        prerelease: ${{ contains(github.ref_name, '-alpha.') || contains(github.ref_name, '-beta.') }}
+        files: |
+          *.zip
+        fail_on_unmatched_files: true
+        generate_release_notes: false
+        append_body: true
