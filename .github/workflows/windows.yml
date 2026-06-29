@@ -16,7 +16,7 @@ jobs:
       matrix:
         arch: [ x86, x64 ]
 
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     defaults:
       run:
@@ -59,7 +59,7 @@ jobs:
     if: github.ref_type == 'tag'
     needs: [ build ]
 
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     defaults:
       run:
