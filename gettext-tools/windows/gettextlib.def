@@ -3,6 +3,7 @@ EXPORTS
 argmatch_die
 error_message_count
 error_with_progname
+exit_failure
 program_name
 simple_backup_suffix
 __xargmatch_internal
