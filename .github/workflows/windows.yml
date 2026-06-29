@@ -14,7 +14,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: libiconv
       run: |
@@ -36,7 +36,7 @@ jobs:
         nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local2" install
 
     - name: archive artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: gettext-windows-x64
         path: |
@@ -52,15 +52,14 @@ jobs:
 
     steps:
     - name: download artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v8
       with:
         name: gettext-windows-x64
         path: gettext-${{ github.ref_name }}-windows-x64
 
     - name: install zip command
-      uses: crazy-max/ghaction-chocolatey@v2
-      with:
-        args: install zip
+      run:
+         choco install zip ;;
 
     - name: zip archive
       run: |
@@ -71,7 +70,7 @@ jobs:
       run: DIR *.zip
 
     - name: release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
       with:
         draft: true
         prerelease: ${{ contains(github.ref_name, '-alpha.') || contains(github.ref_name, '-beta.') }}
@@ -89,7 +88,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: libiconv
       run: |
@@ -111,7 +110,7 @@ jobs:
         nmake /NOLOGO /F Makefile.msvc DLL=1 MFLAGS="-MD -D_BIND_TO_CURRENT_VCLIBS_VERSION=1" PREFIX="${{ github.workspace }}\tmp\local2" install
 
     - name: archive artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v7
       with:
         name: gettext-windows-x86
         path: |
@@ -127,7 +126,7 @@ jobs:
 
     steps:
     - name: download artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v8
       with:
         name: gettext-windows-x86
         path: gettext-${{ github.ref_name }}-windows-x86
@@ -146,7 +145,7 @@ jobs:
       run: DIR *.zip
 
     - name: release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
       with:
         draft: true
         prerelease: ${{ contains(github.ref_name, '-alpha.') || contains(github.ref_name, '-beta.') }}
